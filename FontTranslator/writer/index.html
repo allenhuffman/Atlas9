@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mossman Script Writer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font: 16px/1.5 system-ui, sans-serif;
+      color: #172126;
+      background: #f1f4f3;
+    }
+
+    body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    h1 { margin-bottom: 4px; }
+    .hint { margin-top: 0; color: #4d5b60; }
+
+    label {
+      display: block;
+      margin: 20px 0 6px;
+      font-weight: 650;
+    }
+
+    textarea {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border: 1px solid #87969a;
+      border-radius: 8px;
+      font: inherit;
+      resize: vertical;
+    }
+
+    .actions { display: flex; gap: 10px; margin: 12px 0; }
+
+    button {
+      padding: 9px 15px;
+      border: 0;
+      border-radius: 7px;
+      color: white;
+      background: #176b58;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button.secondary { color: #172126; background: #dce5e2; }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    #status { min-height: 1.5em; color: #4d5b60; }
+
+    #preview {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+      height: auto;
+      margin-top: 12px;
+      border: 1px solid #c5cfcc;
+      border-radius: 8px;
+      background: white;
+    }
+
+    @media print {
+      body { max-width: none; margin: 0; padding: 0; background: white; }
+      h1, .hint, label, textarea, .actions, #status { display: none !important; }
+      #preview { width: 100%; margin: 0; border: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Mossman Script Writer</h1>
+  <p class="hint">Type text to render editable vector glyphs based on the supplied chart. This page works locally in your browser.</p>
+
+  <label for="source">Text to translate</label>
+  <textarea id="source" placeholder="Type a sentence...">Mossman Script</textarea>
+  <div class="actions">
+    <button id="render" type="button" disabled>Render</button>
+    <button id="download-svg" class="secondary" type="button" disabled>Download SVG</button>
+    <button id="download-png" class="secondary" type="button" disabled>Download PNG</button>
+    <button id="print" class="secondary" type="button" disabled>Print</button>
+  </div>
+  <div id="status" role="status" aria-live="polite">Loading the local vector glyphs...</div>
+  <svg id="preview" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Text rendered in Mossman Script"></svg>
+
+  <script>
+    "use strict";
+
+    const svgNamespace = "http://www.w3.org/2000/svg";
+    const glyphsUrl = "glyphs.json";
+    let sizes = { dot: {}, ring: {} };
+    const glyphHeight = 84;
+    const strokeWidth = 3.4; // one thickness for every ring and line, in output pixels, like the photographed sign
+    const letterGap = 12;
+    const wordGap = 38;
+    const lineGap = 28;
+    const maxLineWidth = 1100;
+    const source = document.querySelector("#source");
+    const preview = document.querySelector("#preview");
+    const status = document.querySelector("#status");
+    const buttons = [...document.querySelectorAll("button")];
+    const glyphs = new Map();
+    let ready = false;
+
+    function element(name, attributes = {}) {
+      const node = document.createElementNS(svgNamespace, name);
+      for (const [key, value] of Object.entries(attributes)) {
+        node.setAttribute(key, value);
+      }
+      return node;
+    }
+
+    function glyphWidth(glyph) {
+      return glyphHeight * glyph.width / glyph.height;
+    }
+
+    function drawGlyph(character, glyph, x, y) {
+      const group = element("g", {
+        "data-character": character,
+        transform: `translate(${x} ${y}) scale(${glyphHeight / glyph.height})`,
+      });
+      const penWidth = strokeWidth * glyph.height / glyphHeight;
+      for (const part of glyph.parts) {
+        if (part.type === "dot") {
+          group.append(element("circle", {
+            cx: part.cx, cy: part.cy, r: part.r ?? sizes.dot[part.size], fill: "black",
+          }));
+        } else if (part.type === "ring") {
+          group.append(element("circle", {
+            cx: part.cx, cy: part.cy, r: part.r ?? sizes.ring[part.size],
+            fill: "none", stroke: "black", "stroke-width": penWidth,
+          }));
+        } else {
+          group.append(element("line", {
+            x1: part.x1, y1: part.y1, x2: part.x2, y2: part.y2,
+            stroke: "black", "stroke-width": penWidth,
+          }));
+        }
+      }
+      return group;
+    }
+
+    function layoutLines(text) {
+      const lines = [];
+      for (const paragraph of text.toUpperCase().split(/\r?\n/)) {
+        let line = [];
+        let width = 0;
+        const words = paragraph.split(/\s+/).filter(Boolean);
+        for (const [wordIndex, word] of words.entries()) {
+          const characters = Array.from(word, (character) => ({
+            character,
+            glyph: glyphs.get(character),
+          }));
+          const wordWidth = characters.reduce(
+            (sum, item) => sum + (item.glyph ? glyphWidth(item.glyph) + letterGap : 36),
+            0
+          );
+          const spaceWidth = line.length ? wordGap : 0;
+          if (line.length && width + spaceWidth + wordWidth > maxLineWidth) {
+            lines.push(line);
+            line = [];
+            width = 0;
+          } else if (wordIndex > 0 && line.length) {
+            line.push({ character: " ", glyph: null });
+            width += wordGap;
+          }
+          for (const item of characters) {
+            line.push(item);
+            width += item.glyph ? glyphWidth(item.glyph) + letterGap : 36;
+          }
+        }
+        lines.push(line);
+      }
+      return lines;
+    }
+
+    function render() {
+      const lines = layoutLines(source.value);
+      const lineWidths = lines.map((line) => line.reduce((sum, item) => {
+        if (item.character === " ") return sum + wordGap;
+        return sum + (item.glyph ? glyphWidth(item.glyph) + letterGap : 36);
+      }, 0));
+      const width = Math.max(1, ...lineWidths);
+      const height = Math.max(1, lines.length * (glyphHeight + lineGap) - lineGap);
+      preview.replaceChildren();
+      const pad = 6; // keeps thickened strokes at the glyph edges from being clipped
+      preview.setAttribute("viewBox", `${-pad} ${-pad} ${width + 2 * pad} ${height + 2 * pad}`);
+      preview.setAttribute("width", width + 2 * pad);
+      preview.setAttribute("height", height + 2 * pad);
+
+      preview.append(element("rect", {
+        x: -pad,
+        y: -pad,
+        width: width + 2 * pad,
+        height: height + 2 * pad,
+        fill: "white",
+      }));
+
+      lines.forEach((line, lineIndex) => {
+        let x = 0;
+        const y = lineIndex * (glyphHeight + lineGap);
+        for (const item of line) {
+          if (item.character === " ") {
+            x += wordGap;
+          } else if (item.glyph) {
+            const itemWidth = glyphWidth(item.glyph);
+            preview.append(drawGlyph(item.character, item.glyph, x, y));
+            x += itemWidth + letterGap;
+          } else {
+            const question = element("text", {
+              x,
+              y: y + glyphHeight * 0.7,
+              fill: "#b42318",
+              "font-family": "system-ui, sans-serif",
+              "font-size": 28,
+            });
+            question.textContent = "?";
+            preview.append(question);
+            x += 36;
+          }
+        }
+      });
+
+      const unsupported = [...new Set(
+        Array.from(source.value.toUpperCase()).filter(
+          (character) => !/[\s]/u.test(character) && !glyphs.has(character)
+        )
+      )];
+      status.textContent = unsupported.length
+        ? `Red ? marks characters without chart glyphs: ${unsupported.join(" ")}. The chart includes only the 3, 4, and 6 digit glyphs (X was traced from the sample photo).`
+        : "Rendered as vector paths. Download SVG to edit the artwork, or save as PNG or print.";
+    }
+
+    function download(name, blob) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = name;
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function loadGlyphs() {
+      const response = await fetch(glyphsUrl);
+      if (!response.ok) throw new Error(`Could not load glyph parts (${response.status})`);
+      const data = await response.json();
+      sizes = data.sizes || sizes;
+      for (const [character, glyph] of Object.entries(data.glyphs)) {
+        glyphs.set(character, glyph);
+      }
+      if (!glyphs.size) throw new Error("No glyphs were found in glyphs.json.");
+      ready = true;
+      buttons.forEach((button) => { button.disabled = false; });
+      render();
+    }
+
+    document.querySelector("#render").addEventListener("click", render);
+    source.addEventListener("input", () => { if (ready) render(); });
+    document.querySelector("#download-svg").addEventListener("click", () => {
+      const svg = new XMLSerializer().serializeToString(preview);
+      download("mossman-script.svg", new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+    });
+    document.querySelector("#download-png").addEventListener("click", () => {
+      const svg = new XMLSerializer().serializeToString(preview);
+      const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = Number(preview.getAttribute("width"));
+        canvas.height = Number(preview.getAttribute("height"));
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          if (blob) download("mossman-script.png", blob);
+          else status.textContent = "Could not create the PNG download.";
+        }, "image/png");
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        status.textContent = "Could not convert the vector artwork to PNG.";
+      };
+      image.src = url;
+    });
+    document.querySelector("#print").addEventListener("click", () => window.print());
+
+    loadGlyphs().catch((error) => {
+      status.textContent = `${error.message} Run the local web server from the writer folder as described in README.md.`;
+    });
+  </script>
+</body>
+</html>

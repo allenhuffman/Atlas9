@@ -1,0 +1,16 @@
+I would like to create a glyph translator that can translate characters found in a photo. There is a sample png showing the glyphs we know so far.
+
+This is a font found in the Atlas9 attraction in Kansas City, KS. People have called it the "Mossman Font' because it appears on movie posters for the fictional Mossman movie, as well as on walls int hat area. It also appears in the "Starbot" spaceship room on walls and doors.
+
+Atlas9-Font.png
+
+Background resaerch on th font, and source of that image:
+
+https://www.reddit.com/r/Atlas9/wiki/mossman-script/
+
+
+KNOWN CHARACTERS:
+
+ABCDEFGHIJ
+KLMNOPQRST
+UVWXYZ 346
