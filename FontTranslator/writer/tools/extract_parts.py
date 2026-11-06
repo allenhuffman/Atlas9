@@ -289,7 +289,9 @@ def main() -> int:
     if args.overlay:
         while len(tiles) % 7:
             tiles.append(np.full((130, 170, 3), 255, np.uint8))
-        cv2.imwrite(str(args.overlay), np.vstack([np.hstack(tiles[i : i + 7]) for i in range(0, len(tiles), 7)]))
+        overlay = np.vstack([np.hstack(tiles[i : i + 7]) for i in range(0, len(tiles), 7)])
+        if not cv2.imwrite(str(args.overlay), overlay):
+            parser.error(f"could not write overlay image: {args.overlay}")
     return 0
 
 
