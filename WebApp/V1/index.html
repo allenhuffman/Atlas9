@@ -81,6 +81,9 @@
   /* FAZR rows (v1.9.7): same look as "Connects to:" rows, but plain text
      (not tappable) — a FAZR point has no detail sheet. */
   #sheet .fazrRow { padding: 12px 2px; border-bottom: 1px solid #2a2a2a; color: #eee; font-size: 16px; }
+  /* Wayfinder (v1.10.0): the floor-change divider between route steps. */
+  #sheet .wfVia { text-align: center; color: #e0a800; font-size: 14px; padding: 10px 0 2px; }
+  #sheet .wfSummary { margin-top: 6px; font-size: 16px; color: #ddd; }
   .check { flex: 0 0 auto; width: 34px; height: 34px; margin-top: 2px; border-radius: 50%; border: 2px solid #666; background: transparent; color: transparent; font-size: 20px; line-height: 30px; text-align: center; cursor: pointer; padding: 0; }
   .check.done { background: #e0a800; border-color: #e0a800; color: #111; }
   .delBtn { flex: 0 0 auto; width: 30px; height: 30px; margin-top: 4px; border-radius: 50%; border: 1px solid #555; background: transparent; color: #999; font-size: 15px; line-height: 28px; text-align: center; cursor: pointer; padding: 0; }
@@ -168,7 +171,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.9.7';
+const APP_VERSION = '1.10.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -486,6 +489,7 @@ function roomSheet(r) {
     '<div class="desc">' + descFor(r) + '</div>' +
     connHTML +
     fazrHTML +
+    '<button class="transcriptBtn" id="sheetWayfinder">Wayfinder</button>' +
     '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
     '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetVisit">' + (done ? '✓ Visited' : 'Mark visited') + '</button>' +
     '<button class="close" id="sheetClose">Close</button></div>'
@@ -498,9 +502,194 @@ function roomSheet(r) {
     render();
   });
   document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Room: ' + r.name));
+  document.getElementById('sheetWayfinder').addEventListener('click', () => wayfinderSheet(r));
   document.querySelectorAll('#sheet .connRow').forEach(b => {
     b.addEventListener('click', () => roomSheet(conns[+b.dataset.ci]));
   });
+}
+/* Wayfinder (v1.10.0, Allen 2026-11-19): directions between rooms.
+   BFS shortest path through the rooms connections graph, treated as
+   undirected (the 3 one-way asymmetries still route both ways).
+   Stairs/Elevator toggle picks which Level-0 connector type a floor
+   change may use; Crawls toggle excludes the three crawl rooms.
+   No spoiler gating — every room can be found from other ways (Allen),
+   so any room is a valid destination and may appear in a route. */
+const WF_STAIRS = ['Theater Stairs', 'Jazz Club Stairs', 'Scavengers Stairs', 'Stairs (Lobby/Starbot)'];
+const WF_ELEVATOR = ['Elevator (Lobby/Starbot)'];
+const WF_CRAWLS = ['Theater Crawl', 'Hypnotizer Crawl', 'Concession Crawl'];
+/* Wayfinder state is session-only (not persisted): the starting room, the
+   destination, and the two toggles (Stairs default, crawls on default). */
+let wfFrom = null;
+let wfTo = null;
+let wfConnector = 'stairs';
+let wfCrawls = true;
+let wfGraph = null;
+function wfBuildGraph() {
+  wfGraph = new Map();
+  for (const r of data.rooms) wfGraph.set(r.name, new Set());
+  for (const r of data.rooms) {
+    for (const c of (r.connections || [])) {
+      if (!wfGraph.has(c)) continue;
+      wfGraph.get(r.name).add(c);
+      wfGraph.get(c).add(r.name);
+    }
+  }
+}
+/* Returns { path } or { error: 'no-connector' | 'no-crawls' }. With crawls
+   on the graph is fully connected, so a failed BFS with crawls on can only
+   be the connector exclusion; with crawls off it is the crawls. */
+function wfFindRoute(from, to, connector, crawlsOn) {
+  if (from === to) return { path: [from] };
+  const excluded = new Set();
+  if (connector === 'stairs') WF_ELEVATOR.forEach(n => excluded.add(n));
+  else WF_STAIRS.forEach(n => excluded.add(n));
+  if (!crawlsOn) WF_CRAWLS.forEach(n => excluded.add(n));
+  if (excluded.has(from) || excluded.has(to)) {
+    const crawlBlocked = !crawlsOn && (WF_CRAWLS.includes(from) || WF_CRAWLS.includes(to));
+    return { error: crawlBlocked ? 'no-crawls' : 'no-connector' };
+  }
+  const prev = new Map([[from, null]]);
+  const q = [from];
+  while (q.length) {
+    const cur = q.shift();
+    for (const nb of wfGraph.get(cur)) {
+      if (prev.has(nb) || excluded.has(nb)) continue;
+      prev.set(nb, cur);
+      if (nb === to) {
+        const path = [to];
+        let p = cur;
+        while (p !== null) { path.unshift(p); p = prev.get(p); }
+        return { path };
+      }
+      q.push(nb);
+    }
+  }
+  return { error: crawlsOn ? 'no-connector' : 'no-crawls' };
+}
+function wfRouteSummary(path) {
+  const byName = new Map(data.rooms.map(r => [r.name, r]));
+  const stops = path.length - 1;
+  if (stops === 0) return "You're already there.";
+  let s = stops + (stops === 1 ? ' stop' : ' stops');
+  const startF = byName.get(path[0]).level;
+  const endF = byName.get(path[path.length - 1]).level;
+  const conns = [];
+  for (const n of path) {
+    const r = byName.get(n);
+    if (r.level === 0 && !conns.includes(n)) conns.push(n);
+  }
+  if (startF != null && endF != null && startF !== 0 && endF !== 0 && startF !== endF) {
+    s += ' · Floor ' + startF + ' → Floor ' + endF;
+    if (conns.length) s += ' via ' + conns.join(' + ');
+  } else if (conns.length) {
+    s += ' · via ' + conns.join(' + ');
+  } else if (startF != null && startF !== 0) {
+    s += ' · Floor ' + startF;
+  } else if (endF != null && endF !== 0) {
+    s += ' · Floor ' + endF;
+  }
+  return s;
+}
+/* Destination list, grouped by floor, excluding the starting room.
+   Typing filters by room name. */
+function wfDestListHTML(needle) {
+  const n = (needle || '').trim().toLowerCase();
+  const cands = data.rooms.filter(r => r.name !== wfFrom.name && (!n || r.name.toLowerCase().includes(n)));
+  const groups = [[1, 'Floor 1'], [2, 'Floor 2'], [0, 'Floor 1 & 2'], [null, 'Floor ?']];
+  let html = '';
+  for (const [lvl, label] of groups) {
+    const items = cands.filter(r => r.level === lvl);
+    if (!items.length) continue;
+    html += '<div class="connHead">' + label + '</div>';
+    html += items.map(r => '<button class="connRow" data-wfdest="' + esc(r.name) + '"><span class="name">' + esc(r.name) + '</span><span class="chev">›</span></button>').join('');
+  }
+  return html || '<div class="empty">No rooms match.</div>';
+}
+function wfAttachDest() {
+  document.querySelectorAll('#sheet [data-wfdest]').forEach(b => {
+    b.addEventListener('click', () => {
+      wfTo = data.rooms.find(r => r.name === b.dataset.wfdest);
+      if (wfTo) { renderWayfinder(); sheet.scrollTop = 0; }
+    });
+  });
+  document.querySelectorAll('#sheet [data-wfstep]').forEach(b => {
+    b.addEventListener('click', () => {
+      const r = data.rooms.find(x => x.name === b.dataset.wfstep);
+      if (r) roomSheet(r);
+    });
+  });
+}
+function renderWayfinder() {
+  if (!wfGraph) wfBuildGraph();
+  const from = wfFrom;
+  let routeHTML = '';
+  if (wfTo) {
+    const route = wfFindRoute(from.name, wfTo.name, wfConnector, wfCrawls);
+    if (route.path) {
+      const byName = new Map(data.rooms.map(r => [r.name, r]));
+      let stepsHTML = '';
+      let lastFloored = null;
+      let pendingConn = null;
+      for (const name of route.path) {
+        const r = byName.get(name);
+        if (r.level === 0) {
+          pendingConn = name;
+        } else {
+          if (pendingConn && lastFloored !== null && r.level !== lastFloored) {
+            stepsHTML += '<div class="wfVia">— via ' + esc(pendingConn) + ' —</div>';
+          }
+          pendingConn = null;
+          lastFloored = r.level;
+        }
+        stepsHTML += '<button class="connRow" data-wfstep="' + esc(name) + '"><span class="name">' + esc(name) + '</span>' +
+          (r.level == null ? '' : '<span class="meta">' + floorLabel(r.level) + '</span>') +
+          '<span class="chev">›</span></button>';
+      }
+      routeHTML = '<div class="connHead">Route to ' + esc(wfTo.name) + '</div>' +
+        '<div class="wfSummary">' + esc(wfRouteSummary(route.path)) + '</div>' + stepsHTML;
+    } else {
+      const msg = route.error === 'no-crawls'
+        ? 'No route without crawls — turn crawls on to see it.'
+        : 'No route using ' + (wfConnector === 'stairs' ? 'Stairs' : 'Elevator') + ' — try the other.';
+      routeHTML = '<div class="connHead">Route to ' + esc(wfTo.name) + '</div><div class="empty">' + msg + '</div>';
+    }
+  }
+  openSheet(
+    '<h2>Wayfinder</h2>' +
+    '<div class="meta">From: <b>' + esc(from.name) + '</b> (' + floorLabel(from.level) + ')</div>' +
+    '<div class="connHead">Go by</div>' +
+    '<div class="filters" style="margin-top:6px"><button data-wfconn="stairs"' + (wfConnector === 'stairs' ? ' class="on"' : '') + '>Stairs</button>' +
+    '<button data-wfconn="elevator"' + (wfConnector === 'elevator' ? ' class="on"' : '') + '>Elevator</button></div>' +
+    '<div class="filters" style="margin-top:8px"><button data-wfcrawl="on"' + (wfCrawls ? ' class="on"' : '') + '>Crawls on</button>' +
+    '<button data-wfcrawl="off"' + (!wfCrawls ? ' class="on"' : '') + '>Crawls off</button></div>' +
+    routeHTML +
+    '<div class="connHead">Where to?</div>' +
+    '<input id="wfSearch" type="search" placeholder="Search rooms…" autocomplete="off" style="width:100%;font-size:18px;padding:10px 12px;border-radius:8px;border:1px solid #555;background:#222;color:#eee;margin-top:6px">' +
+    '<div id="wfDestList">' + wfDestListHTML('') + '</div>'
+  , true);
+  const search = document.getElementById('wfSearch');
+  search.addEventListener('input', () => {
+    document.getElementById('wfDestList').innerHTML = wfDestListHTML(search.value);
+    wfAttachDest();
+  });
+  document.querySelectorAll('#sheet [data-wfconn]').forEach(b => {
+    b.addEventListener('click', () => {
+      wfConnector = b.dataset.wfconn;
+      renderWayfinder();
+    });
+  });
+  document.querySelectorAll('#sheet [data-wfcrawl]').forEach(b => {
+    b.addEventListener('click', () => {
+      wfCrawls = b.dataset.wfcrawl === 'on';
+      renderWayfinder();
+    });
+  });
+  wfAttachDest();
+}
+function wayfinderSheet(fromRoom) {
+  wfFrom = fromRoom;
+  wfTo = null;
+  renderWayfinder();
 }
 function personSheet(p) {
   const done = located.has(p.name);
