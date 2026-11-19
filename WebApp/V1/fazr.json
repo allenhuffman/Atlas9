@@ -1,0 +1,259 @@
+{
+  "generated": "2026-11-19",
+  "source": "Atlas9 Data — FAZR",
+  "count": 36,
+  "fazr": [
+    {
+      "room": "Arcade",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on VERA Runner arcade game",
+      "photo": null
+    },
+    {
+      "room": "Theater",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "joystick cup",
+      "photo": null
+    },
+    {
+      "room": "Theater",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "four button cup",
+      "photo": null
+    },
+    {
+      "room": "Theater",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "paddle cups",
+      "photo": null
+    },
+    {
+      "room": "Projection Room",
+      "type": "Computer",
+      "spoiler": false,
+      "description": "computer terminal",
+      "photo": null
+    },
+    {
+      "room": "Projection Room",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the Holomax",
+      "photo": null
+    },
+    {
+      "room": "Projection Room",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the Scene Selector",
+      "photo": null
+    },
+    {
+      "room": "Scavengers/Battle Drums",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "FAZR terminal",
+      "photo": null
+    },
+    {
+      "room": "FACADE Field Lab",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "FAZR terminal",
+      "photo": null
+    },
+    {
+      "room": "Film Storage",
+      "type": "Computer",
+      "spoiler": false,
+      "description": "computer terminal",
+      "photo": null
+    },
+    {
+      "room": "Grayscale Swords",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "",
+      "photo": null
+    },
+    {
+      "room": "Headshot Remixer",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "FAZR terminal",
+      "photo": null
+    },
+    {
+      "room": "Sapphire Jazz Club Balcony",
+      "type": "Movie Poster",
+      "spoiler": false,
+      "description": "movie poster",
+      "photo": null
+    },
+    {
+      "room": "Sapphire Jazz Club",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on microphone stand",
+      "photo": null
+    },
+    {
+      "room": "Sapphire Jazz Club",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on seats, in the Spire",
+      "photo": null
+    },
+    {
+      "room": "Mesmerite, The",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "FAZR terminal",
+      "photo": "photos/Mesmerite-fazr.jpg"
+    },
+    {
+      "room": "MossMan",
+      "type": "Movie Poster",
+      "spoiler": false,
+      "description": "movie poster",
+      "photo": null
+    },
+    {
+      "room": "PhotoBooth (Left)",
+      "type": "FAZR",
+      "spoiler": true,
+      "description": "hidden inside the booth",
+      "photo": null
+    },
+    {
+      "room": "Power Supply",
+      "type": "Computer",
+      "spoiler": false,
+      "description": "computer terminal",
+      "photo": null
+    },
+    {
+      "room": "Power Supply",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the power supply",
+      "photo": null
+    },
+    {
+      "room": "Prototyzer",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the Prototyzer",
+      "photo": null
+    },
+    {
+      "room": "Prototyzer",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the Sample Analyzer",
+      "photo": null
+    },
+    {
+      "room": "Prototyzer",
+      "type": "Computer",
+      "spoiler": false,
+      "description": "computer terminal",
+      "photo": null
+    },
+    {
+      "room": "Scavengers/TV Den",
+      "type": "Movie Poster",
+      "spoiler": false,
+      "description": "movie poster",
+      "photo": null
+    },
+    {
+      "room": "StarBot",
+      "type": "Movie Poster",
+      "spoiler": false,
+      "description": "movie poster",
+      "photo": null
+    },
+    {
+      "room": "StarBot",
+      "type": "INTERFAZE",
+      "spoiler": false,
+      "description": "INTERFAZE screen",
+      "photo": null
+    },
+    {
+      "room": "StarBot",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on LITE (Linguistic Information Translation Engine)",
+      "photo": null
+    },
+    {
+      "room": "Theater Manager's Office",
+      "type": "FAZR",
+      "spoiler": true,
+      "description": "hidden behind filing cabinet",
+      "photo": null
+    },
+    {
+      "room": "Theater Manager's Office",
+      "type": "INTERFAZE",
+      "spoiler": false,
+      "description": "INTERFAZE screen",
+      "photo": null
+    },
+    {
+      "room": "Theater Manager's Office",
+      "type": "Computer",
+      "spoiler": false,
+      "description": "manager's computer",
+      "photo": null
+    },
+    {
+      "room": "Victor's Study",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the wall",
+      "photo": null
+    },
+    {
+      "room": "Scavengers/TV Den",
+      "type": "FAZR",
+      "spoiler": true,
+      "description": "hidden in the small mound behind a painting",
+      "photo": null
+    },
+    {
+      "room": "VERA",
+      "type": "INTERFAZE",
+      "spoiler": false,
+      "description": "INTERFAZE screen",
+      "photo": null
+    },
+    {
+      "room": "Scavengers/TV Den",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the V.H.S. (Visual Harp System)",
+      "photo": null
+    },
+    {
+      "room": "Crystal Cave, The",
+      "type": "FAZR",
+      "spoiler": false,
+      "description": "on the wall",
+      "photo": null
+    },
+    {
+      "room": "FACADE Field Lab",
+      "type": "INTERFAZE",
+      "spoiler": false,
+      "description": "INTERFAZE screen",
+      "photo": null
+    }
+  ]
+}

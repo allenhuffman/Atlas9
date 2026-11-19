@@ -78,6 +78,9 @@
   #sheet .connRow .name { flex: 1; min-width: 0; }
   #sheet .connRow .meta { color: #aaa; font-size: 14px; white-space: nowrap; }
   #sheet .connRow .chev { color: #aaa; font-size: 18px; }
+  /* FAZR rows (v1.9.7): same look as "Connects to:" rows, but plain text
+     (not tappable) — a FAZR point has no detail sheet. */
+  #sheet .fazrRow { padding: 12px 2px; border-bottom: 1px solid #2a2a2a; color: #eee; font-size: 16px; }
   .check { flex: 0 0 auto; width: 34px; height: 34px; margin-top: 2px; border-radius: 50%; border: 2px solid #666; background: transparent; color: transparent; font-size: 20px; line-height: 30px; text-align: center; cursor: pointer; padding: 0; }
   .check.done { background: #e0a800; border-color: #e0a800; color: #111; }
   .delBtn { flex: 0 0 auto; width: 30px; height: 30px; margin-top: 4px; border-radius: 50%; border: 1px solid #555; background: transparent; color: #999; font-size: 15px; line-height: 28px; text-align: center; cursor: pointer; padding: 0; }
@@ -154,8 +157,8 @@
   <input id="q" type="search" placeholder="Search…" autocomplete="off">
   <div class="filters" id="levelFilters">
     <button data-level="all" class="on">All</button>
-    <button data-level="1">Level 1</button>
-    <button data-level="2">Level 2</button>
+    <button data-level="1">Floor 1</button>
+    <button data-level="2">Floor 2</button>
     <button data-level="visited">✓ Visited</button>
   </div>
 </header>
@@ -165,7 +168,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.9.6';
+const APP_VERSION = '1.9.7';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -176,7 +179,7 @@ const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd_pYVPk-SKvEPa5NzRvQ
 const FORM_ENTRY = { number: '1374229631', room: '479547862', onwhat: '1991468258', said: '1344508081', agent: '34120854', email: '2073283127', text: '1014662962' };
 const RESEARCH_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSceMVSAV7Ftea5aQto59eDOZGeZrIZKFcddHl3MkiY3V77pGA/viewform';
 const RESEARCH_FORM_ENTRY = { about: '2144553325', found: '1939760705', where: '828332630', agent: '385676025', email: '420727312', text: '480972557' };
-let data = { rooms: [], people: [], phones: [], telephones: [], timeline: [] };
+let data = { rooms: [], people: [], phones: [], telephones: [], timeline: [], fazr: [] };
 let tab = 'hunt';
 let dossier = 'rooms';
 let level = 'all';
@@ -410,6 +413,15 @@ function openInstall() { openSheet(installHTML(), true); }
 if (isStandalone) { document.getElementById('installBtn').style.display = 'none'; }
 else { document.getElementById('installBtn').addEventListener('click', openInstall); }
 document.getElementById('aboutBtn').addEventListener('click', openAbout);
+/* Floor labels (v1.9.7, Allen 2026-11-19): the app says "Floor 1/2", not
+   "Level". Level 0 rooms (stairs, elevators) span both floors, so they
+   show "Floor 1 & 2" and match either floor filter. A null level (unknown)
+   shows "Floor ?" and matches no floor filter (All only). */
+function floorLabel(l) {
+  if (l == null) return 'Floor ?';
+  if (l === 0) return 'Floor 1 & 2';
+  return 'Floor ' + l;
+}
 function descFor(r) {
   if (noSpoilers && r.spoiler) return '<span class="spoilerHidden">Description hidden in no-spoilers mode.</span>';
   return esc(r.description || '');
@@ -450,16 +462,30 @@ function roomSheet(r) {
   const connHTML = conns.length
     ? '<div class="connHead">Connects to:</div>' + conns.map((t, i) =>
         '<button class="connRow" data-ci="' + i + '"><span class="name">' + esc(t.name) + '</span>' +
-        (t.level == null ? '' : '<span class="meta">Level ' + t.level + '</span>') +
+        (t.level == null ? '' : '<span class="meta">' + floorLabel(t.level) + '</span>') +
         '<span class="chev">›</span></button>').join('')
+    : '';
+  /* "FAZR:" (v1.9.7): FAZR points in this room, from fazr.json. Public
+     points always show type + description; spoiler points show a
+     placeholder with spoilers off, same as room descriptions. Rows are
+     plain (not tappable) — a FAZR point has no detail sheet. */
+  const roomFazr = (data.fazr || []).filter(f => f.room === r.name);
+  const fazrHTML = roomFazr.length
+    ? '<div class="connHead">FAZR:</div>' + roomFazr.map(f => {
+        const body = (noSpoilers && f.spoiler)
+          ? '<span class="spoilerHidden">FAZR hidden in no-spoilers mode.</span>'
+          : esc((f.type ? f.type + ' — ' : '') + (f.description || ''));
+        return '<div class="fazrRow">' + body + '</div>';
+      }).join('')
     : '';
   openSheet(
     '<h2>' + esc(r.name) + star + '</h2>' +
-    '<div class="meta">Level ' + (r.level == null ? '?' : r.level) + (artists ? ' · ' + esc(artists) : '') + '</div>' +
+    '<div class="meta">' + floorLabel(r.level) + (artists ? ' · ' + esc(artists) : '') + '</div>' +
     (r.official ? '<div class="meta">Official exhibit name</div>' : '') +
     photo +
     '<div class="desc">' + descFor(r) + '</div>' +
     connHTML +
+    fazrHTML +
     '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
     '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetVisit">' + (done ? '✓ Visited' : 'Mark visited') + '</button>' +
     '<button class="close" id="sheetClose">Close</button></div>'
@@ -545,7 +571,7 @@ function telephoneSheet(t) {
   openSheet(
     '<h2>' + esc(t.name) + '</h2>' +
     photo +
-    '<div class="meta">Level ' + t.level + ' · ' + esc(t.description || '') + '</div>' +
+    '<div class="meta">Floor ' + t.level + ' · ' + esc(t.description || '') + '</div>' +
     numLine +
     '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
     '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetTelFound">' + (done ? '✓ Found' : 'Mark found') + '</button>' +
@@ -899,7 +925,7 @@ function render() {
     levelFilters.classList.add('hidden');
     const rm = data.rooms.filter(r => {
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
-      else if (level !== 'all' && String(r.level) !== level) return false;
+      else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
       return [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase().includes(needle);
     });
     const pp = data.people.filter(p => [p.name, p.description].join(' ').toLowerCase().includes(needle));
@@ -913,7 +939,7 @@ function render() {
       html += rm.map((r) => {
         const star = r.official ? ' <span class="star">*</span>' : '';
         const artists = (r.artists && r.artists.length) ? r.artists.join(', ') : '';
-        const meta = [(r.level == null ? null : 'Level ' + r.level), artists].filter(Boolean).join(' · ');
+        const meta = [(r.level == null ? null : floorLabel(r.level)), artists].filter(Boolean).join(' · ');
         const done = visited.has(roomKey(r));
         const thumb = r.photo ? '<img class="thumb" src="' + esc(r.photo) + '" alt="" loading="lazy">' : '';
         return '<div class="item" data-kind="room" data-name="' + esc(r.name) + '|' + r.level + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(roomKey(r)) + '" aria-label="Mark visited">✓</button>' +
@@ -937,7 +963,7 @@ function render() {
         const done = foundTelephones.has(telephoneKey(t));
         return '<div class="item" data-kind="telephone" data-name="' + esc(telephoneKey(t)) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(telephoneKey(t)) + '" aria-label="Mark found">✓</button>' +
           '<div class="body"><div class="name">' + esc(t.name) + '</div>' +
-          '<div class="meta">Level ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
+          '<div class="meta">Floor ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
       }).join('');
     }
     if (ph.length) {
@@ -996,7 +1022,7 @@ function render() {
     levelFilters.classList.remove('hidden');
     items = data.rooms.filter(r => {
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
-      else if (level !== 'all' && String(r.level) !== level) return false;
+      else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
       if (!needle) return true;
       return [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase().includes(needle);
     });
@@ -1004,7 +1030,7 @@ function render() {
     list.innerHTML = items.length ? items.map((r, i) => {
       const star = r.official ? ' <span class="star">*</span>' : '';
       const artists = (r.artists && r.artists.length) ? r.artists.join(', ') : '';
-      const meta = [(r.level == null ? null : 'Level ' + r.level), artists].filter(Boolean).join(' · ');
+      const meta = [(r.level == null ? null : floorLabel(r.level)), artists].filter(Boolean).join(' · ');
       const done = visited.has(roomKey(r));
       const thumb = r.photo ? '<img class="thumb" src="' + esc(r.photo) + '" alt="" loading="lazy">' : '';
       return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(roomKey(r)) + '" aria-label="Mark visited">✓</button>' +
@@ -1064,7 +1090,7 @@ function render() {
       return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(telephoneKey(t)) + '" aria-label="Mark found">✓</button>' +
         thumb +
         '<div class="body"><div class="name">' + esc(t.name) + '</div>' +
-        '<div class="meta">Level ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
+        '<div class="meta">Floor ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
     }).join('') : '<div class="empty">No phones match.</div>';
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
@@ -1171,13 +1197,15 @@ Promise.all([
   fetch('people.json?v=' + APP_VERSION).then(r => r.json()),
   fetch('phones.json?v=' + APP_VERSION).then(r => r.json()),
   fetch('telephones.json?v=' + APP_VERSION).then(r => r.json()),
-  fetch('timeline.json?v=' + APP_VERSION).then(r => r.json())
-]).then(([rm, pp, ph, tel, tl]) => {
+  fetch('timeline.json?v=' + APP_VERSION).then(r => r.json()),
+  fetch('fazr.json?v=' + APP_VERSION).then(r => r.json())
+]).then(([rm, pp, ph, tel, tl, fz]) => {
   data.rooms = rm.rooms || [];
   data.people = pp.people || [];
   data.phones = ph.phones || [];
   data.telephones = tel.telephones || [];
   data.timeline = tl.timeline || [];
+  data.fazr = fz.fazr || [];
   render();
   if (!localStorage.getItem(WELCOME_KEY)) {
     localStorage.setItem(WELCOME_KEY, '1');

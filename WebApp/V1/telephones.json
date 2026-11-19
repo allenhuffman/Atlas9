@@ -36,7 +36,7 @@
       "photo": "photos/Prototyzer-phone.jpg"
     },
     {
-      "name": "Scavengers Den",
+      "name": "Scavengers/TV Den",
       "level": 1,
       "description": "white slim desk phone",
       "number": "55-1955",
@@ -76,7 +76,7 @@
       "photo": "photos/PowerSupply-phone.jpg"
     },
     {
-      "name": "Auditorium #9 Projection Room",
+      "name": "Projection Room",
       "level": 2,
       "description": "red desk phone",
       "number": "314-212",
