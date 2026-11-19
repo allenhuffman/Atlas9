@@ -163,7 +163,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.9.4';
+const APP_VERSION = '1.9.5';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -435,10 +435,11 @@ function roomSheet(r) {
   const done = visited.has(roomKey(r));
   const photo = r.photo ? '<img class="photo" src="' + esc(r.photo) + '" alt="">' : '';
   /* "Connects to:" (v1.9.4, Allen 2026-11-18): each connected room is a
-     tappable row that opens that room's card. Resolve by name; the first
-     match wins, so "Auditorium #9" opens the Level 1 room. A name that
-     matches no room is skipped with a console warning (stale sheet name),
-     never a crash. Rooms with no connections show no section. */
+     tappable row that opens that room's card. Resolve by name; room names
+     are distinct in the sheet (Auditorium #9 Lower / Upper since v1.9.5),
+     so the first match is the room. A name that matches no room is
+     skipped with a console warning (stale sheet name), never a crash.
+     Rooms with no connections show no section. */
   const conns = (r.connections || []).map(name => {
     const target = data.rooms.find(x => x.name === name);
     if (!target) { console.warn('Connects to: no room named "' + name + '" (from "' + r.name + '")'); return null; }

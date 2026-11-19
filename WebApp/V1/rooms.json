@@ -1,7 +1,7 @@
 {
   "generated": "2026-11-19",
   "source": "Atlas9 Data — Rooms",
-  "count": 53,
+  "count": 56,
   "rooms": [
     {
       "name": "Agent Onboarding area (lobby)",
@@ -11,7 +11,11 @@
       "artists": [],
       "description": "entrance area with a TV set mounted up on the wall.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Containment Zone",
+        "Lobby"
+      ]
     },
     {
       "name": "Arcade",
@@ -24,7 +28,9 @@
       "spoiler": false,
       "spoilerDetail": "One of the Photobooths is a secret entrance to Headshot Remixer.",
       "connections": [
-        "Headshot Remixer"
+        "Headshot Remixer",
+        "Lobby",
+        "Restrooms (Lobby)"
       ]
     },
     {
@@ -44,7 +50,7 @@
       ]
     },
     {
-      "name": "Auditorium #9",
+      "name": "Auditorium #9 Lower",
       "official": true,
       "level": 1,
       "section": "rooms",
@@ -55,11 +61,13 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Auditorium #9 Projection Room"
+        "Auditorium #9 Upper",
+        "Lobby",
+        "Theater Crawl"
       ]
     },
     {
-      "name": "Auditorium #9",
+      "name": "Auditorium #9 Upper",
       "official": true,
       "level": 2,
       "section": "rooms",
@@ -70,6 +78,7 @@
       "photo": null,
       "spoiler": false,
       "connections": [
+        "Auditorium #9 Lower",
         "Auditorium #9 Projection Room"
       ]
     },
@@ -88,7 +97,7 @@
       "connections": [
         "Jazz Club/Balcony",
         "Speakereasy",
-        "Auditorium #9"
+        "Auditorium #9 Upper"
       ]
     },
     {
@@ -111,7 +120,10 @@
       "artists": [],
       "description": "ticket counter.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
     },
     {
       "name": "Chant of the Mesmerite",
@@ -141,7 +153,8 @@
         "Fun Zone",
         "Prototyzer",
         "Licorice Lounge",
-        "Scavengers"
+        "Scavengers",
+        "Concession Crawl"
       ]
     },
     {
@@ -152,7 +165,10 @@
       "artists": [],
       "description": "snack bar.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Lobby"
+      ]
     },
     {
       "name": "Containment Zone",
@@ -162,7 +178,14 @@
       "artists": [],
       "description": "entrance area with Box Office, RV, Splice Bros. Pizza and gift shop.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Gift Shop",
+        "Box Office",
+        "Splice Bros Pizza & Pub",
+        "Agent Onboarding area (lobby)",
+        "VERA"
+      ]
     },
     {
       "name": "Crystal Cave, The",
@@ -213,7 +236,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "StarBot"
+        "StarBot",
+        "Restrooms (Lobby)"
       ]
     },
     {
@@ -233,7 +257,8 @@
         "Theater Manager’s Office",
         "Sapphire Stroll",
         "Atlas9 Storage",
-        "Jazz Club/Spire"
+        "Jazz Club/Spire",
+        "Restrooms (Lobby)"
       ]
     },
     {
@@ -249,7 +274,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Lobby"
+        "Lobby",
+        "Theater Crawl"
       ]
     },
     {
@@ -276,7 +302,10 @@
       "artists": [],
       "description": "gift shop in the containment zone.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
     },
     {
       "name": "Grayscale Swords",
@@ -316,7 +345,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Mesmerite, The"
+        "Mesmerite, The",
+        "Hypnotizer Crawl"
       ]
     },
     {
@@ -357,7 +387,13 @@
       "spoiler": false,
       "connections": [
         "FACADE Field Lab",
-        "Employee Break Room"
+        "Employee Break Room",
+        "Auditorium #9 Lower",
+        "Agent Onboarding area (lobby)",
+        "Arcade",
+        "Concessions (Lobby)",
+        "MossMan",
+        "Sapphire Stroll"
       ]
     },
     {
@@ -435,7 +471,8 @@
         "Jazz Club/Spire",
         "Power Supply",
         "Prototyzer",
-        "Sapphire Stroll"
+        "Sapphire Stroll",
+        "Lobby"
       ]
     },
     {
@@ -448,7 +485,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "MossMan"
+        "MossMan",
+        "Theater Crawl"
       ]
     },
     {
@@ -496,7 +534,13 @@
       "artists": [],
       "description": "large, multi-stall restrooms.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Arcade",
+        "Elevator (Lobby)",
+        "Stairs (Lobby)",
+        "Employee Break Room"
+      ]
     },
     {
       "name": "Jazz Club/Spire",
@@ -513,7 +557,9 @@
         "Fun Zone",
         "MossMan",
         "Sapphire Stroll",
-        "Employee Break Room"
+        "Employee Break Room",
+        "Jazz Club/Balcony",
+        "Concession Crawl"
       ]
     },
     {
@@ -531,7 +577,8 @@
         "Malachi’s Alley",
         "Dub Den",
         "Auditorium #9 Projection Room",
-        "Scavengers/Upper"
+        "Scavengers/Upper",
+        "Jazz Club/Spire"
       ]
     },
     {
@@ -546,7 +593,8 @@
       "connections": [
         "Employee Break Room",
         "Jazz Club/Spire",
-        "Atlas9 Storage"
+        "Atlas9 Storage",
+        "Lobby"
       ]
     },
     {
@@ -605,7 +653,10 @@
       ],
       "description": "pizza restaurant with bar, pool table and a few cocktail arcade games.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
     },
     {
       "name": "Stairs (Starbot)",
@@ -630,7 +681,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "StarBot"
+        "StarBot",
+        "Restrooms (Lobby)"
       ]
     },
     {
@@ -694,7 +746,8 @@
       "spoilerDetail": "Secret crawl under the table.",
       "connections": [
         "Concession Caverns",
-        "Jazz Club/Spire"
+        "Jazz Club/Spire",
+        "Hypnotizer Crawl"
       ]
     },
     {
@@ -705,7 +758,10 @@
       "artists": [],
       "description": "RV in the Containment Zone.",
       "photo": null,
-      "spoiler": false
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
     },
     {
       "name": "Victor’s Study",
@@ -734,7 +790,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Mesmerite, The"
+        "Mesmerite, The",
+        "Hypnotizer Crawl"
       ]
     },
     {
@@ -748,6 +805,50 @@
       "spoiler": false,
       "connections": [
         "Jazz Club/Balcony"
+      ]
+    },
+    {
+      "name": "Theater Crawl",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "crawl connecting Auditorium #9 Lower, FACADE Field Lab, and Power Supply",
+      "photo": null,
+      "spoiler": true,
+      "connections": [
+        "Auditorium #9 Lower",
+        "FACADE Field Lab",
+        "Power Supply"
+      ]
+    },
+    {
+      "name": "Hypnotizer Crawl",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "crawl connecting Fun Zone, the Hypnotizer Room, and Round Mirrors",
+      "photo": null,
+      "spoiler": true,
+      "connections": [
+        "Fun Zone",
+        "Hypnotizer Room, The",
+        "Round Mirrors"
+      ]
+    },
+    {
+      "name": "Concession Crawl",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "crawl connecting Jazz Club/Spire and Concession Caverns",
+      "photo": null,
+      "spoiler": true,
+      "connections": [
+        "Jazz Club/Spire",
+        "Concession Caverns"
       ]
     }
   ]
