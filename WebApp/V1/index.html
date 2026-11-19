@@ -35,6 +35,7 @@
   #count { color: #999; font-size: 13px; padding: 8px 14px 0; }
   #list { padding: 6px 14px 30px; }
   .item { border-bottom: 1px solid #2a2a2a; padding: 12px 0; display: flex; gap: 12px; cursor: pointer; }
+  .item.static { cursor: default; }
   .item .body { flex: 1; min-width: 0; }
   .item .thumb { flex: 0 0 auto; width: 64px; height: 64px; object-fit: cover; border-radius: 8px; margin-top: 2px; }
   /* detail sheet */
@@ -148,6 +149,7 @@
     <button data-dossier="people">People</button>
     <button data-dossier="phones">Phones</button>
     <button data-dossier="numbers">Numbers</button>
+    <button data-dossier="timeline">Timeline</button>
   </div>
   <input id="q" type="search" placeholder="Search…" autocomplete="off">
   <div class="filters" id="levelFilters">
@@ -161,9 +163,9 @@
 <div id="count"></div>
 <div id="list"></div>
 <div id="sheetWrap"><div id="sheet"></div></div>
-<footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
+<footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.9.5';
+const APP_VERSION = '1.9.6';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -174,7 +176,7 @@ const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd_pYVPk-SKvEPa5NzRvQ
 const FORM_ENTRY = { number: '1374229631', room: '479547862', onwhat: '1991468258', said: '1344508081', agent: '34120854', email: '2073283127', text: '1014662962' };
 const RESEARCH_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSceMVSAV7Ftea5aQto59eDOZGeZrIZKFcddHl3MkiY3V77pGA/viewform';
 const RESEARCH_FORM_ENTRY = { about: '2144553325', found: '1939760705', where: '828332630', agent: '385676025', email: '420727312', text: '480972557' };
-let data = { rooms: [], people: [], phones: [], telephones: [] };
+let data = { rooms: [], people: [], phones: [], telephones: [], timeline: [] };
 let tab = 'hunt';
 let dossier = 'rooms';
 let level = 'all';
@@ -1076,6 +1078,19 @@ function render() {
     list.querySelectorAll('.item').forEach(el => {
       el.addEventListener('click', () => telephoneSheet(items[+el.dataset.i]));
     });
+  } else if (dossier === 'timeline') {
+    /* Timeline: public (Allen, 2026-11-19) — shows the same regardless of
+       spoiler mode. No checklist, no detail sheet; each row is the bold
+       date lead followed by the event text, as in the Dossier. */
+    levelFilters.classList.add('hidden');
+    items = data.timeline.filter(t => {
+      if (!needle) return true;
+      return [t.date, t.event].join(' ').toLowerCase().includes(needle);
+    });
+    count.textContent = items.length + ' of ' + data.timeline.length + ' timeline entries';
+    list.innerHTML = items.length ? items.map((t) => {
+      return '<div class="item static"><div class="body"><div class="desc"><b>' + esc(t.date) + '</b> — ' + esc(t.event) + '</div></div></div>';
+    }).join('') : '<div class="empty">No timeline entries match.</div>';
   } else {
     levelFilters.classList.add('hidden');
     items = uniqueNumbers().filter(p => {
@@ -1155,12 +1170,14 @@ Promise.all([
   fetch('rooms.json?v=' + APP_VERSION).then(r => r.json()),
   fetch('people.json?v=' + APP_VERSION).then(r => r.json()),
   fetch('phones.json?v=' + APP_VERSION).then(r => r.json()),
-  fetch('telephones.json?v=' + APP_VERSION).then(r => r.json())
-]).then(([rm, pp, ph, tel]) => {
+  fetch('telephones.json?v=' + APP_VERSION).then(r => r.json()),
+  fetch('timeline.json?v=' + APP_VERSION).then(r => r.json())
+]).then(([rm, pp, ph, tel, tl]) => {
   data.rooms = rm.rooms || [];
   data.people = pp.people || [];
   data.phones = ph.phones || [];
   data.telephones = tel.telephones || [];
+  data.timeline = tl.timeline || [];
   render();
   if (!localStorage.getItem(WELCOME_KEY)) {
     localStorage.setItem(WELCOME_KEY, '1');
