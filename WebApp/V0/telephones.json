@@ -1,0 +1,91 @@
+{
+  "generated": "2026-11-18",
+  "source": "Atlas9 Dossier — Template — Telephone System / Spoilers — Telephones",
+  "count": 12,
+  "telephones": [
+    {
+      "name": "Agent Room",
+      "level": 1,
+      "description": "red wall phone by coffee maker",
+      "number": null,
+      "confirmed": false
+    },
+    {
+      "name": "Agent Room",
+      "level": 1,
+      "description": "speakerphone on table (prop, not functional)",
+      "number": null,
+      "confirmed": false
+    },
+    {
+      "name": "Containment Zone",
+      "level": 1,
+      "description": "payphone near the gift shop",
+      "number": "314-101",
+      "confirmed": true
+    },
+    {
+      "name": "Manager’s Office",
+      "level": 1,
+      "description": "black desk phone on back wall desk",
+      "number": "314-112",
+      "confirmed": true
+    },
+    {
+      "name": "Prototyzer Room",
+      "level": 1,
+      "description": "transparent slim desk phone",
+      "number": null,
+      "confirmed": false
+    },
+    {
+      "name": "Scavenger TV Den",
+      "level": 1,
+      "description": "hamburger phone on the side table",
+      "number": "55-1955?",
+      "confirmed": false
+    },
+    {
+      "name": "Splice Bros. Pizza",
+      "level": 1,
+      "description": "light blue wall phone near the restroom",
+      "number": "314-276(?)",
+      "confirmed": false
+    },
+    {
+      "name": "VERA RV",
+      "level": 1,
+      "description": "beige wall phone",
+      "number": "55-009?",
+      "confirmed": false
+    },
+    {
+      "name": "Film Storage",
+      "level": 2,
+      "description": "beige desk phone",
+      "number": "314-209",
+      "confirmed": true
+    },
+    {
+      "name": "Power Supply",
+      "level": 2,
+      "description": "red slim desk phone",
+      "number": null,
+      "confirmed": false
+    },
+    {
+      "name": "Projection Room",
+      "level": 2,
+      "description": "red desk phone",
+      "number": "314-212",
+      "confirmed": true
+    },
+    {
+      "name": "Speakereasy",
+      "level": 2,
+      "description": "black rotary wall phone (currently broken)",
+      "number": "55-1943",
+      "confirmed": true
+    }
+  ]
+}

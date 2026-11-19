@@ -1,0 +1,95 @@
+{
+  "generated": "2026-11-19",
+  "source": "Atlas9 Data — Telephones",
+  "count": 11,
+  "telephones": [
+    {
+      "name": "FACADE Field Lab",
+      "level": 1,
+      "description": "red wall phone by coffee maker",
+      "number": null,
+      "confirmed": false,
+      "photo": "photos/FACADEFieldLab-phone.jpg"
+    },
+    {
+      "name": "Containment Zone",
+      "level": 1,
+      "description": "payphone near the gift shop",
+      "number": "314-101",
+      "confirmed": true,
+      "photo": "photos/ContainmentZone-phone.jpg"
+    },
+    {
+      "name": "Theater Manager’s Office",
+      "level": 1,
+      "description": "black desk phone on back wall desk",
+      "number": "314-112",
+      "confirmed": true,
+      "photo": "photos/ManagersOffice-phone.jpg"
+    },
+    {
+      "name": "Prototyzer",
+      "level": 1,
+      "description": "transparent slim desk phone",
+      "number": null,
+      "confirmed": false,
+      "photo": "photos/Prototyzer-phone.jpg"
+    },
+    {
+      "name": "Scavengers Den",
+      "level": 1,
+      "description": "white slim desk phone",
+      "number": "55-1955",
+      "confirmed": false,
+      "photo": "photos/ScavengersDen-phone.jpg"
+    },
+    {
+      "name": "Splice Bros Pizza & Pub",
+      "level": 1,
+      "description": "light blue wall phone near the restroom",
+      "number": "314-276",
+      "confirmed": false,
+      "photo": "photos/SpliceBrosPizza-phone.jpg"
+    },
+    {
+      "name": "VERA",
+      "level": 1,
+      "description": "beige wall phone",
+      "number": "55-009",
+      "confirmed": false,
+      "photo": "photos/VERA-phone.jpg"
+    },
+    {
+      "name": "Film Storage",
+      "level": 2,
+      "description": "beige desk phone",
+      "number": "314-209",
+      "confirmed": true,
+      "photo": "photos/FilmStorage-phone.jpg"
+    },
+    {
+      "name": "Power Supply",
+      "level": 2,
+      "description": "red slim desk phone",
+      "number": null,
+      "confirmed": false,
+      "photo": "photos/PowerSupply-phone.jpg"
+    },
+    {
+      "name": "Auditorium #9 Projection Room",
+      "level": 2,
+      "description": "red desk phone",
+      "number": "314-212",
+      "confirmed": true,
+      "photo": "photos/ProjectionRoom-phone.jpg"
+    },
+    {
+      "name": "Speakereasy",
+      "level": 2,
+      "description": "black rotary wall phone (currently broken)",
+      "number": "55-1943",
+      "confirmed": false,
+      "photo": "photos/Speakereasy-phone.jpg"
+    }
+  ]
+}

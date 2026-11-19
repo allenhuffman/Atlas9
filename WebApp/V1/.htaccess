@@ -1,0 +1,3 @@
+<FilesMatch "\.(html|json)$">
+  Header set Cache-Control "no-cache, must-revalidate"
+</FilesMatch>

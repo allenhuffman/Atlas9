@@ -1,0 +1,48 @@
+{
+  "generated": "2026-11-19",
+  "source": "Atlas9 Data — People",
+  "count": 7,
+  "people": [
+    {
+      "name": "Agent 00",
+      "description": "F.A.C.A.D.E. agent in charge.",
+      "photo": "photos/agent00.jpg",
+      "whereEncountered": "Onboarding TV, or in attraction."
+    },
+    {
+      "name": "Arthur McAllistor",
+      "description": "Opened the first Atlas Theater in 1951 at age 18. Founded Atlas CineCorp.",
+      "photo": "photos/arthur.jpg",
+      "whereEncountered": "Voicemails."
+    },
+    {
+      "name": "Blair Paul",
+      "description": "Manager.",
+      "photo": "photos/blair.jpg",
+      "whereEncountered": "Onboarding TV, Employee Breakroom TV."
+    },
+    {
+      "name": "Burny",
+      "description": "A talking oversized kernel of popcorn.",
+      "photo": "photos/burny.jpg",
+      "whereEncountered": "Onboarding TV."
+    },
+    {
+      "name": "Casper Voss",
+      "description": "Assistant Figurehead of F.A.C.A.D.E.",
+      "photo": "photos/casper.jpg",
+      "whereEncountered": "Onboarding TV, Theater movie loop."
+    },
+    {
+      "name": "Frank Roberts",
+      "description": "Projectionist that invented the HOLOMAX system.",
+      "photo": "photos/frank.jpg"
+    },
+    {
+      "name": "Melissa Hartwell",
+      "description": "Theater manager.",
+      "photo": "photos/melissa.jpg",
+      "whereEncountered": "Telephone call."
+    }
+  ]
+}

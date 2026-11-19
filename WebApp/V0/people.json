@@ -1,0 +1,42 @@
+{
+  "generated": "2026-11-18",
+  "source": "Atlas9 Dossier — Template — Characters / People",
+  "count": 7,
+  "people": [
+    {
+      "name": "Arthur McAllistor",
+      "description": "Founded Atlas CineCorp and opened the first Atlas Theater in 1951 at age 18.",
+      "photo": "photos/arthur.jpg"
+    },
+    {
+      "name": "Melissa Hartwell",
+      "description": "Theater manager.",
+      "photo": "photos/melissa.jpg"
+    },
+    {
+      "name": "Agent 00 (zero zero)",
+      "description": "F.A.C.A.D.E. agent.",
+      "photo": "photos/agent00.jpg"
+    },
+    {
+      "name": "Blair Paul",
+      "description": "Manager.",
+      "photo": "photos/blair.jpg"
+    },
+    {
+      "name": "Frank Roberts",
+      "description": "Projectionist that invented the HOLOMAX system.",
+      "photo": "photos/frank.jpg"
+    },
+    {
+      "name": "Casper Voss",
+      "description": "Assistant Figurehead of F.A.C.A.D.E.",
+      "photo": "photos/casper.jpg"
+    },
+    {
+      "name": "Burny",
+      "description": "A talking oversized kernel of popcorn (seemingly).",
+      "photo": "photos/burny.jpg"
+    }
+  ]
+}

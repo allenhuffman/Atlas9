@@ -1,0 +1,577 @@
+{
+  "generated": "2026-11-18",
+  "source": "Atlas9 Dossier — Template — Rooms / Exhibits",
+  "count": 51,
+  "rooms": [
+    {
+      "name": "Atlas9 Storage",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "storage room where the Polybius arcade machine is.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Auditorium #9",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Joshuah Jest"
+      ],
+      "description": "theater. Stairs connect it to level 2.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Auditorium Gum Tunnel",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Austin Lionberger"
+      ],
+      "description": "also called “the vents”. Crawl that connects the theater to FACADE Field Lab and Power Supply.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Chant of the Mesmerite",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "“a room with mirrored chambers that contorts the scene with subtle interactive displays that react as visitors move.”",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Concession Caverns",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Dennis Butt",
+        "Jason Comotto"
+      ],
+      "description": "giant popcorn, candy and soda cup.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Crystal Cave, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Dennis Butt"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Employee Break Room",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "the area outside the Manager’s office with the sink, cabinets, and TV set.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "FACADE Field Lab",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley",
+        "Tinius"
+      ],
+      "description": "the agents room.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Grayscale Swords",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Austin Lionberger"
+      ],
+      "description": "the display above the map between the entrances to… RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Headshot Remixer",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "the room with all the portraits on the walls.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Hypnotizer Room, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Jeremy Collins"
+      ],
+      "description": "room connecting to Mesmerite? RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Key of Color",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Erick Bachmann"
+      ],
+      "description": "the mound room in Scavengers? RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Licorice Lounge",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Dennis Butt"
+      ],
+      "description": "red licorice room.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Lobby",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "containing the arcade, agent onboarding, concessions, stairs, elevator and large restrooms.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Mesmerite, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Tyler Schrader"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "MossMan",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Rachel Eilts"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Prototyzer",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Power Supply",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Sapphire Stroll",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Sapphire Jazz Club, The / Spire, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Chase Hanna"
+      ],
+      "description": "stairs lead to level 2.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Scavengers",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Stephanie Bloss",
+        "Scott Seetin",
+        "Dennis Butt"
+      ],
+      "description": "contains the TV den and mound.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Scavengers Den",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Erick Bachmann"
+      ],
+      "description": "room with wall of TVs and the giant guitar.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Temple of the Iris",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Theater Manager’s Office",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "Melissa Hartwell’s office with the desk, computer and filing cabinets.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Tickets: FunZone",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Jason Comotto"
+      ],
+      "description": "party room with the giant table.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "VERA",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "RV in the containment zone where you first enter the building.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Agent Onboarding area (lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Arcade",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "arcade games, PhotoBooths.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Box Office (containment zone)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Concessions (lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "snack bar",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Containment Zone",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "entrance area",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Elevator (lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "takes you to Starbot",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Gift Shop (containment zone)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Restrooms (lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Restroom (Splice Bros. Pizza)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Splice Bros Pizza & Pub",
+      "official": true,
+      "level": 1,
+      "section": "other",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Stairs (lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "takes you to Starbot",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Auditorium #9",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Joshuah Jest"
+      ],
+      "description": "theater. Stairs connect it to level 1.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Auditorium #9 Projection Room",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "the HOLOMAX.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Dub Den",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "listed as Music Machine on evac map.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Film Reel Storage",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "Frank’s office.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Malachi’s Alley",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "who is Malachi? RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Mirror Doorway",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Mirror Pedestal",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Sapphire Jazz Club, The / Spire, The",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Chase Hanna"
+      ],
+      "description": "stairs lead to level 1.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Speakereasy",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "bar serving beer, wine, cocktails and mocktails, small plates and desserts.",
+      "photo": null,
+      "spoiler": true
+    },
+    {
+      "name": "StarBot ship",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Tinius"
+      ],
+      "description": "contains elevator, stairs and single restroom.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Victor’s Study",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "listed as Old Man’s Study on evac maps.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Elevator (in Starbot)",
+      "official": false,
+      "level": 2,
+      "section": "other",
+      "artists": [],
+      "description": "takes you to lobby.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Restroom (in Starbot)",
+      "official": false,
+      "level": 2,
+      "section": "other",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false
+    },
+    {
+      "name": "Stairs (in Starbot)",
+      "official": false,
+      "level": 2,
+      "section": "other",
+      "artists": [],
+      "description": "takes you to lobby.",
+      "photo": null,
+      "spoiler": false
+    }
+  ]
+}

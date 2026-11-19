@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Atlas9 Guide</title>
+<style>
+  * { box-sizing: border-box; }
+  button { touch-action: manipulation; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #111; color: #eee; }
+  header { position: -webkit-sticky; position: sticky; top: 0; background: #111; padding: 12px 14px 8px; border-bottom: 1px solid #333; z-index: 2; }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  h1 small { font-weight: normal; color: #999; font-size: 14px; }
+  #ver { color: #e0a800; font-size: 13px; font-weight: normal; margin-left: 6px; }
+  .toprow { display: flex; align-items: center; justify-content: space-between; }
+  .topbtns { display: flex; gap: 6px; }
+  #spoilerBtn, #profileBtn { font-size: 13px; padding: 5px 10px; border-radius: 20px; border: 1px solid #555; background: #222; color: #ccc; cursor: pointer; }
+  #spoilerBtn.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  #profileBtn.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+  .tabs button { flex: 1; font-size: 16px; padding: 10px 0; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
+  .tabs button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  #q { width: 100%; font-size: 18px; padding: 10px 12px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; }
+  #q::placeholder { color: #888; }
+  .filters { display: flex; gap: 8px; margin-top: 10px; }
+  .filters button { flex: 1; font-size: 16px; padding: 9px 0; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
+  .filters button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  .subtabs { display: flex; gap: 8px; margin-bottom: 10px; }
+  .subtabs button { flex: 1; font-size: 15px; padding: 8px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1c; color: #ccc; cursor: pointer; }
+  .subtabs button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  .subtabs.hidden { display: none; }
+  .hidden { display: none; }
+  #count { color: #999; font-size: 13px; padding: 8px 14px 0; }
+  #list { padding: 6px 14px 30px; }
+  .item { border-bottom: 1px solid #2a2a2a; padding: 12px 0; display: flex; gap: 12px; cursor: pointer; }
+  .item .body { flex: 1; min-width: 0; }
+  .item .thumb { flex: 0 0 auto; width: 64px; height: 64px; object-fit: cover; border-radius: 8px; margin-top: 2px; }
+  /* detail sheet */
+  #sheetWrap { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 10; display: none; align-items: flex-end; justify-content: center; }
+  #sheetWrap.open { display: flex; }
+  #sheet { background: #1c1c1c; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 10px 18px 28px; }
+  #sheet .grab { width: 44px; height: 5px; border-radius: 3px; background: #555; margin: 4px auto 14px; }
+  #sheet h2 { margin: 0 0 4px; font-size: 22px; }
+  #sheet h2 .star { color: #e0a800; }
+  #sheet h2 .unconf { color: #e0a800; font-weight: normal; font-size: 14px; }
+  #sheet .meta { color: #aaa; font-size: 15px; margin: 2px 0; }
+  #sheet .desc { margin-top: 12px; font-size: 16px; line-height: 1.55; color: #ddd; }
+  #sheet .notes { margin-top: 12px; font-size: 15px; line-height: 1.5; color: #bbb; font-style: italic; }
+  #sheet .photo { width: 100%; border-radius: 10px; margin-top: 12px; }
+  #sheet .close { display: block; width: 100%; margin-top: 18px; font-size: 16px; padding: 11px 0; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; cursor: pointer; }
+  #sheet .transcript { margin-top: 12px; font-size: 15px; line-height: 1.55; color: #ddd; white-space: pre-wrap; background: #222; border-radius: 8px; padding: 12px; }
+  #sheet .transcript.hidden { display: none; }
+  #sheet .transcriptBtn { display: block; width: 100%; margin-top: 12px; font-size: 15px; padding: 10px 0; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; cursor: pointer; }
+  #sheet.large { max-height: 95vh; padding: 16px 20px 32px; }
+  #sheet .profileNote { background: #222; border: 1px solid #444; border-radius: 10px; padding: 14px; font-size: 15px; line-height: 1.55; color: #bbb; margin-top: 14px; }
+  #sheet .profileForm label { display: block; margin-top: 18px; font-size: 16px; color: #ccc; }
+  #sheet .profileForm input { width: 100%; font-size: 18px; padding: 13px; border-radius: 10px; border: 1px solid #555; background: #222; color: #eee; margin-top: 6px; font-family: inherit; }
+  #sheet .profileForm .saveBtn { display: block; width: 100%; margin-top: 22px; font-size: 18px; padding: 14px 0; border-radius: 10px; border: 1px solid #e0a800; background: #e0a800; color: #111; font-weight: bold; cursor: pointer; }
+  #sheet .aboutBody { margin-top: 12px; font-size: 16px; line-height: 1.6; color: #ddd; }
+  #sheet .aboutBody p { margin: 0 0 12px; }
+  #sheet .steps { margin: 0 0 12px 20px; line-height: 1.6; }
+  #sheet .steps li { margin-bottom: 8px; }
+  footer button { background: none; border: none; color: #e0a800; font-size: 12px; padding: 0; cursor: pointer; text-decoration: underline; }
+  #sheet .visitBtn { display: block; width: 100%; margin-top: 12px; font-size: 15px; padding: 10px 0; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; cursor: pointer; }
+  #sheet .visitBtn.done { background: #e0a800; color: #111; font-weight: bold; }
+  /* detail-sheet action row (Allen, 2026-11-18): Submit a research note on
+     its own row, then Mark + Close side by side — the Mark button used to
+     render as an unstyled browser default next to the styled buttons. */
+  #sheet .btnRow { display: flex; gap: 10px; margin-top: 12px; }
+  #sheet .btnRow .visitBtn, #sheet .btnRow .close { flex: 1; min-width: 0; margin-top: 0; }
+  .check { flex: 0 0 auto; width: 34px; height: 34px; margin-top: 2px; border-radius: 50%; border: 2px solid #666; background: transparent; color: transparent; font-size: 20px; line-height: 30px; text-align: center; cursor: pointer; padding: 0; }
+  .check.done { background: #e0a800; border-color: #e0a800; color: #111; }
+  .delBtn { flex: 0 0 auto; width: 30px; height: 30px; margin-top: 4px; border-radius: 50%; border: 1px solid #555; background: transparent; color: #999; font-size: 15px; line-height: 28px; text-align: center; cursor: pointer; padding: 0; }
+  .item .name { font-size: 18px; font-weight: bold; }
+  .item .name .star { color: #e0a800; }
+  .item .name .unconf { color: #e0a800; font-weight: normal; font-size: 14px; }
+  .item .meta { color: #aaa; font-size: 14px; margin-top: 2px; }
+  .item .desc { margin-top: 6px; font-size: 15px; line-height: 1.45; color: #ddd; }
+  .item .desc:empty { display: none; }
+  .item .notes { margin-top: 6px; font-size: 14px; line-height: 1.45; color: #bbb; font-style: italic; }
+  .item .notes:empty { display: none; }
+  .empty { color: #888; padding: 20px 0; text-align: center; }
+  .spoilerHidden { color: #888; font-style: italic; }
+  /* hunt */
+  .huntBox { padding: 14px 0 6px; }
+  .huntBox .big { font-size: 17px; font-weight: bold; margin-bottom: 8px; }
+  .huntRow { display: flex; gap: 8px; }
+  .huntRow input { flex: 1; min-width: 0; font-size: 20px; padding: 12px 40px 12px 12px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; text-transform: uppercase; }
+  .huntInputWrap { position: relative; flex: 1; display: flex; min-width: 0; }
+  .huntRow .huntClear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: #e05252; font-size: 22px; cursor: pointer; padding: 4px 10px; }
+  .huntClear.hidden { display: none; }
+  .huntRow button { font-size: 17px; padding: 0 18px; border-radius: 8px; border: 1px solid #e0a800; background: #e0a800; color: #111; font-weight: bold; cursor: pointer; }
+  .progress { margin-top: 12px; font-size: 15px; color: #ccc; }
+  .progress .bar { height: 10px; background: #2a2a2a; border-radius: 5px; margin-top: 6px; overflow: hidden; }
+  .progress .bar i { display: block; height: 100%; background: #e0a800; }
+  .result { margin-top: 14px; padding: 14px; border-radius: 10px; background: #1c1c1c; }
+  .result.good { border: 1px solid #3a7d3a; }
+  .result.new { border: 1px solid #e0a800; }
+  .result.warn { border: 1px solid #e0a800; }
+  .result .rtitle { font-size: 19px; font-weight: bold; }
+  .result .rmeta { color: #aaa; font-size: 14px; margin-top: 4px; }
+  .result .rdesc { margin-top: 8px; font-size: 15px; line-height: 1.5; color: #ddd; }
+  .foundIn { margin-top: 8px; font-size: 14px; line-height: 1.5; color: #aaa; }
+  .foundIn div { margin-top: 2px; }
+  .result label { display: block; margin-top: 12px; font-size: 14px; color: #aaa; }
+  .result input, .result textarea { width: 100%; font-size: 16px; padding: 10px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; margin-top: 4px; font-family: inherit; }
+  .result textarea { min-height: 70px; }
+  .result .cancelBtn { display: block; width: 100%; margin-top: 10px; font-size: 16px; padding: 11px 0; border-radius: 8px; border: 1px solid #555; background: transparent; color: #ccc; cursor: pointer; }
+  .result .submitBtn { display: block; width: 100%; margin-top: 10px; font-size: 16px; padding: 11px 0; border-radius: 8px; border: 1px solid #e0a800; background: #e0a800; color: #111; font-weight: bold; cursor: pointer; }
+  /* telephone dial pad */
+  .dialpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .dialpad button { font-size: 24px; padding: 12px 0 8px; border-radius: 10px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; line-height: 1.1; }
+  .dialpad button .sub { display: block; font-size: 11px; color: #888; letter-spacing: 2px; margin-top: 2px; }
+  .dialpad button:active { background: #333; }
+  .roomList { background: #222; border: 1px solid #555; border-radius: 8px; margin-top: 4px; max-height: 220px; overflow-y: auto; }
+  .roomList.hidden { display: none; }
+  .roomList .ropt { padding: 10px 12px; border-bottom: 1px solid #2a2a2a; cursor: pointer; }
+  .roomList .ropt:last-child { border-bottom: none; }
+  .roomList .ropt .rname { font-size: 16px; font-weight: bold; }
+  .roomList .ropt .rdesc { font-size: 14px; color: #aaa; margin-top: 2px; }
+  footer { color: #777; font-size: 12px; padding: 0 14px 24px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="toprow">
+    <h1>Atlas9 Guide <small>fan guide</small><span id="ver"></span></h1>
+    <div class="topbtns">
+      <button id="profileBtn">Profile</button>
+      <button id="spoilerBtn" aria-pressed="true">Spoilers</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button data-tab="hunt" class="on">Researcher</button>
+    <button data-tab="dossier">Dossier</button>
+  </div>
+  <div class="subtabs hidden" id="dossierTabs">
+    <button data-dossier="rooms" class="on">Rooms</button>
+    <button data-dossier="people">People</button>
+    <button data-dossier="phones">Phones</button>
+    <button data-dossier="numbers">Numbers</button>
+  </div>
+  <input id="q" type="search" placeholder="Search…" autocomplete="off">
+  <div class="filters" id="levelFilters">
+    <button data-level="all" class="on">All</button>
+    <button data-level="1">Level 1</button>
+    <button data-level="2">Level 2</button>
+    <button data-level="visited">✓ Visited</button>
+  </div>
+</header>
+<div id="updateBar" style="display:none;background:#e0a800;color:#111;font-size:15px;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between"><span>A new version of the guide is available.</span><button id="updateBtn" style="font-size:15px;font-weight:bold;padding:6px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#e0a800;cursor:pointer;white-space:nowrap">Update</button></div>
+<div id="count"></div>
+<div id="list"></div>
+<div id="sheetWrap"><div id="sheet"></div></div>
+<footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details. Data from the Atlas9 Dossier — Template and the Telephone Directory (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
+<script>
+const APP_VERSION = '1.8.18';
+/* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
+   phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
+   input stays readonly on touch devices so the on-screen keyboard never pops
+   up over the dial pad, but is editable on desktop so digits can be typed. */
+const hasKeyboard = window.matchMedia('(pointer: fine)').matches;
+document.getElementById('ver').textContent = 'v' + APP_VERSION;
+const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd_pYVPk-SKvEPa5NzRvQ12NdcC5CFWemMcTUDFXWi7CNTgcg/viewform';
+const FORM_ENTRY = { number: '1374229631', room: '479547862', onwhat: '1991468258', said: '1344508081', agent: '34120854', email: '2073283127', text: '1014662962' };
+const RESEARCH_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSceMVSAV7Ftea5aQto59eDOZGeZrIZKFcddHl3MkiY3V77pGA/viewform';
+const RESEARCH_FORM_ENTRY = { about: '2144553325', found: '1939760705', where: '828332630', agent: '385676025', email: '420727312', text: '480972557' };
+let data = { rooms: [], people: [], phones: [], telephones: [] };
+let tab = 'hunt';
+let dossier = 'rooms';
+let level = 'all';
+const VISIT_KEY = 'a9-visited-rooms';
+let visited = new Set(JSON.parse(localStorage.getItem(VISIT_KEY) || '[]'));
+/* Film Reel Storage moved L1 -> L2 in the Template (v1.8.4 rooms swap) —
+   carry any saved visited checkmark for the old key over to the new one. */
+if (visited.has('1|Film Reel Storage')) { visited.delete('1|Film Reel Storage'); visited.add('2|Film Reel Storage'); saveVisited(); }
+function roomKey(r) { return r.level + '|' + r.name; }
+function saveVisited() { localStorage.setItem(VISIT_KEY, JSON.stringify([...visited])); }
+/* Spoilers always start OFF on every launch (Allen, 2026-11-18) — the toggle
+   still works within a session, but the on-state is never remembered. */
+let noSpoilers = true;
+const FOUND_KEY = 'a9-found-numbers';
+let found = new Set(JSON.parse(localStorage.getItem(FOUND_KEY) || '[]'));
+function saveFound() { localStorage.setItem(FOUND_KEY, JSON.stringify([...found])); }
+/* dossier checklists: people located, physical telephones found, + number
+   entries found (per entry, not per unique number — the 55-row Numbers list
+   is the checklist; the old a9-found-phones key is kept so saved checkmarks
+   survive the Phones/Numbers split) */
+const LOCATED_KEY = 'a9-located-people';
+let located = new Set(JSON.parse(localStorage.getItem(LOCATED_KEY) || '[]'));
+/* Burny rename (v1.8.3): the Dossier's "Burny (sp?)" is confirmed as "Burny"
+   by Atlas9's own videos, so the name lost its qualifier — carry any saved
+   checkmark for the old name over to the new one. */
+if (located.has('Burny (sp?)')) { located.delete('Burny (sp?)'); located.add('Burny'); saveLocated(); }
+/* Casper rename (v1.8.5): the Template's plain "Casper Voss" replaces the
+   Dossier's "Casper Voss (d.o.b 7/13/xx)" — carry any saved checkmark over. */
+if (located.has('Casper Voss (d.o.b 7/13/xx)')) { located.delete('Casper Voss (d.o.b 7/13/xx)'); located.add('Casper Voss'); saveLocated(); }
+function saveLocated() { localStorage.setItem(LOCATED_KEY, JSON.stringify([...located])); }
+const FOUND_PHONES_KEY = 'a9-found-phones';
+let foundPhones = new Set(JSON.parse(localStorage.getItem(FOUND_PHONES_KEY) || '[]'));
+function saveFoundPhones() { localStorage.setItem(FOUND_PHONES_KEY, JSON.stringify([...foundPhones])); }
+/* the Numbers list is a list of KNOWN NUMBERS (Allen, 2026-11-18) — one row
+   per unique number, not one per Directory row (55 rows, 24 numbers). The
+   checklist is per number too; phoneKey is now just the number string. */
+function phoneKey(p) { return p.number; }
+/* v1.8.10 migration: any per-row checkmark (old key "number|description|
+   foundIn|foundOn") carries over to its number. */
+{
+  const migrated = new Set();
+  let changed = false;
+  for (const k of foundPhones) {
+    if (k.includes('|')) { migrated.add(k.split('|')[0]); changed = true; }
+    else migrated.add(k);
+  }
+  if (changed) { foundPhones = migrated; saveFoundPhones(); }
+}
+/* siblings = every Directory row for this number; descriptions = the distinct
+   ones (usually one — 8000 is the exception: Frank's VM / Melissa's VM). */
+function numberSibs(p) { return data.phones.filter(x => normNum(x.number) === normNum(p.number)); }
+function numberDescs(p) { return [...new Set(numberSibs(p).map(x => x.description).filter(Boolean))]; }
+/* missing-evidence flags, per number (Allen, 2026-11-18): a number needs a
+   recording/photo only when NO row for it has one — 314-112 has a photo on
+   some rows, so it counts as photographed. */
+function numberNeeds(p) {
+  const sibs = numberSibs(p);
+  return [!sibs.some(x => x.recording) ? 'needs recording' : '', !sibs.some(x => x.photo) ? 'needs photo' : ''].filter(Boolean).join(' · ');
+}
+function numberMatches(p, needle) {
+  return numberSibs(p).some(x => [x.number, x.description, x.foundIn, x.foundOn, x.foundNotes].join(' ').toLowerCase().includes(needle));
+}
+function uniqueNumbers() {
+  const seen = new Map();
+  for (const p of data.phones) {
+    const k = normNum(p.number);
+    if (!seen.has(k)) seen.set(k, p);
+  }
+  return [...seen.values()];
+}
+/* one summary row for a number (list + search): bare number, description(s)
+   only with spoilers on, missing-evidence flags always. */
+function numberRowHTML(p) {
+  const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
+  const desc = !noSpoilers ? numberDescs(p).join(' · ') : '';
+  const needs = numberNeeds(p);
+  const done = foundPhones.has(phoneKey(p));
+  return '<div class="body"><div class="name">' + esc(p.number) + unconf + '</div>' +
+    (desc ? '<div class="meta">' + esc(desc) + '</div>' : '') +
+    (needs ? '<div class="meta">' + esc(needs) + '</div>' : '') +
+    '</div>';
+}
+/* physical telephones found (per phone — the two Agent Room phones share a
+   name, so the key carries the description too) */
+const FOUND_TEL_KEY = 'a9-found-telephones';
+let foundTelephones = new Set(JSON.parse(localStorage.getItem(FOUND_TEL_KEY) || '[]'));
+function saveFoundTelephones() { localStorage.setItem(FOUND_TEL_KEY, JSON.stringify([...foundTelephones])); }
+function telephoneKey(t) { return t.level + '|' + t.name + '|' + (t.description || ''); }
+/* researcher profile (optional): agent name/handle + contact, stored on the
+   phone; prefilled into every report form, and editable per-submission */
+const PROFILE_KEY = 'a9-profile';
+let profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+function saveProfile() { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
+function profileParams() {
+  const out = {};
+  if (profile.agent) out[FORM_ENTRY.agent] = profile.agent;
+  if (profile.email) out[FORM_ENTRY.email] = profile.email;
+  if (profile.text) out[FORM_ENTRY.text] = profile.text;
+  return out;
+}
+function formUrlWith(params) {
+  let url = FORM_URL + '?usp=pp_url';
+  for (const k in params) url += '&entry.' + k + '=' + encodeURIComponent(params[k] || '');
+  return url;
+}
+function researchUrlWith(params) {
+  let url = RESEARCH_FORM_URL + '?usp=pp_url';
+  for (const k in params) url += '&entry.' + k + '=' + encodeURIComponent(params[k] || '');
+  return url;
+}
+function openResearchNote(about) {
+  const params = {};
+  if (about) params[RESEARCH_FORM_ENTRY.about] = about;
+  if (profile.agent) params[RESEARCH_FORM_ENTRY.agent] = profile.agent;
+  if (profile.email) params[RESEARCH_FORM_ENTRY.email] = profile.email;
+  if (profile.text) params[RESEARCH_FORM_ENTRY.text] = profile.text;
+  window.open(researchUrlWith(params), '_blank');
+}
+function profileFieldsHTML(prefix) {
+  return '<label>Agent name or handle <span style="color:#888">(optional)</span><input id="' + prefix + 'Agent" type="text" placeholder="e.g. ALSPLACE" autocomplete="off" value="' + esc(profile.agent || '') + '"></label>' +
+    '<label>Email <span style="color:#888">(optional)</span><input id="' + prefix + 'Email" type="email" placeholder="So Allen can reach you with a question" autocomplete="off" value="' + esc(profile.email || '') + '"></label>' +
+    '<label>Text number <span style="color:#888">(optional)</span><input id="' + prefix + 'Text" type="tel" placeholder="A number Allen can text you at" autocomplete="off" value="' + esc(profile.text || '') + '"></label>';
+}
+function profileValues(prefix) {
+  return {
+    agent: (document.getElementById(prefix + 'Agent') || {}).value || '',
+    email: (document.getElementById(prefix + 'Email') || {}).value || '',
+    text: (document.getElementById(prefix + 'Text') || {}).value || ''
+  };
+}
+const q = document.getElementById('q');
+const list = document.getElementById('list');
+const count = document.getElementById('count');
+const levelFilters = document.getElementById('levelFilters');
+const dossierTabs = document.getElementById('dossierTabs');
+const spoilerBtn = document.getElementById('spoilerBtn');
+function setSpoilerBtn() {
+  spoilerBtn.textContent = 'Spoilers';
+  spoilerBtn.classList.toggle('on', !noSpoilers);
+  spoilerBtn.setAttribute('aria-pressed', (!noSpoilers).toString());
+}
+spoilerBtn.addEventListener('click', () => {
+  noSpoilers = !noSpoilers;
+  setSpoilerBtn();
+  render();
+});
+setSpoilerBtn();
+const profileBtn = document.getElementById('profileBtn');
+function setProfileBtn() {
+  profileBtn.textContent = profile.agent ? 'Profile: ' + profile.agent : 'Profile';
+  profileBtn.classList.toggle('on', !!profile.agent);
+}
+profileBtn.addEventListener('click', () => {
+  openSheet(
+    '<h2>Researcher profile</h2>' +
+    '<div class="desc">Fill this in once and your name and contact go on every report you send, so Allen can reach you with a question. You can still change them on any single report.</div>' +
+    '<div class="profileNote">Your profile is saved only on this device. If you delete the app or clear its data, your profile will be lost and you will need to enter it again.</div>' +
+    '<div class="profileForm">' + profileFieldsHTML('pf') +
+    '<button class="saveBtn" id="profileSave">Save profile</button></div>',
+    true
+  );
+  document.getElementById('profileSave').addEventListener('click', () => {
+    profile = profileValues('pf');
+    saveProfile();
+    setProfileBtn();
+    closeSheet();
+  });
+});
+setProfileBtn();
+/* About / first-run: explains the app and that nothing is stored on a server.
+   Your profile, found numbers, and visited checkmarks live only on this device.
+   The only thing that ever leaves the device is a report you choose to send. */
+const WELCOME_KEY = 'a9-welcomed';
+function aboutHTML() {
+  return '<h2>About this app</h2>' +
+    '<div class="aboutBody">' +
+    '<p>The Atlas9 Guide is a fan-made research tool and reference for the Atlas9 experience in Kansas City, KS. It is not affiliated with Atlas9.</p>' +
+    '<p><strong>Researcher mode</strong> is the research tool: type a phone number you found and it tells you whether it is known — without saying what it is for, so nothing is spoiled. <strong>Dossier mode</strong> is the full reference, with spoilers: rooms, people, phones, and phone numbers with their details.</p>' +
+    '<p><strong>Nothing you do here is stored on a server.</strong> Your profile, the numbers you found, and the rooms you marked visited are saved only on this device. If you delete the app or clear its data, they will be lost.</p>' +
+    '<p><strong>The only thing that ever leaves your device is a report you choose to send.</strong> When you tap “Report this find,” “Report this number,” or “Submit a research note,” that report — and only that report — is sent to Allen for review. Nothing is sent automatically.</p>' +
+    '<p>Found something that belongs in the Dossier — a detail, a correction, a sighting? <button id="aboutResearchNote" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Submit a research note</button></p>' +
+    '<p><button id="aboutCheckUpdate" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Check for updates</button> <span id="aboutUpdateMsg" style="color:#999;font-size:14px"></span></p>' +
+    (isStandalone ? '' : '<p><button id="aboutInstall" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Install on Home Screen</button></p>') +
+    '</div>';
+}
+function openAbout() {
+  openSheet(aboutHTML(), true);
+  const inst = document.getElementById('aboutInstall');
+  if (inst) inst.addEventListener('click', openInstall);
+  document.getElementById('aboutResearchNote').addEventListener('click', () => openResearchNote(''));
+  document.getElementById('aboutCheckUpdate').addEventListener('click', () => {
+    const msg = document.getElementById('aboutUpdateMsg');
+    msg.textContent = 'Checking…';
+    fetch('version.json?v=' + Date.now()).then(r => r.json()).then(v => {
+      const latest = (v && v.version) || '';
+      if (latest && latest !== APP_VERSION) {
+        msg.textContent = '';
+        closeSheet();
+        updateBar.style.display = 'flex';
+      } else {
+        msg.textContent = 'You are on the latest version (v' + APP_VERSION + ').';
+      }
+    }).catch(() => { msg.textContent = 'Could not check — are you online?'; });
+  });
+}
+/* Install on Home Screen: iPhone Safari and Android Chrome offer no
+   JavaScript install prompt the app can trigger, so the instructions open
+   as a sheet right here on top of the guide — adding from here adds the
+   guide itself, not an instructions page. */
+const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+function installHTML() {
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  let steps;
+  if (isIOS) {
+    steps = '<ol class="steps"><li>Open this guide in <strong>Safari</strong>. If you are reading this inside another app, use its share menu and choose “Open in Safari”.</li><li>Tap the <strong>Page Menu</strong> button — the three-line icon — then tap <strong>Share</strong>. (If your tabs sit at the bottom or top of the screen, tap the <strong>Share</strong> button — the square with an arrow — directly.)</li><li>Scroll down and tap <strong>“Add to Home Screen”</strong>. (Don’t see it? Scroll to the very bottom, tap <strong>Edit Actions</strong>, then tap <strong>+ Add to Home Screen</strong>.)</li><li>Turn on <strong>Open as Web App</strong>.</li><li>Tap <strong>Add</strong>. The guide appears on your Home Screen like an app.</li></ol><p>On older iOS, tap the Share button at the bottom of the screen, then “Add to Home Screen”.</p>';
+  } else if (isAndroid) {
+    steps = '<ol class="steps"><li>Tap the <strong>⋮ menu</strong> in the top right of Chrome.</li><li>Tap <strong>“Add to Home screen”</strong> (or “Install app”).</li><li>Tap <strong>Add</strong> / <strong>Install</strong>. The guide appears on your Home Screen like an app.</li></ol>';
+  } else {
+    steps = '<p>On an <strong>iPhone</strong>, open this guide in Safari, tap the Page Menu button (three-line icon), then Share, then “Add to Home Screen”, turn on “Open as Web App”, and tap Add. On <strong>Android</strong>, open it in Chrome, tap the ⋮ menu, then “Add to Home screen”. There is no install button the guide itself can show — your phone adds it from the browser menu.</p>';
+  }
+  return '<h2>Install on Home Screen</h2>' +
+    '<div class="aboutBody">' +
+    '<p>Adding the guide to your Home Screen makes it open like an app — full screen, with its own icon. Your saved profile, found numbers, and visited checkmarks stay on the device either way.</p>' +
+    steps +
+    '<p>These instructions open right here on top of the guide, so what you add is the guide itself — not an instructions page.</p>' +
+    '</div>';
+}
+function openInstall() { openSheet(installHTML(), true); }
+if (isStandalone) { document.getElementById('installBtn').style.display = 'none'; }
+else { document.getElementById('installBtn').addEventListener('click', openInstall); }
+document.getElementById('aboutBtn').addEventListener('click', openAbout);
+function descFor(r) {
+  if (noSpoilers && r.spoiler) return '<span class="spoilerHidden">Description hidden in no-spoilers mode.</span>';
+  return esc(r.description || '');
+}
+function descText(r) {
+  if (noSpoilers && r.spoiler) return '';
+  return r.description || '';
+}
+
+const sheetWrap = document.getElementById('sheetWrap');
+const sheet = document.getElementById('sheet');
+function openSheet(html, large, noClose) {
+  sheet.innerHTML = '<div class="grab"></div>' + html +
+    (noClose ? '' : '<button class="close" id="sheetClose">Close</button>');
+  sheet.classList.toggle('large', !!large);
+  sheetWrap.classList.add('open');
+  const sc = document.getElementById('sheetClose');
+  if (sc) sc.addEventListener('click', closeSheet);
+}
+function closeSheet() { sheetWrap.classList.remove('open'); sheet.classList.remove('large'); }
+sheetWrap.addEventListener('click', (e) => { if (e.target === sheetWrap) closeSheet(); });
+function roomSheet(r) {
+  const star = r.official ? ' <span class="star">*</span>' : '';
+  const artists = (r.artists && r.artists.length) ? r.artists.join(', ') : '';
+  const done = visited.has(roomKey(r));
+  const photo = r.photo ? '<img class="photo" src="' + esc(r.photo) + '" alt="">' : '';
+  openSheet(
+    '<h2>' + esc(r.name) + star + '</h2>' +
+    '<div class="meta">Level ' + r.level + (artists ? ' · ' + esc(artists) : '') + '</div>' +
+    (r.official ? '<div class="meta">Official exhibit name</div>' : '') +
+    photo +
+    '<div class="desc">' + descFor(r) + '</div>' +
+    '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
+    '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetVisit">' + (done ? '✓ Visited' : 'Mark visited') + '</button>' +
+    '<button class="close" id="sheetClose">Close</button></div>'
+  , false, true);
+  document.getElementById('sheetVisit').addEventListener('click', () => {
+    const k = roomKey(r);
+    if (visited.has(k)) visited.delete(k); else visited.add(k);
+    saveVisited();
+    roomSheet(r);
+    render();
+  });
+  document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Room: ' + r.name));
+}
+function personSheet(p) {
+  const done = located.has(p.name);
+  const photo = p.photo ? '<img class="photo" src="' + esc(p.photo) + '" alt="">' : '';
+  openSheet(
+    '<h2>' + esc(p.name) + '</h2>' +
+    photo +
+    '<div class="desc">' + esc(p.description || '') + '</div>' +
+    '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
+    '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetLocate">' + (done ? '✓ Located' : 'Mark located') + '</button>' +
+    '<button class="close" id="sheetClose">Close</button></div>'
+  , false, true);
+  document.getElementById('sheetLocate').addEventListener('click', () => {
+    if (located.has(p.name)) located.delete(p.name); else located.add(p.name);
+    saveLocated();
+    personSheet(p);
+    render();
+  });
+  document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Person: ' + p.name));
+}
+function phoneSheet(p) {
+  const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
+  const dates = [p.recording ? 'Recording: ' + p.recording : '', p.photo ? 'Photo: ' + p.photo : ''].filter(Boolean).join(' · ');
+  const tr = transcriptText(p);
+  const done = foundPhones.has(phoneKey(p));
+  const descs = numberDescs(p).join(' · ');
+  /* with spoilers off the sheet shows no spoiler content at all (Allen, 2026-11-18): no descriptions (placeholder instead, same as rooms), no 8000 line, no location, no transcript button. The old "Found:" fallback leaked the room with spoilers off, and with spoilers on the list covers it, so the line is gone entirely */
+  const descHTML = descs
+    ? (noSpoilers ? '<div class="meta"><span class="spoilerHidden">Description hidden in no-spoilers mode.</span></div>' : '<div class="meta">' + esc(descs) + '</div>')
+    : '';
+  const foundIn = foundInHTML(numberSibs(p));
+  const is8000 = normNum(p.number) === '8000';
+  openSheet(
+    '<h2>' + esc(p.number) + unconf + '</h2>' +
+    descHTML +
+    (is8000 && !noSpoilers ? '<div class="meta">Which voicemail box answers depends on which phone you call 8000 from.</div>' : '') +
+    foundIn +
+    (dates ? '<div class="meta">' + esc(dates) + '</div>' : '') +
+    '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
+    (tr && !noSpoilers ? '<button class="transcriptBtn" id="trBtn">Show transcript</button><div class="transcript hidden" id="trText">' + esc(tr) + '</div>' : '') +
+    '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetFound">' + (done ? '✓ Found' : 'Mark found') + '</button>' +
+    '<button class="close" id="sheetClose">Close</button></div>'
+  , false, true);
+  document.getElementById('sheetFound').addEventListener('click', () => {
+    const k = phoneKey(p);
+    if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
+    saveFoundPhones();
+    phoneSheet(p);
+    render();
+  });
+  document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Phone: ' + p.number + (descs && !noSpoilers ? ' — ' + descs : '')));
+  const trBtn = document.getElementById('trBtn');
+  if (trBtn) trBtn.addEventListener('click', () => {
+    const t = document.getElementById('trText');
+    const hidden = t.classList.toggle('hidden');
+    trBtn.textContent = hidden ? 'Show transcript' : 'Hide transcript';
+  });
+}
+function telephoneSheet(t) {
+  const done = foundTelephones.has(telephoneKey(t));
+  const unconf = t.number && !t.confirmed ? ' <span class="unconf">(unconfirmed)</span>' : '';
+  const numLine = noSpoilers
+    ? '<div class="meta"><span class="spoilerHidden">Number hidden in no-spoilers mode.</span></div>'
+    : (t.number
+      ? '<div class="meta">Phone # ' + esc(t.number) + unconf + '</div>'
+      : '<div class="meta">Phone # unknown.</div>');
+  openSheet(
+    '<h2>' + esc(t.name) + '</h2>' +
+    '<div class="meta">Level ' + t.level + ' · ' + esc(t.description || '') + '</div>' +
+    numLine +
+    '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
+    '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetTelFound">' + (done ? '✓ Found' : 'Mark found') + '</button>' +
+    '<button class="close" id="sheetClose">Close</button></div>'
+  , false, true);
+  document.getElementById('sheetTelFound').addEventListener('click', () => {
+    const k = telephoneKey(t);
+    if (foundTelephones.has(k)) foundTelephones.delete(k); else foundTelephones.add(k);
+    saveFoundTelephones();
+    telephoneSheet(t);
+    render();
+  });
+  document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Phone: ' + t.name + ' — ' + t.description));
+}
+function transcriptText(p) {
+  if (!p.transcript) return '';
+  if (typeof p.transcript === 'string') return p.transcript;
+  if (Array.isArray(p.transcript)) return p.transcript.map(t => (t.label ? t.label + '\n' : '') + t.text).join('\n\n');
+  if (typeof p.transcript === 'object') return Object.keys(p.transcript).map(k => k + '\n' + p.transcript[k]).join('\n\n');
+  return '';
+}
+
+/* searchable room picker: type to filter by name or description; picking is
+   optional — freeform text stays as typed (for rooms whose name is unknown) */
+function attachRoomPicker(input, listEl) {
+  function showMatches() {
+    const needle = input.value.trim().toLowerCase();
+    if (needle.length < 2) { listEl.classList.add('hidden'); listEl.innerHTML = ''; return; }
+    const matches = data.rooms.filter(r => {
+      const hay = [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase();
+      return hay.includes(needle);
+    }).slice(0, 8);
+    if (!matches.length) { listEl.classList.add('hidden'); listEl.innerHTML = ''; return; }
+    listEl.innerHTML = matches.map((r, i) =>
+      '<div class="ropt" data-i="' + i + '"><div class="rname">' + esc(r.name) + '</div>' +
+      '<div class="rdesc">' + esc(r.description || '') + '</div></div>'
+    ).join('');
+    listEl.classList.remove('hidden');
+    listEl.querySelectorAll('.ropt').forEach(el => {
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        input.value = matches[+el.dataset.i].name;
+        listEl.classList.add('hidden');
+        listEl.innerHTML = '';
+      });
+    });
+  }
+  input.addEventListener('input', showMatches);
+  input.addEventListener('focus', showMatches);
+  input.addEventListener('blur', () => { setTimeout(() => { listEl.classList.add('hidden'); }, 150); });
+}
+const KEYPAD = { A: '2', B: '2', C: '2', D: '3', E: '3', F: '3', G: '4', H: '4', I: '4', J: '5', K: '5', L: '5', M: '6', N: '6', O: '6', P: '7', Q: '7', R: '7', S: '7', T: '8', U: '8', V: '8', W: '9', X: '9', Y: '9', Z: '9' };
+function normNum(s) {
+  s = String(s || '').toUpperCase().replace(/\([^)]*\)/g, '');
+  let out = '';
+  for (const ch of s) {
+    if (ch >= '0' && ch <= '9') out += ch;
+    else if (KEYPAD[ch]) out += KEYPAD[ch];
+  }
+  return out;
+}
+function knownNumbers() {
+  const map = {};
+  for (const p of data.phones) {
+    const k = normNum(p.number);
+    if (k && !map[k]) map[k] = p;
+  }
+  return map;
+}
+/* "Found in" list (Allen, 2026-11-18): where a number was already found.
+   Spoiler detail — shown only with Spoilers on, so a researcher can check
+   whether their find is already known before reporting it. */
+function foundInHTML(rows) {
+  if (noSpoilers) return '';
+  const seen = new Set();
+  const lines = [];
+  for (const r of rows) {
+    const loc = [r.foundIn, r.foundOn].filter(Boolean).join(' — ');
+    const note = (r.foundNotes || '').trim();
+    /* the note's literal text rides with its location (Allen, 2026-11-18): it tells folks WHICH note it was found on when another sits nearby — e.g. the two CRT POST-ITs by the Projection Room computer. A note already in parens stands as-is, so it never double-wraps */
+    let line = loc;
+    if (note) line = line ? line + ' ' + (note.startsWith('(') ? note : '(' + note + ')') : note;
+    if (!line || seen.has(line)) continue;
+    seen.add(line);
+    lines.push('<div>' + esc(line) + '</div>');
+  }
+  if (!lines.length) return '';
+  return '<div class="foundIn"><strong>Found in:</strong>' + lines.join('') + '</div>';
+}
+function foundCount() {
+  const known = knownNumbers();
+  let n = 0;
+  for (const k of found) if (known[k]) n++;
+  return n;
+}
+function foundListHTML() {
+  const known = knownNumbers();
+  const keys = [...found].filter(k => known[k]).sort();
+  if (!keys.length) return '<div class="empty">No numbers found yet — start hunting!</div>';
+  return keys.map(k => {
+    const p = known[k];
+    const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
+    const hasRec = data.phones.some(x => normNum(x.number) === k && x.recording);
+    const hint = hasRec ? '' : ' <span style="color:#e0a800;font-size:13px">· no recording yet</span>';
+    return '<div class="item" data-k="' + k + '"><div class="body"><div class="name">' + esc(p.number) + unconf + hint + '</div></div><button class="delBtn" data-k="' + k + '" aria-label="Remove from found">✕</button></div>';
+  }).join('');
+}
+function attachFoundListTaps() {
+  list.querySelectorAll('#foundList .item').forEach(el => {
+    el.addEventListener('click', () => foundNumberSheet(el.dataset.k));
+  });
+  list.querySelectorAll('#foundList .delBtn').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const k = b.dataset.k;
+      const p = knownNumbers()[k];
+      openSheet(
+        '<h2>Remove this number?</h2>' +
+        '<div class="desc">Remove ' + esc(p ? p.number : k) + ' from the numbers you found? You can find it again with the dial pad.</div>' +
+        '<button id="delConfirm" style="display:block;width:100%;margin-top:18px;font-size:17px;padding:12px 0;border-radius:8px;border:1px solid #c0392b;background:#c0392b;color:#fff;font-weight:bold;cursor:pointer">Remove</button>'
+      );
+      document.getElementById('delConfirm').addEventListener('click', () => {
+        found.delete(k);
+        saveFound();
+        closeSheet();
+        updateFoundList();
+      });
+    });
+  });
+}
+function foundNumberSheet(k) {
+  const known = knownNumbers();
+  const p = known[k];
+  if (!p) return;
+  const rows = data.phones.filter(x => normNum(x.number) === k);
+  const hasRec = rows.some(x => x.recording);
+  const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
+  if (hasRec) {
+    openSheet(
+      '<h2>' + esc(p.number) + unconf + '</h2>' +
+      '<div class="desc">This number has a recording on file.</div>' +
+      foundInHTML(rows)
+    );
+    return;
+  }
+  openSheet(
+    '<h2>' + esc(p.number) + unconf + '</h2>' +
+    '<div class="desc">We do not have a recording for this number yet. If you called it, what did it say?</div>' +
+    foundInHTML(rows) +
+    '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">What does this number say?<textarea id="saysText" style="width:100%;font-size:16px;padding:10px;border-radius:8px;border:1px solid #555;background:#222;color:#eee;margin-top:4px;font-family:inherit;min-height:70px" placeholder="Describe what you heard when you called it."></textarea></label>' +
+    profileFieldsHTML('fs') +
+    '<button class="submitBtn" id="saysGo">Report what it says</button>'
+  );
+  document.getElementById('saysGo').addEventListener('click', () => {
+    const said = document.getElementById('saysText').value.trim();
+    const pv = profileValues('fs');
+    const params = {};
+    params[FORM_ENTRY.number] = p.number;
+    params[FORM_ENTRY.said] = said;
+    if (pv.agent) params[FORM_ENTRY.agent] = pv.agent;
+    if (pv.email) params[FORM_ENTRY.email] = pv.email;
+    if (pv.text) params[FORM_ENTRY.text] = pv.text;
+    window.open(formUrlWith(params), '_blank');
+  });
+}
+function updateFoundList() {
+  const el = document.getElementById('foundList');
+  if (el) { el.innerHTML = foundListHTML(); attachFoundListTaps(); }
+  const prog = document.querySelector('.progress');
+  if (prog) {
+    const known = knownNumbers();
+    const n = foundCount();
+    const total = Object.keys(known).length;
+    const pct = total ? Math.round(n / total * 100) : 0;
+    prog.innerHTML = 'You found ' + n + ' of ' + total + ' known numbers<div class="bar"><i style="width:' + pct + '%"></i></div>';
+  }
+}
+function refreshHuntClear() {
+  const inp = document.getElementById('huntInput');
+  const c = document.getElementById('huntClear');
+  if (inp && c) c.classList.toggle('hidden', !inp.value);
+}
+function huntHTML() {
+  const known = knownNumbers();
+  const total = Object.keys(known).length;
+  const n = foundCount();
+  const pct = total ? Math.round(n / total * 100) : 0;
+  const ro = hasKeyboard ? '' : ' readonly';
+  return '<div class="huntBox"><div class="big">Phone hunt</div>' +
+    '<div class="progress">You found ' + n + ' of ' + total + ' known numbers<div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+    '<div style="height:12px"></div>' +
+    '<div class="huntRow"><span class="huntInputWrap"><input id="huntInput" type="text" placeholder="Type a number…"' + ro + ' autocomplete="off" autocapitalize="characters"><button id="huntClear" class="huntClear hidden" aria-label="Clear number">✕</button></span><button id="huntGo">Check</button></div>' +
+    '<div class="dialpad" id="dialpad">' +
+      ['1|', '2|ABC', '3|DEF', '4|GHI', '5|JKL', '6|MNO', '7|PQRS', '8|TUV', '9|WXYZ', '', '0|+', 'back|⌫'].map(d => {
+        if (!d) return '<span></span>';
+        const parts = d.split('|');
+        if (parts[0] === 'back') return '<button data-d="back">⌫</button>';
+        return '<button data-d="' + parts[0] + '">' + parts[0] + (parts[1] ? '<span class="sub">' + parts[1] + '</span>' : '') + '</button>';
+      }).join('') +
+    '</div>' +
+    '<div id="huntResult"></div>' +
+    '<div class="big" style="margin-top:18px">Numbers you found</div>' +
+    '<div id="foundList">' + foundListHTML() + '</div></div>';
+}
+function huntCheck(raw) {
+  const k = normNum(raw);
+  const res = document.getElementById('huntResult');
+  if (!k) { res.innerHTML = ''; return; }
+  const known = knownNumbers();
+  const p = known[k];
+  if (p) {
+    const isNew = !found.has(k);
+    found.add(k);
+    saveFound();
+    const known = knownNumbers();
+    const n = foundCount();
+    const total = Object.keys(known).length;
+    const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
+    updateFoundList();
+    res.innerHTML = '<div class="result good"><div class="rtitle">' + (p.confirmed ? '✓ Confirmed!' : 'Known — but unconfirmed') + '</div>' +
+      '<div class="rmeta">' + esc(p.number) + unconf + '</div>' +
+      '<div class="rdesc">' + (isNew ? 'Added to your found count.' : 'You already found this one.') + ' ' + n + ' of ' + total + ' found.</div>' +
+      foundInHTML(data.phones.filter(x => normNum(x.number) === k)) +
+      '<label>What room did you find it in? <span style="color:#888">(optional)</span><input id="cfRoom" type="text" placeholder="Type a room name, or describe where you are" autocomplete="off"><div class="roomList hidden" id="cfRoomList"></div></label>' +
+      '<label>Any other notes? <span style="color:#888">(optional)</span><textarea id="cfNotes" placeholder="e.g. written on the wall by the projector"></textarea></label>' +
+      profileFieldsHTML('cf') +
+      '<button class="submitBtn" id="cfGo">Report this find</button>' +
+      '<button class="cancelBtn" id="cfCancel">Cancel</button></div>';
+    attachRoomPicker(document.getElementById('cfRoom'), document.getElementById('cfRoomList'));
+    document.getElementById('cfCancel').addEventListener('click', () => {
+      document.getElementById('huntResult').innerHTML = '';
+      const inp = document.getElementById('huntInput');
+      if (inp) inp.value = '';
+      refreshHuntClear();
+    });
+    attachRoomPicker(document.getElementById('cfRoom'), document.getElementById('cfRoomList'));
+    document.getElementById('cfGo').addEventListener('click', () => {
+      const room = document.getElementById('cfRoom').value.trim();
+      const notes = document.getElementById('cfNotes').value.trim();
+      const pv = profileValues('cf');
+      const params = {};
+      params[FORM_ENTRY.number] = p.number;
+      params[FORM_ENTRY.room] = room;
+      params[FORM_ENTRY.said] = notes;
+      if (pv.agent) params[FORM_ENTRY.agent] = pv.agent;
+      if (pv.email) params[FORM_ENTRY.email] = pv.email;
+      if (pv.text) params[FORM_ENTRY.text] = pv.text;
+      window.open(formUrlWith(params), '_blank');
+    });
+    const inp = document.getElementById('huntInput');
+    if (inp) inp.value = '';
+    refreshHuntClear();
+  } else {
+    /* Digit-count warning (Allen, 2026-11-18): 23 of the 24 known numbers
+       are 6 digits (8000, the voicemail number, is the only 4-digit one —
+       and it is known, so it confirms with no warning). An unknown number
+       with any other length asks first. */
+    if (k.length !== 6) {
+      res.innerHTML = '<div class="result warn"><div class="rtitle">Double-check this number</div>' +
+        '<div class="rmeta">' + esc(raw.trim()) + '</div>' +
+        '<div class="rdesc">Currently known numbers appear to be 6 digits, and this one has ' + k.length + '. Are you sure you typed it right?</div>' +
+        '<button class="submitBtn" id="digitGo">Yes — report it</button>' +
+        '<button class="cancelBtn" id="digitFix">No — let me fix it</button></div>';
+      document.getElementById('digitGo').addEventListener('click', () => showNewNumberForm(raw));
+      document.getElementById('digitFix').addEventListener('click', () => { res.innerHTML = ''; });
+      return;
+    }
+    showNewNumberForm(raw);
+  }
+}
+function showNewNumberForm(raw) {
+  const res = document.getElementById('huntResult');
+  res.innerHTML = '<div class="result new"><div class="rtitle">Not in the guide yet</div>' +
+      '<div class="rmeta">' + esc(raw.trim()) + '</div>' +
+      '<div class="rdesc">This number is not in the Telephone Directory. Found something new? Tell us about it — it goes to Allen for review.</div>' +
+      '<label>Which room did you find it in?<input id="subRoom" type="text" placeholder="Type a room name, or describe where you are" autocomplete="off"><div class="roomList hidden" id="subRoomList"></div></label>' +
+      '<label>On what did you find the number?<input id="subOn" type="text" placeholder="e.g. note on wall, business card"></label>' +
+      '<label>What does this number do when you call?<textarea id="subSaid" placeholder="Describe what happens when you call it — what you hear, what it says."></textarea></label>' +
+      profileFieldsHTML('sub') +
+      '<button class="submitBtn" id="subGo">Report this number</button>' +
+      '<button class="cancelBtn" id="subCancel">Cancel</button></div>';
+    attachRoomPicker(document.getElementById('subRoom'), document.getElementById('subRoomList'));
+    document.getElementById('subCancel').addEventListener('click', () => {
+      document.getElementById('huntResult').innerHTML = '';
+      const inp = document.getElementById('huntInput');
+      if (inp) inp.value = '';
+      refreshHuntClear();
+    });
+    attachRoomPicker(document.getElementById('subRoom'), document.getElementById('subRoomList'));
+    document.getElementById('subGo').addEventListener('click', () => {
+      const room = document.getElementById('subRoom').value.trim();
+      const onwhat = document.getElementById('subOn').value.trim();
+      const said = document.getElementById('subSaid').value.trim();
+      const pv = profileValues('sub');
+      const params = {};
+      params[FORM_ENTRY.number] = raw.trim();
+      params[FORM_ENTRY.room] = room;
+      params[FORM_ENTRY.onwhat] = onwhat;
+      params[FORM_ENTRY.said] = said;
+      if (pv.agent) params[FORM_ENTRY.agent] = pv.agent;
+      if (pv.email) params[FORM_ENTRY.email] = pv.email;
+      if (pv.text) params[FORM_ENTRY.text] = pv.text;
+      window.open(formUrlWith(params), '_blank');
+    });
+}
+
+function render() {
+  const needle = q.value.trim().toLowerCase();
+  let items = [];
+  if (tab === 'hunt') {
+    q.classList.add('hidden');
+    levelFilters.classList.add('hidden');
+    dossierTabs.classList.add('hidden');
+    count.textContent = '';
+    list.innerHTML = huntHTML();
+    attachFoundListTaps();
+    const inp = document.getElementById('huntInput');
+    const go = document.getElementById('huntGo');
+    const run = () => huntCheck(inp.value);
+    go.addEventListener('click', run);
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+    if (hasKeyboard) inp.addEventListener('input', () => {
+      const clean = inp.value.toUpperCase().replace(/[^0-9A-Z-]/g, '');
+      if (clean !== inp.value) inp.value = clean;
+      refreshHuntClear();
+    });
+    document.getElementById('huntClear').addEventListener('click', () => {
+      inp.value = '';
+      document.getElementById('huntResult').innerHTML = '';
+      refreshHuntClear();
+    });
+    document.querySelectorAll('#dialpad button').forEach(b => {
+      b.addEventListener('click', () => {
+        const d = b.dataset.d;
+        if (d === 'back') inp.value = inp.value.slice(0, -1);
+        else inp.value += d;
+        refreshHuntClear();
+      });
+    });
+    refreshHuntClear();
+    return;
+  }
+  q.classList.remove('hidden');
+  dossierTabs.classList.remove('hidden');
+  q.placeholder = 'Search rooms, people, phones, numbers…';
+  /* global search: a search term searches rooms + people + phones +
+     numbers together, grouped by type. With no term, show the current
+     sub-tab's list. A telephone's number is spoiler detail, so it is never
+     part of the search text — only its name and description are. */
+  if (needle) {
+    levelFilters.classList.add('hidden');
+    const rm = data.rooms.filter(r => {
+      if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
+      else if (level !== 'all' && String(r.level) !== level) return false;
+      return [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase().includes(needle);
+    });
+    const pp = data.people.filter(p => [p.name, p.description].join(' ').toLowerCase().includes(needle));
+    const tel = data.telephones.filter(t => [t.name, t.description].join(' ').toLowerCase().includes(needle));
+    const ph = uniqueNumbers().filter(p => numberMatches(p, needle));
+    const total = rm.length + pp.length + tel.length + ph.length;
+    count.textContent = total + ' result' + (total === 1 ? '' : 's') + ' for “' + q.value.trim() + '”';
+    let html = '';
+    if (rm.length) {
+      html += '<div style="color:#e0a800;font-size:13px;font-weight:bold;padding:12px 0 0">Rooms</div>';
+      html += rm.map((r) => {
+        const star = r.official ? ' <span class="star">*</span>' : '';
+        const artists = (r.artists && r.artists.length) ? r.artists.join(', ') : '';
+        const meta = ['Level ' + r.level, artists].filter(Boolean).join(' · ');
+        const done = visited.has(roomKey(r));
+        const thumb = r.photo ? '<img class="thumb" src="' + esc(r.photo) + '" alt="" loading="lazy">' : '';
+        return '<div class="item" data-kind="room" data-name="' + esc(r.name) + '|' + r.level + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(roomKey(r)) + '" aria-label="Mark visited">✓</button>' +
+          '<div class="body"><div class="name">' + esc(r.name) + star + '</div>' +
+          (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
+          '<div class="desc">' + descFor(r) + '</div></div>' + thumb + '</div>';
+      }).join('');
+    }
+    if (pp.length) {
+      html += '<div style="color:#e0a800;font-size:13px;font-weight:bold;padding:12px 0 0">People</div>';
+      html += pp.map((p) => {
+        const done = located.has(p.name);
+        return '<div class="item" data-kind="person" data-name="' + esc(p.name) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(p.name) + '" aria-label="Mark located">✓</button>' +
+          '<div class="body"><div class="name">' + esc(p.name) + '</div>' +
+          '<div class="desc">' + esc(p.description || '') + '</div></div></div>';
+      }).join('');
+    }
+    if (tel.length) {
+      html += '<div style="color:#e0a800;font-size:13px;font-weight:bold;padding:12px 0 0">Phones</div>';
+      html += tel.map((t) => {
+        const done = foundTelephones.has(telephoneKey(t));
+        return '<div class="item" data-kind="telephone" data-name="' + esc(telephoneKey(t)) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(telephoneKey(t)) + '" aria-label="Mark found">✓</button>' +
+          '<div class="body"><div class="name">' + esc(t.name) + '</div>' +
+          '<div class="meta">Level ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
+      }).join('');
+    }
+    if (ph.length) {
+      html += '<div style="color:#e0a800;font-size:13px;font-weight:bold;padding:12px 0 0">Numbers</div>';
+      html += ph.map((p) => {
+        const done = foundPhones.has(phoneKey(p));
+        return '<div class="item" data-kind="phone" data-name="' + esc(p.number) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(phoneKey(p)) + '" aria-label="Mark found">✓</button>' +
+          numberRowHTML(p) + '</div>';
+      }).join('');
+    }
+    list.innerHTML = html || '<div class="empty">Nothing matches.</div>';
+    list.querySelectorAll('.check').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const k = b.dataset.k;
+        const item = b.closest('.item');
+        const kind = item ? item.dataset.kind : '';
+        if (kind === 'room') {
+          if (visited.has(k)) visited.delete(k); else visited.add(k);
+          saveVisited();
+        } else if (kind === 'person') {
+          if (located.has(k)) located.delete(k); else located.add(k);
+          saveLocated();
+        } else if (kind === 'telephone') {
+          if (foundTelephones.has(k)) foundTelephones.delete(k); else foundTelephones.add(k);
+          saveFoundTelephones();
+        } else {
+          if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
+          saveFoundPhones();
+        }
+        render();
+      });
+    });
+    list.querySelectorAll('.item').forEach(el => {
+      el.addEventListener('click', () => {
+        const kind = el.dataset.kind;
+        if (kind === 'room') {
+          const parts = el.dataset.name.split('|');
+          const r = data.rooms.find(x => x.name === parts[0] && String(x.level) === parts[1]);
+          if (r) roomSheet(r);
+        } else if (kind === 'person') {
+          const p = data.people.find(x => x.name === el.dataset.name);
+          if (p) personSheet(p);
+        } else if (kind === 'telephone') {
+          const t = data.telephones.find(x => telephoneKey(x) === el.dataset.name);
+          if (t) telephoneSheet(t);
+        } else {
+          const p = data.phones.find(x => x.number === el.dataset.name);
+          if (p) phoneSheet(p);
+        }
+      });
+    });
+    return;
+  }
+  if (dossier === 'rooms') {
+    levelFilters.classList.remove('hidden');
+    items = data.rooms.filter(r => {
+      if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
+      else if (level !== 'all' && String(r.level) !== level) return false;
+      if (!needle) return true;
+      return [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase().includes(needle);
+    });
+    count.textContent = items.length + ' of ' + data.rooms.length + ' rooms · ' + visited.size + ' visited';
+    list.innerHTML = items.length ? items.map((r, i) => {
+      const star = r.official ? ' <span class="star">*</span>' : '';
+      const artists = (r.artists && r.artists.length) ? r.artists.join(', ') : '';
+      const meta = ['Level ' + r.level, artists].filter(Boolean).join(' · ');
+      const done = visited.has(roomKey(r));
+      const thumb = r.photo ? '<img class="thumb" src="' + esc(r.photo) + '" alt="" loading="lazy">' : '';
+      return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(roomKey(r)) + '" aria-label="Mark visited">✓</button>' +
+        '<div class="body"><div class="name">' + esc(r.name) + star + '</div>' +
+        (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
+        '<div class="desc">' + descFor(r) + '</div></div>' + thumb + '</div>';
+    }).join('') : '<div class="empty">No rooms match.</div>';
+    list.querySelectorAll('.check').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const k = b.dataset.k;
+        if (visited.has(k)) visited.delete(k); else visited.add(k);
+        saveVisited();
+        render();
+      });
+    });
+    list.querySelectorAll('.item').forEach(el => {
+      el.addEventListener('click', () => roomSheet(items[+el.dataset.i]));
+    });
+  } else if (dossier === 'people') {
+    levelFilters.classList.add('hidden');
+    items = data.people.filter(p => {
+      if (!needle) return true;
+      return [p.name, p.description].join(' ').toLowerCase().includes(needle);
+    });
+    count.textContent = items.length + ' of ' + data.people.length + ' people · ' + located.size + ' located';
+    list.innerHTML = items.length ? items.map((p, i) => {
+      const done = located.has(p.name);
+      const thumb = p.photo ? '<img class="thumb" src="' + esc(p.photo) + '" alt="" loading="lazy">' : '';
+      return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(p.name) + '" aria-label="Mark located">✓</button>' +
+        thumb +
+        '<div class="body"><div class="name">' + esc(p.name) + '</div>' +
+        '<div class="desc">' + esc(p.description || '') + '</div></div></div>';
+    }).join('') : '<div class="empty">No people match.</div>';
+    list.querySelectorAll('.check').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const k = b.dataset.k;
+        if (located.has(k)) located.delete(k); else located.add(k);
+        saveLocated();
+        render();
+      });
+    });
+    list.querySelectorAll('.item').forEach(el => {
+      el.addEventListener('click', () => personSheet(items[+el.dataset.i]));
+    });
+  } else if (dossier === 'phones') {
+    levelFilters.classList.add('hidden');
+    items = data.telephones.filter(t => {
+      if (!needle) return true;
+      return [t.name, t.description].join(' ').toLowerCase().includes(needle);
+    });
+    count.textContent = items.length + ' of ' + data.telephones.length + ' phones · ' + foundTelephones.size + ' found';
+    list.innerHTML = items.length ? items.map((t, i) => {
+      const done = foundTelephones.has(telephoneKey(t));
+      return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(telephoneKey(t)) + '" aria-label="Mark found">✓</button>' +
+        '<div class="body"><div class="name">' + esc(t.name) + '</div>' +
+        '<div class="meta">Level ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
+    }).join('') : '<div class="empty">No phones match.</div>';
+    list.querySelectorAll('.check').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const k = b.dataset.k;
+        if (foundTelephones.has(k)) foundTelephones.delete(k); else foundTelephones.add(k);
+        saveFoundTelephones();
+        render();
+      });
+    });
+    list.querySelectorAll('.item').forEach(el => {
+      el.addEventListener('click', () => telephoneSheet(items[+el.dataset.i]));
+    });
+  } else {
+    levelFilters.classList.add('hidden');
+    items = uniqueNumbers().filter(p => {
+      if (!needle) return true;
+      return numberMatches(p, needle);
+    });
+    count.textContent = items.length + ' of ' + uniqueNumbers().length + ' numbers · ' + foundPhones.size + ' found';
+    list.innerHTML = items.length ? items.map((p, i) => {
+      const done = foundPhones.has(phoneKey(p));
+      return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(phoneKey(p)) + '" aria-label="Mark found">✓</button>' +
+        numberRowHTML(p) + '</div>';
+    }).join('') : '<div class="empty">No phone numbers match.</div>';
+    list.querySelectorAll('.check').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const k = b.dataset.k;
+        if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
+        saveFoundPhones();
+        render();
+      });
+    });
+    list.querySelectorAll('.item').forEach(el => {
+      el.addEventListener('click', () => phoneSheet(items[+el.dataset.i]));
+    });
+  }
+}
+/* Update check: iOS home-screen apps resume from the background without
+   reloading, so a new version would sit unseen until the app is force-quit.
+   When the page becomes visible again (and every 5 minutes while open), fetch
+   version.json and offer a one-tap Update that reloads the page. */
+const updateBar = document.getElementById('updateBar');
+document.getElementById('updateBtn').addEventListener('click', () => location.reload());
+let updateChecked = false;
+function checkForUpdate(quiet) {
+  fetch('version.json?v=' + Date.now()).then(r => r.json()).then(v => {
+    const latest = (v && v.version) || '';
+    if (latest && latest !== APP_VERSION) {
+      updateBar.style.display = 'flex';
+    } else if (!quiet) {
+      updateBar.style.display = 'none';
+    }
+    updateChecked = true;
+  }).catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(true); });
+window.addEventListener('pageshow', () => checkForUpdate(true));
+setInterval(() => { if (!document.hidden) checkForUpdate(true); }, 5 * 60 * 1000);
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+q.addEventListener('input', render);
+document.querySelectorAll('.tabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    tab = b.dataset.tab;
+    render();
+  });
+});
+document.querySelectorAll('#dossierTabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#dossierTabs button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    dossier = b.dataset.dossier;
+    render();
+  });
+});
+document.querySelectorAll('#levelFilters button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#levelFilters button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    level = b.dataset.level;
+    render();
+  });
+});
+Promise.all([
+  fetch('rooms.json?v=' + APP_VERSION).then(r => r.json()),
+  fetch('people.json?v=' + APP_VERSION).then(r => r.json()),
+  fetch('phones.json?v=' + APP_VERSION).then(r => r.json()),
+  fetch('telephones.json?v=' + APP_VERSION).then(r => r.json())
+]).then(([rm, pp, ph, tel]) => {
+  data.rooms = rm.rooms || [];
+  data.people = pp.people || [];
+  data.phones = ph.phones || [];
+  data.telephones = tel.telephones || [];
+  render();
+  if (!localStorage.getItem(WELCOME_KEY)) {
+    localStorage.setItem(WELCOME_KEY, '1');
+    openAbout();
+  }
+}).catch(() => { list.innerHTML = '<div class="empty">Could not load the data files.</div>'; });
+</script>
+</body>
+</html>

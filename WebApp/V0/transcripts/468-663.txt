@@ -1,0 +1,29 @@
+10/6/2026: edited by AH
+
+Hello, you have reached the facade hotline, where we are all about transparency.
+
+Press 1 to report an anomaly.
+
+Press 2 to speak with a live agent.
+
+(1) Please state the nature or type of the disturbance you wish to report. (Beep)
+
+	(say something)
+
+You have selected: (plays back what you said)
+
+Please describe the disturbance you have experienced. (Beep)
+
+	(say something)
+
+Facades strive to contain these disturbances for future study. Thank you for reporting your experience. It will be handled accordingly.
+
+(Disconnects. If you call back to press 2...)
+
+Hello. You have reached the façade hotline, where we are all about transparency.
+
+Press 1 to report an anomaly.
+
+Press two to speak with a live agent. 
+
+(2) Thank you for selecting Live Agent. The next available FACADE operator will be with you shortly. Please hold. (Glitching) Wait time information currently at nine... nine... nine... nine... minutes. (Music)
