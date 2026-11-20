@@ -118,16 +118,20 @@ check(isSpoilerEdge('Projection Room', 'Speakereasy'), 'Projection Room -> Speak
 check(isSpoilerEdge('Party Room (Fun Zone)', 'Hypnotizer Crawl'), 'Party Room -> Hypnotizer Crawl must be a spoiler edge');
 check(!isSpoilerEdge('Headshot Remixer', 'Employee Break Room'), 'Headshot -> Break Room must NOT be a spoiler edge (public exit)');
 check(!isSpoilerEdge('Lobby', 'Theater'), 'Lobby -> Theater must NOT be a spoiler edge');
-// Via notes: lookup tries both orders, returns null when no note exists.
-// (DIRECTIONS is empty until Allen supplies notes; the lookup itself is
-// checked here with a sample map, not the shipped data.)
-const sample = { 'Lobby|Containment Zone': 'through the double doors by the box office' };
-check(viaNote(sample, 'Lobby', 'Containment Zone') === 'through the double doors by the box office', 'viaNote forward lookup');
-check(viaNote(sample, 'Containment Zone', 'Lobby') === 'through the double doors by the box office', 'viaNote reverse lookup');
+// Via notes (v1.4.22): Door notes are directional — written from the
+// room you're leaving — so the lookup is the exact direction only;
+// the reverse leg needs its own note and shows nothing without one.
+// The lookup itself is checked here with a sample map; the shipped
+// DIRECTIONS come from the sheet's Door column.
+const sample = { 'Lobby|Containment Zone': 'double doors by the box office' };
+check(viaNote(sample, 'Lobby', 'Containment Zone') === 'double doors by the box office', 'viaNote forward lookup');
+check(viaNote(sample, 'Containment Zone', 'Lobby') === null, 'viaNote must be null in reverse — Door notes are directional (v1.4.22)');
 check(viaNote(sample, 'Lobby', 'Theater') === null, 'viaNote must be null with no note');
 check(viaNote({}, 'Lobby', 'Theater') === null, 'viaNote must be null with empty map');
 check(viaNote(null, 'Lobby', 'Theater') === null, 'viaNote must be null with null map');
 check(typeof DIRECTIONS === 'object', 'DIRECTIONS must be embedded');
+check(Object.keys(DIRECTIONS).length > 0, 'DIRECTIONS must not be empty — Door notes are live (v1.4.22)');
+check(DIRECTIONS['Employee Break Room|Headshot Remixer'] === 'through the door disguised as a soda machine', 'shipped DIRECTIONS must carry the soda-machine note (v1.4.22)');
 console.log('Via notes embedded in shipped file:', Object.keys(DIRECTIONS).length);
 // Shortcut target lists (v1.2.0/1.3.0): exact sets, all pickable rooms.
 check(JSON.stringify(FOOD_DRINK.slice().sort()) === JSON.stringify(['Concessions (Lobby)', 'Speakereasy', 'Splice Bros Pizza & Pub'].sort()), 'FOOD_DRINK must be the 3 serving rooms, got ' + FOOD_DRINK);

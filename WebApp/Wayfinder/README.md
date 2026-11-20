@@ -470,7 +470,7 @@ Unofficial Atlas9 Wayfinder stores nothing (no account, no saved data).
 
 Single self-contained `index.html` (rooms data embedded). Rebuild with:
 
-    python3 build.py          # from atlas9-app-v2/rooms.json + directions.csv
+    python3 build.py          # from atlas9-app-v2/rooms.json + door-notes.json
     node test_routing.js      # full routing matrix on the shipped file
 
 Deploy: SFTP `index.html` + `version.json` + `apple-touch-icon.png`
@@ -480,14 +480,16 @@ SFTP note), chmod 644 each file separately.
 ## Door directions (Via notes)
 
 Routes show a "which door to go through" line under a step when a note
-exists for that connection. Notes live in `directions.csv` — one row per
-connection pair (70 rows: all pairs except crawls and Headshot Remixer).
+exists for that connection. Notes live in the Atlas9 Data sheet's
+Connections tab, "Door (how to get through)" column — one note per
+directed connection, written from the room you're leaving, as a full
+phrase starting with a preposition ("through the…", "under the…",
+"behind the…"). The reverse leg needs its own note. `build-rooms-json.py` writes them to
+`atlas9-app-v2/door-notes.json`, and `build.py` embeds them.
 
-- `Via` is a complete phrase, e.g. `through the double doors by the
-  box office` — worded neutrally so it reads the same travelling
-  either way; the app shows it verbatim.
-- One note per pair covers both directions (lookup tries `A|B` then `B|A`).
-- Empty `Via` = no note yet; the route renders exactly as before.
+- `Door` is a full phrase, e.g. `through the door disguised as a soda machine` —
+  the app shows it verbatim.
+- Empty `Door` = no note yet; the route renders exactly as before.
 - Never invent a door description — notes come from Allen / on-site
   knowledge only. `build.py` warns on unknown room names and skips them.
 

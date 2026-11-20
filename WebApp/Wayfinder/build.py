@@ -21,7 +21,6 @@ Then re-run the routing test:
     node ~/workspace/atlas9vigator/test_routing.js
 """
 import base64
-import csv
 import io
 import json
 import shutil
@@ -30,6 +29,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SRC_ROOMS = Path.home() / "workspace" / "atlas9-app-v2" / "rooms.json"
 SRC_FAZR = Path.home() / "workspace" / "atlas9-app-v2" / "fazr.json"
+SRC_DOOR_NOTES = Path.home() / "workspace" / "atlas9-app-v2" / "door-notes.json"
 
 def load_fazr_points():
     """FAZR points as {room, type, spoiler} — no descriptions.
@@ -50,29 +50,28 @@ def load_fazr_points():
     return points
 
 def load_directions():
-    """Via notes from directions.csv: {\"Room A|Room B\": note}.
+    """Via notes from the sheet's Connections Door column, via
+    door-notes.json (written by build-rooms-json.py):
+    {"Room A|Room B": note}.
 
-    One note per connection pair, worded neutrally (a complete phrase
-    such as \"through the double doors by the box office\") so it reads
-    the same in either direction. Empty cells are skipped. Unknown room
+    One note per directed connection, worded from the room you're
+    leaving — the app looks the exact direction up, so the reverse
+    leg needs its own note. Empty cells are skipped. Unknown room
     names are warned about, never silently embedded.
     """
-    path = HERE / "directions.csv"
+    if not SRC_DOOR_NOTES.exists():
+        print("  door-notes.json missing — no Via notes embedded")
+        return {}
+    data = json.loads(SRC_DOOR_NOTES.read_text())
+    rooms = json.loads(SRC_ROOMS.read_text())
+    known = {r["name"] for r in rooms["rooms"]}
     notes = {}
-    if not path.exists():
-        return notes
-    data = json.loads(SRC_ROOMS.read_text())
-    known = {r["name"] for r in data["rooms"]}
-    with open(path, newline="") as f:
-        for row in csv.DictReader(f):
-            frm, to = (row.get("From") or "").strip(), (row.get("To") or "").strip()
-            note = (row.get("Via") or "").strip()
-            if not note:
-                continue
-            if frm not in known or to not in known:
-                print(f"  WARNING: directions.csv row with unknown room: {frm!r} / {to!r} — skipped")
-                continue
-            notes[f"{frm}|{to}"] = note
+    for key, note in (data.get("notes") or {}).items():
+        frm, _, to = key.partition("|")
+        if frm not in known or to not in known:
+            print(f"  WARNING: door-notes.json row with unknown room: {frm!r} / {to!r} — skipped")
+            continue
+        notes[key] = note
     return notes
 
 def share_qr_data_uri():
