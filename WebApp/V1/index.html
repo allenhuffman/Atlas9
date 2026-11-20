@@ -197,7 +197,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.14.0';
+const APP_VERSION = '1.15.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -477,14 +477,15 @@ function descText(r) {
   if (noSpoilers && r.spoiler) return '';
   return r.description || '';
 }
-/* FAZR Dossier tab (v1.11.0): one row per FAZR point. A spoiler point shows
-   the same placeholder as the room sheet's FAZR section with spoilers off;
-   the room name and type are public in both modes. A blank description
-   renders blank here — the builder already bakes "RESEARCH NEEDED. Submit
-   information." into the JSON description when Research needed?=TRUE, so
-   by the time the app sees it the rule is already applied. */
+/* FAZR Dossier tab (v1.11.0): one row per FAZR point. Spoiler points
+   (v1.15.0) are hidden entirely with spoilers off — the list, the room
+   sheet's FAZR section and search all exclude them, so this function
+   never sees one in no-spoilers mode and no placeholder is needed.
+   A blank description renders blank here — the builder already bakes
+   "RESEARCH NEEDED. Submit information." into the JSON description when
+   Research needed?=TRUE, so by the time the app sees it the rule is
+   already applied. */
 function fazrDescHTML(f) {
-  if (noSpoilers && f.spoiler) return '<span class="spoilerHidden">FAZR hidden in no-spoilers mode.</span>';
   return esc(f.description || '');
 }
 function fazrMatches(f, needle) {
@@ -538,19 +539,17 @@ function roomSheet(r) {
         (t.level == null ? '' : '<span class="meta">' + floorLabel(t.level) + '</span>') +
         '<span class="chev">›</span></button>').join('')
     : '';
-  /* "FAZR:" (v1.9.7): FAZR points in this room, from fazr.json. Public
-     points always show type + description; spoiler points show a
-     placeholder with spoilers off, same as room descriptions. Rows are
+  /* "FAZR:" (v1.9.7): FAZR points in this room, from fazr.json. Spoiler
+     points (v1.15.0) are hidden entirely with spoilers off — a hidden
+     FAZR is like a hidden exit, it only shows with spoilers on. If
+     nothing visible remains, the whole FAZR section is omitted. Rows are
      plain (not tappable) — the FAZR detail sheet opens from the FAZR
      list, not from the room sheet. */
-  const roomFazr = (data.fazr || []).filter(f => f.room === r.name);
+  const roomFazr = (data.fazr || []).filter(f => f.room === r.name && (!noSpoilers || !f.spoiler));
   const fazrHTML = roomFazr.length
-    ? '<div class="connHead">FAZR:</div>' + roomFazr.map(f => {
-        const body = (noSpoilers && f.spoiler)
-          ? '<span class="spoilerHidden">FAZR hidden in no-spoilers mode.</span>'
-          : esc((f.type ? f.type + ' — ' : '') + (f.description || ''));
-        return '<div class="fazrRow">' + body + '</div>';
-      }).join('')
+    ? '<div class="connHead">FAZR:</div>' + roomFazr.map(f =>
+        '<div class="fazrRow">' + esc((f.type ? f.type + ' — ' : '') + (f.description || '')) + '</div>'
+      ).join('')
     : '';
   openSheet(
     '<h2>' + esc(r.name) + star + '</h2>' +
@@ -879,6 +878,14 @@ function telephoneSheet(t) {
    carries no research flag, so the baked text is the signal.
    "Mark found" button (v1.13.0): same as the telephone sheet's. */
 function fazrSheet(f) {
+  /* (v1.15.0): a spoiler point opened with spoilers off — reachable only
+     via a stale link, since the list, room section and search all hide
+     it — shows nothing about the point: no room, type, description or
+     photo. */
+  if (noSpoilers && f.spoiler) {
+    openSheet('<h2>Hidden FAZR</h2><div class="desc">This FAZR point is hidden. Turn spoilers on to see it.</div><div class="btnRow"><button class="close" id="sheetClose">Close</button></div>', false, true);
+    return;
+  }
   const room = data.rooms.find(x => x.name === f.room);
   const photo = f.photo ? '<img class="photo" src="' + esc(f.photo) + '" alt="">' : '';
   const needsResearch = (f.description || '').indexOf('RESEARCH NEEDED') === 0;
@@ -1242,8 +1249,8 @@ function render() {
      numbers + FAZR points together, grouped by type. With no term, show
      the current sub-tab's list. A telephone's number is spoiler detail, so
      it is never part of the search text — only its name and description
-     are. A spoiler FAZR point's description is likewise not searchable
-     with spoilers off. */
+     are. A spoiler FAZR point (v1.15.0) is excluded entirely from search
+     results with spoilers off, even on a room-name or type match. */
   if (needle) {
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.add('hidden');
@@ -1255,7 +1262,7 @@ function render() {
     const pp = data.people.filter(p => [p.name, p.description].join(' ').toLowerCase().includes(needle));
     const tel = data.telephones.filter(t => [t.name, t.description].join(' ').toLowerCase().includes(needle));
     const ph = uniqueNumbers().filter(p => numberMatches(p, needle));
-    const fz = data.fazr.filter(f => (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
+    const fz = data.fazr.filter(f => (!noSpoilers || !f.spoiler) && (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
     const total = rm.length + pp.length + tel.length + ph.length + fz.length;
     count.textContent = total + ' result' + (total === 1 ? '' : 's') + ' for “' + q.value.trim() + '”';
     let html = '';
@@ -1461,11 +1468,16 @@ function render() {
        description, thumbnail where one exists (Mesmerite only, for now).
        The type filter row above the list filters by type. Tapping a row
        opens that FAZR point's detail sheet (v1.12.0). Checkmark circles
-       (v1.13.0) mark points found, like the phone rows. */
+       (v1.13.0) mark points found, like the phone rows.
+       Spoiler points (v1.15.0): hidden entirely with spoilers off — the
+       count line counts visible points only, so nothing hints that
+       points are hidden (no "33 of 36"). */
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.remove('hidden');
-    items = data.fazr.filter(f => fazrType === 'all' || f.type === fazrType);
-    count.textContent = items.length + ' of ' + data.fazr.length + ' FAZR points · ' + foundFazr.size + ' found';
+    const visibleFazr = data.fazr.filter(f => !noSpoilers || !f.spoiler);
+    items = visibleFazr.filter(f => fazrType === 'all' || f.type === fazrType);
+    const foundVisible = visibleFazr.filter(f => foundFazr.has(fazrKey(f))).length;
+    count.textContent = items.length + ' of ' + visibleFazr.length + ' FAZR points · ' + foundVisible + ' found';
     list.innerHTML = items.length ? items.map((f, i) => fazrItemHTML(f, ' data-i="' + i + '"')).join('') : '<div class="empty">No FAZR points match.</div>';
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
