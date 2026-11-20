@@ -197,7 +197,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.12.1';
+const APP_VERSION = '1.13.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -302,6 +302,18 @@ const FOUND_TEL_KEY = 'a9-found-telephones';
 let foundTelephones = new Set(JSON.parse(localStorage.getItem(FOUND_TEL_KEY) || '[]'));
 function saveFoundTelephones() { localStorage.setItem(FOUND_TEL_KEY, JSON.stringify([...foundTelephones])); }
 function telephoneKey(t) { return t.level + '|' + t.name + '|' + (t.description || ''); }
+/* FAZR points found (v1.13.0, Allen 2026-11-19): per point — several rooms
+   have multiple FAZR points, so the key carries room + type + description
+   (descriptions are distinct within a room). The one blank description
+   (Grayscale Swords) falls back to its index within the room+type group. */
+const FOUND_FAZR_KEY = 'a9-found-fazr';
+let foundFazr = new Set(JSON.parse(localStorage.getItem(FOUND_FAZR_KEY) || '[]'));
+function saveFoundFazr() { localStorage.setItem(FOUND_FAZR_KEY, JSON.stringify([...foundFazr])); }
+function fazrKey(f) {
+  if (f.description) return f.room + '|' + f.type + '|' + f.description;
+  const group = data.fazr.filter(x => x.room === f.room && x.type === f.type);
+  return f.room + '|' + f.type + '|#' + group.indexOf(f);
+}
 /* researcher profile (optional): agent name/handle + contact, stored on the
    phone; prefilled into every report form, and editable per-submission */
 const PROFILE_KEY = 'a9-profile';
@@ -481,7 +493,8 @@ function fazrMatches(f, needle) {
 }
 function fazrItemHTML(f, attrs) {
   const thumb = f.photo ? '<img class="thumb" src="' + esc(f.photo) + '" alt="" loading="lazy">' : '';
-  return '<div class="item"' + attrs + '>' + thumb +
+  const done = foundFazr.has(fazrKey(f));
+  return '<div class="item"' + attrs + '><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(fazrKey(f)) + '" aria-label="Mark found">✓</button>' + thumb +
     '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></div>' +
     '<div class="desc">' + fazrDescHTML(f) + '</div></div></div>';
 }
@@ -835,22 +848,32 @@ function telephoneSheet(t) {
    only, for now). The "Submit information" button appears only when the
    builder baked "RESEARCH NEEDED. Submit information." into the
    description (blank description + Research needed?=TRUE) — fazr.json
-   carries no research flag, so the baked text is the signal. */
+   carries no research flag, so the baked text is the signal.
+   "Mark found" button (v1.13.0): same as the telephone sheet's. */
 function fazrSheet(f) {
   const room = data.rooms.find(x => x.name === f.room);
   const photo = f.photo ? '<img class="photo" src="' + esc(f.photo) + '" alt="">' : '';
   const needsResearch = (f.description || '').indexOf('RESEARCH NEEDED') === 0;
   const floorMeta = room && room.level != null ? '<div class="meta">' + floorLabel(room.level) + '</div>' : '';
+  const done = foundFazr.has(fazrKey(f));
   openSheet(
     '<button class="titleLink" id="sheetRoom"><span>' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></span><span class="chev">›</span></button>' +
     floorMeta +
     photo +
     '<div class="desc">' + fazrDescHTML(f) + '</div>' +
     (needsResearch ? '<button class="transcriptBtn" id="sheetNote">Submit information</button>' : '') +
-    '<button class="close" id="sheetClose">Close</button>'
+    '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetFazrFound">' + (done ? '✓ Found' : 'Mark found') + '</button>' +
+    '<button class="close" id="sheetClose">Close</button></div>'
   , false, true);
   document.getElementById('sheetRoom').addEventListener('click', () => {
     if (room) roomSheet(room);
+  });
+  document.getElementById('sheetFazrFound').addEventListener('click', () => {
+    const k = fazrKey(f);
+    if (foundFazr.has(k)) foundFazr.delete(k); else foundFazr.add(k);
+    saveFoundFazr();
+    fazrSheet(f);
+    render();
   });
   const note = document.getElementById('sheetNote');
   if (note) note.addEventListener('click', () => openResearchNote('FAZR: ' + f.room + ' — ' + f.type));
@@ -1268,6 +1291,9 @@ function render() {
         } else if (kind === 'telephone') {
           if (foundTelephones.has(k)) foundTelephones.delete(k); else foundTelephones.add(k);
           saveFoundTelephones();
+        } else if (kind === 'fazr') {
+          if (foundFazr.has(k)) foundFazr.delete(k); else foundFazr.add(k);
+          saveFoundFazr();
         } else {
           if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
           saveFoundPhones();
@@ -1406,13 +1432,22 @@ function render() {
     /* FAZR points (v1.11.0): one row per point — room name + type badge +
        description, thumbnail where one exists (Mesmerite only, for now).
        The type filter row above the list filters by type. Tapping a row
-       opens that FAZR point's detail sheet (v1.12.0). No checklist — FAZR
-       points are reference, not a hunt. */
+       opens that FAZR point's detail sheet (v1.12.0). Checkmark circles
+       (v1.13.0) mark points found, like the phone rows. */
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.remove('hidden');
     items = data.fazr.filter(f => fazrType === 'all' || f.type === fazrType);
-    count.textContent = items.length + ' of ' + data.fazr.length + ' FAZR points';
+    count.textContent = items.length + ' of ' + data.fazr.length + ' FAZR points · ' + foundFazr.size + ' found';
     list.innerHTML = items.length ? items.map((f, i) => fazrItemHTML(f, ' data-i="' + i + '"')).join('') : '<div class="empty">No FAZR points match.</div>';
+    list.querySelectorAll('.check').forEach(b => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const k = b.dataset.k;
+        if (foundFazr.has(k)) foundFazr.delete(k); else foundFazr.add(k);
+        saveFoundFazr();
+        render();
+      });
+    });
     list.querySelectorAll('.item').forEach(el => {
       el.addEventListener('click', () => fazrSheet(items[+el.dataset.i]));
     });
