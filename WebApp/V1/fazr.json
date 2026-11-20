@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-19",
+  "generated": "2026-11-20",
   "source": "Atlas9 Data — FAZR",
   "count": 36,
   "fazr": [
@@ -193,28 +193,28 @@
       "photo": null
     },
     {
-      "room": "Theater Manager's Office",
+      "room": "Theater Manager’s Office",
       "type": "FAZR",
       "spoiler": true,
       "description": "hidden behind filing cabinet",
       "photo": null
     },
     {
-      "room": "Theater Manager's Office",
+      "room": "Theater Manager’s Office",
       "type": "INTERFAZE",
       "spoiler": false,
       "description": "INTERFAZE screen",
       "photo": null
     },
     {
-      "room": "Theater Manager's Office",
+      "room": "Theater Manager’s Office",
       "type": "Computer",
       "spoiler": false,
       "description": "manager's computer",
       "photo": null
     },
     {
-      "room": "Victor's Study",
+      "room": "Victor’s Study",
       "type": "FAZR",
       "spoiler": false,
       "description": "on the wall",

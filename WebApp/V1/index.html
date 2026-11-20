@@ -90,6 +90,8 @@
   .item .name { font-size: 18px; font-weight: bold; }
   .item .name .star { color: #e0a800; }
   .item .name .unconf { color: #e0a800; font-weight: normal; font-size: 14px; }
+  /* FAZR Dossier tab (v1.11.0): small type badge next to the room name. */
+  .item .fazrType { font-size: 12px; font-weight: normal; color: #e0a800; border: 1px solid #555; border-radius: 10px; padding: 2px 8px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
   .item .meta { color: #aaa; font-size: 14px; margin-top: 2px; }
   .item .desc { margin-top: 6px; font-size: 15px; line-height: 1.45; color: #ddd; }
   .item .desc:empty { display: none; }
@@ -156,6 +158,7 @@
     <button data-dossier="phones">Phones</button>
     <button data-dossier="numbers">Numbers</button>
     <button data-dossier="timeline">Timeline</button>
+    <button data-dossier="fazr">FAZR</button>
   </div>
   <input id="q" type="search" placeholder="Search…" autocomplete="off">
   <div class="filters" id="levelFilters">
@@ -164,14 +167,21 @@
     <button data-level="2">Floor 2</button>
     <button data-level="visited">✓ Visited</button>
   </div>
+  <div class="filters hidden" id="fazrTypeFilters">
+    <button data-fazrtype="all" class="on">All</button>
+    <button data-fazrtype="FAZR">FAZR</button>
+    <button data-fazrtype="Computer">Computer</button>
+    <button data-fazrtype="Movie Poster">Movie Poster</button>
+    <button data-fazrtype="INTERFAZE">INTERFAZE</button>
+  </div>
 </header>
 <div id="updateBar" style="display:none;background:#e0a800;color:#111;font-size:15px;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between"><span>A new version of the guide is available.</span><button id="updateBtn" style="font-size:15px;font-weight:bold;padding:6px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#e0a800;cursor:pointer;white-space:nowrap">Update</button></div>
 <div id="count"></div>
 <div id="list"></div>
 <div id="sheetWrap"><div id="sheet"></div></div>
-<footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
+<footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.11.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -186,6 +196,11 @@ let data = { rooms: [], people: [], phones: [], telephones: [], timeline: [], fa
 let tab = 'hunt';
 let dossier = 'rooms';
 let level = 'all';
+/* FAZR Dossier tab (v1.11.0): type filter state — 'all' or one of the four
+   types present in fazr.json (FAZR / Computer / Movie Poster / INTERFAZE).
+   Checkpoint and Portal do not exist in the data yet, so they get no
+   filter button. */
+let fazrType = 'all';
 const VISIT_KEY = 'a9-visited-rooms';
 let visited = new Set(JSON.parse(localStorage.getItem(VISIT_KEY) || '[]'));
 /* Film Reel Storage moved L1 -> L2 in the Template (v1.8.4 rooms swap) —
@@ -317,6 +332,7 @@ const q = document.getElementById('q');
 const list = document.getElementById('list');
 const count = document.getElementById('count');
 const levelFilters = document.getElementById('levelFilters');
+const fazrTypeFilters = document.getElementById('fazrTypeFilters');
 const dossierTabs = document.getElementById('dossierTabs');
 const spoilerBtn = document.getElementById('spoilerBtn');
 function setSpoilerBtn() {
@@ -432,6 +448,26 @@ function descFor(r) {
 function descText(r) {
   if (noSpoilers && r.spoiler) return '';
   return r.description || '';
+}
+/* FAZR Dossier tab (v1.11.0): one row per FAZR point. A spoiler point shows
+   the same placeholder as the room sheet's FAZR section with spoilers off;
+   the room name and type are public in both modes. A blank description
+   renders blank here — the builder already bakes "RESEARCH NEEDED. Submit
+   information." into the JSON description when Research needed?=TRUE, so
+   by the time the app sees it the rule is already applied. */
+function fazrDescHTML(f) {
+  if (noSpoilers && f.spoiler) return '<span class="spoilerHidden">FAZR hidden in no-spoilers mode.</span>';
+  return esc(f.description || '');
+}
+function fazrMatches(f, needle) {
+  const desc = (noSpoilers && f.spoiler) ? '' : (f.description || '');
+  return [f.room, f.type, desc].join(' ').toLowerCase().includes(needle);
+}
+function fazrItemHTML(f, attrs) {
+  const thumb = f.photo ? '<img class="thumb" src="' + esc(f.photo) + '" alt="" loading="lazy">' : '';
+  return '<div class="item"' + attrs + '>' + thumb +
+    '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></div>' +
+    '<div class="desc">' + fazrDescHTML(f) + '</div></div></div>';
 }
 
 const sheetWrap = document.getElementById('sheetWrap');
@@ -1073,6 +1109,7 @@ function render() {
   if (tab === 'hunt') {
     q.classList.add('hidden');
     levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.add('hidden');
     dossierTabs.classList.add('hidden');
     count.textContent = '';
     list.innerHTML = huntHTML();
@@ -1105,13 +1142,16 @@ function render() {
   }
   q.classList.remove('hidden');
   dossierTabs.classList.remove('hidden');
-  q.placeholder = 'Search rooms, people, phones, numbers…';
+  q.placeholder = 'Search rooms, people, phones, numbers, FAZR…';
   /* global search: a search term searches rooms + people + phones +
-     numbers together, grouped by type. With no term, show the current
-     sub-tab's list. A telephone's number is spoiler detail, so it is never
-     part of the search text — only its name and description are. */
+     numbers + FAZR points together, grouped by type. With no term, show
+     the current sub-tab's list. A telephone's number is spoiler detail, so
+     it is never part of the search text — only its name and description
+     are. A spoiler FAZR point's description is likewise not searchable
+     with spoilers off. */
   if (needle) {
     levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.add('hidden');
     const rm = data.rooms.filter(r => {
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
       else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
@@ -1120,7 +1160,8 @@ function render() {
     const pp = data.people.filter(p => [p.name, p.description].join(' ').toLowerCase().includes(needle));
     const tel = data.telephones.filter(t => [t.name, t.description].join(' ').toLowerCase().includes(needle));
     const ph = uniqueNumbers().filter(p => numberMatches(p, needle));
-    const total = rm.length + pp.length + tel.length + ph.length;
+    const fz = data.fazr.filter(f => (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
+    const total = rm.length + pp.length + tel.length + ph.length + fz.length;
     count.textContent = total + ' result' + (total === 1 ? '' : 's') + ' for “' + q.value.trim() + '”';
     let html = '';
     if (rm.length) {
@@ -1163,6 +1204,10 @@ function render() {
           numberRowHTML(p) + '</div>';
       }).join('');
     }
+    if (fz.length) {
+      html += '<div style="color:#e0a800;font-size:13px;font-weight:bold;padding:12px 0 0">FAZR</div>';
+      html += fz.map((f) => fazrItemHTML(f, ' data-kind="fazr" data-name="' + esc(f.room) + '"')).join('');
+    }
     list.innerHTML = html || '<div class="empty">Nothing matches.</div>';
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
@@ -1199,6 +1244,9 @@ function render() {
         } else if (kind === 'telephone') {
           const t = data.telephones.find(x => telephoneKey(x) === el.dataset.name);
           if (t) telephoneSheet(t);
+        } else if (kind === 'fazr') {
+          const r = data.rooms.find(x => x.name === el.dataset.name);
+          if (r) roomSheet(r);
         } else {
           const p = data.phones.find(x => x.number === el.dataset.name);
           if (p) phoneSheet(p);
@@ -1209,6 +1257,7 @@ function render() {
   }
   if (dossier === 'rooms') {
     levelFilters.classList.remove('hidden');
+    fazrTypeFilters.classList.add('hidden');
     items = data.rooms.filter(r => {
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
       else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
@@ -1241,6 +1290,7 @@ function render() {
     });
   } else if (dossier === 'people') {
     levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.add('hidden');
     items = data.people.filter(p => {
       if (!needle) return true;
       return [p.name, p.description].join(' ').toLowerCase().includes(needle);
@@ -1268,6 +1318,7 @@ function render() {
     });
   } else if (dossier === 'phones') {
     levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.add('hidden');
     items = data.telephones.filter(t => {
       if (!needle) return true;
       return [t.name, t.description].join(' ').toLowerCase().includes(needle);
@@ -1298,6 +1349,7 @@ function render() {
        spoiler mode. No checklist, no detail sheet; each row is the bold
        date lead followed by the event text, as in the Dossier. */
     levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.add('hidden');
     items = data.timeline.filter(t => {
       if (!needle) return true;
       return [t.date, t.event].join(' ').toLowerCase().includes(needle);
@@ -1306,8 +1358,27 @@ function render() {
     list.innerHTML = items.length ? items.map((t) => {
       return '<div class="item static"><div class="body"><div class="desc"><b>' + esc(t.date) + '</b> — ' + esc(t.event) + '</div></div></div>';
     }).join('') : '<div class="empty">No timeline entries match.</div>';
+  } else if (dossier === 'fazr') {
+    /* FAZR points (v1.11.0): one row per point — room name + type badge +
+       description, thumbnail where one exists (Mesmerite only, for now).
+       The type filter row above the list filters by type. Tapping a row
+       opens that room's detail sheet. No checklist — FAZR points are
+       reference, not a hunt. */
+    levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.remove('hidden');
+    items = data.fazr.filter(f => fazrType === 'all' || f.type === fazrType);
+    count.textContent = items.length + ' of ' + data.fazr.length + ' FAZR points';
+    list.innerHTML = items.length ? items.map((f, i) => fazrItemHTML(f, ' data-i="' + i + '"')).join('') : '<div class="empty">No FAZR points match.</div>';
+    list.querySelectorAll('.item').forEach(el => {
+      el.addEventListener('click', () => {
+        const f = items[+el.dataset.i];
+        const r = data.rooms.find(x => x.name === f.room);
+        if (r) roomSheet(r);
+      });
+    });
   } else {
     levelFilters.classList.add('hidden');
+    fazrTypeFilters.classList.add('hidden');
     items = uniqueNumbers().filter(p => {
       if (!needle) return true;
       return numberMatches(p, needle);
@@ -1378,6 +1449,16 @@ document.querySelectorAll('#levelFilters button').forEach(b => {
     document.querySelectorAll('#levelFilters button').forEach(x => x.classList.remove('on'));
     b.classList.add('on');
     level = b.dataset.level;
+    render();
+  });
+});
+/* FAZR type filter (v1.11.0): same pattern as the floor filter, scoped to
+   the FAZR tab. */
+document.querySelectorAll('#fazrTypeFilters button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#fazrTypeFilters button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    fazrType = b.dataset.fazrtype;
     render();
   });
 });
