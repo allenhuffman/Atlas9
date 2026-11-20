@@ -197,7 +197,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.13.0';
+const APP_VERSION = '1.14.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -521,8 +521,13 @@ function roomSheet(r) {
      are distinct in the sheet (Auditorium #9 Lower / Upper since v1.9.5),
      so the first match is the room. A name that matches no room is
      skipped with a console warning (stale sheet name), never a crash.
-     Rooms with no connections show no section. */
-  const conns = (r.connections || []).map(name => {
+     Rooms with no connections show no section.
+     Spoiler connections (v1.14.0): a room's Connections-Spoilers are
+     shown only with spoilers on — omitted entirely with spoilers off,
+     no placeholder, so nothing hints a hidden connection exists. */
+  const connNames = [...(r.connections || [])];
+  if (!noSpoilers) connNames.push(...(r.spoilerConnections || []));
+  const conns = connNames.map(name => {
     const target = data.rooms.find(x => x.name === name);
     if (!target) { console.warn('Connects to: no room named "' + name + '" (from "' + r.name + '")'); return null; }
     return target;
@@ -574,36 +579,70 @@ function roomSheet(r) {
   });
 }
 /* Wayfinder (v1.10.0, Allen 2026-11-19): directions between rooms.
-   BFS shortest path through the rooms connections graph, treated as
-   undirected (the 3 one-way asymmetries still route both ways).
+   BFS shortest path through the rooms connections graph.
+   Spoiler connections (v1.14.0): when spoilers are off the graph is
+   DIRECTIONAL — a room's public Connections are its outgoing edges only
+   (the 3 one-way sheet asymmetries route one way too), and its
+   Connections-Spoilers are not edges at all. When spoilers are on, the
+   spoiler edges are usable and every edge is added both ways (as before).
    Stairs/Elevator toggle picks which Level-0 connector type a floor
    change may use; Crawls toggle excludes the three crawl rooms.
-   No spoiler gating — every room can be found from other ways (Allen),
-   so any room is a valid destination and may appear in a route. */
+   Headshot Remixer is unreachable as a destination with spoilers off
+   (both its entrances are hidden) — that is expected; the no-route
+   message says to turn spoilers on. */
 const WF_STAIRS = ['Theater Stairs', 'Jazz Club Stairs', 'Scavengers Stairs', 'Stairs (Lobby/Starbot)'];
 const WF_ELEVATOR = ['Elevator (Lobby/Starbot)'];
 const WF_CRAWLS = ['Theater Crawl', 'Hypnotizer Crawl', 'Concession Crawl'];
 /* Wayfinder state is session-only (not persisted): the starting room, the
-   destination, and the two toggles (Stairs default, crawls on default). */
+   destination, and the two toggles (Stairs default, Crawls off default). */
 let wfFrom = null;
 let wfTo = null;
 let wfConnector = 'stairs';
 let wfCrawls = false;
 let wfGraph = null;
-function wfBuildGraph() {
-  wfGraph = new Map();
-  for (const r of data.rooms) wfGraph.set(r.name, new Set());
+function wfBuildGraph(spoilersOn) {
+  const g = new Map();
+  for (const r of data.rooms) g.set(r.name, new Set());
   for (const r of data.rooms) {
     for (const c of (r.connections || [])) {
-      if (!wfGraph.has(c)) continue;
-      wfGraph.get(r.name).add(c);
-      wfGraph.get(c).add(r.name);
+      if (!g.has(c)) continue;
+      g.get(r.name).add(c);
+      if (spoilersOn) g.get(c).add(r.name);
+    }
+    if (spoilersOn) {
+      for (const c of (r.spoilerConnections || [])) {
+        if (!g.has(c)) continue;
+        g.get(r.name).add(c);
+        g.get(c).add(r.name);
+      }
     }
   }
+  return g;
 }
-/* Returns { path } or { error: 'no-connector' | 'no-crawls' }. With crawls
-   on the graph is fully connected, so a failed BFS with crawls on can only
-   be the connector exclusion; with crawls off it is the crawls. */
+function wfBFS(graph, from, to, excluded) {
+  const prev = new Map([[from, null]]);
+  const q = [from];
+  while (q.length) {
+    const cur = q.shift();
+    for (const nb of graph.get(cur)) {
+      if (prev.has(nb) || excluded.has(nb)) continue;
+      prev.set(nb, cur);
+      if (nb === to) {
+        const path = [to];
+        let p = cur;
+        while (p !== null) { path.unshift(p); p = prev.get(p); }
+        return path;
+      }
+      q.push(nb);
+    }
+  }
+  return null;
+}
+/* Returns { path } or { error: 'no-connector' | 'no-crawls' | 'no-spoilers' }.
+   With crawls on the graph is fully connected, so a failed BFS with crawls
+   on can only be the connector exclusion; with crawls off it is the crawls.
+   With spoilers off a failed BFS is checked against the full (spoilers-on)
+   graph — if a route exists there, the spoiler exclusion is the blocker. */
 function wfFindRoute(from, to, connector, crawlsOn) {
   if (from === to) return { path: [from] };
   const excluded = new Set();
@@ -614,22 +653,9 @@ function wfFindRoute(from, to, connector, crawlsOn) {
     const crawlBlocked = !crawlsOn && (WF_CRAWLS.includes(from) || WF_CRAWLS.includes(to));
     return { error: crawlBlocked ? 'no-crawls' : 'no-connector' };
   }
-  const prev = new Map([[from, null]]);
-  const q = [from];
-  while (q.length) {
-    const cur = q.shift();
-    for (const nb of wfGraph.get(cur)) {
-      if (prev.has(nb) || excluded.has(nb)) continue;
-      prev.set(nb, cur);
-      if (nb === to) {
-        const path = [to];
-        let p = cur;
-        while (p !== null) { path.unshift(p); p = prev.get(p); }
-        return { path };
-      }
-      q.push(nb);
-    }
-  }
+  const path = wfBFS(wfGraph, from, to, excluded);
+  if (path) return { path };
+  if (noSpoilers && wfBFS(wfBuildGraph(true), from, to, excluded)) return { error: 'no-spoilers' };
   return { error: crawlsOn ? 'no-connector' : 'no-crawls' };
 }
 function wfRouteSummary(path) {
@@ -686,7 +712,7 @@ function wfAttachDest() {
   });
 }
 function renderWayfinder() {
-  if (!wfGraph) wfBuildGraph();
+  wfGraph = wfBuildGraph(!noSpoilers);
   const from = wfFrom;
   let routeHTML = '';
   if (wfTo) {
@@ -716,6 +742,8 @@ function renderWayfinder() {
     } else {
       const msg = route.error === 'no-crawls'
         ? 'No route without crawls — turn crawls on to see it.'
+        : route.error === 'no-spoilers'
+        ? 'No route with spoilers off — turn spoilers on to see it.'
         : 'No route using ' + (wfConnector === 'stairs' ? 'Stairs' : 'Elevator') + ' — try the other.';
       routeHTML = '<div class="connHead">Route to ' + esc(wfTo.name) + '</div><div class="empty">' + msg + '</div>';
     }

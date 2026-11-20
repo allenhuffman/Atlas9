@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-19",
+  "generated": "2026-11-20",
   "source": "Atlas9 Data — Rooms",
   "count": 59,
   "rooms": [
@@ -95,8 +95,10 @@
       "spoilerDetail": "Secret door into Speakereasy.",
       "connections": [
         "Sapphire Jazz Club Balcony",
-        "Speakereasy",
         "Theater Upper"
+      ],
+      "spoilerConnections": [
+        "Speakereasy"
       ]
     },
     {
@@ -233,11 +235,13 @@
       "spoiler": false,
       "spoilerDetail": "Hidden door behind soda machine. Trash can screams. Refrigerator makes noise when opened.",
       "connections": [
-        "Headshot Remixer",
         "Theater Manager’s Office",
         "Sapphire Stroll",
         "Atlas9 Storage",
         "Lobby"
+      ],
+      "spoilerConnections": [
+        "Headshot Remixer"
       ]
     },
     {
@@ -417,7 +421,8 @@
       "spoiler": false,
       "connections": [
         "Hypnotizer Room, The",
-        "Round Mirrors"
+        "Round Mirrors",
+        "Sapphire Jazz Club"
       ]
     },
     {
@@ -542,7 +547,8 @@
         "Sapphire Stroll",
         "Atlas9 Storage",
         "Concession Crawl",
-        "Jazz Club Stairs"
+        "Jazz Club Stairs",
+        "Mesmerite, The"
       ]
     },
     {
@@ -727,7 +733,9 @@
       "spoilerDetail": "Secret crawl under the table.",
       "connections": [
         "Concession Caverns",
-        "Sapphire Jazz Club",
+        "Sapphire Jazz Club"
+      ],
+      "spoilerConnections": [
         "Hypnotizer Crawl"
       ]
     },
@@ -874,8 +882,10 @@
       "spoiler": true,
       "spoilerDetail": "passage through the back of the booth leads to the Headshot Remixer; a FAZR is hidden inside",
       "connections": [
-        "Headshot Remixer",
         "Arcade"
+      ],
+      "spoilerConnections": [
+        "Headshot Remixer"
       ]
     },
     {
