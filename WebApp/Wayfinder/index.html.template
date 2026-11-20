@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Unofficial Atlas9 Wayfinder</title>
+<meta name="apple-mobile-web-app-title" content="A9 Wayfinder">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  * { box-sizing: border-box; }
+  button { touch-action: manipulation; font-family: inherit; }
+  /* Bottom room (v1.3.3): the page must be tall enough for the route
+     box to scroll to the top of the screen. Without it the browser
+     stops at the bottom of the document and the box lands mid-screen,
+     so a new destination looks like nothing moved. A full viewport of
+     space after the footer guarantees the box top can always reach
+     the top. */
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #111; color: #eee; padding-bottom: 100vh; padding-bottom: 100svh; }
+  header { position: -webkit-sticky; position: sticky; top: 0; background: #111; padding: 12px 14px 8px; border-bottom: 1px solid #333; z-index: 2; }
+  h1 { margin: 0; font-size: 22px; }
+  /* Header buttons (v1.3.0): same flex row + pill style as the Field
+     Guide's Profile/Spoilers — the title wraps beside them on a
+     narrow phone instead of running underneath. */
+  .toprow { display: flex; align-items: center; justify-content: space-between; }
+  .topbtns { display: flex; gap: 6px; flex-shrink: 0; margin-left: 8px; }
+  #configBtn, #spoilerBtn { font-size: 13px; padding: 5px 10px; border-radius: 20px; border: 1px solid #555; background: #222; color: #ccc; cursor: pointer; }
+  #spoilerBtn.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  /* Header icon buttons (v1.4.0): Share and Report are icons, not
+     pills — same border/background as the pills, just a glyph. */
+  .iconBtn { font-size: 13px; padding: 5px 8px; border-radius: 20px; border: 1px solid #555; background: #222; color: #ccc; cursor: pointer; line-height: 0; }
+  .iconBtn svg { width: 16px; height: 16px; vertical-align: middle; }
+  h1 small { font-weight: normal; color: #999; font-size: 14px; }
+  #ver { color: #e0a800; font-size: 13px; font-weight: normal; margin-left: 6px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
+  main { padding: 12px 14px 30px; max-width: 640px; margin: 0 auto; }
+  h2 { font-size: 15px; color: #ccc; margin: 18px 0 8px; }
+  .big { display: block; width: 100%; font-size: 18px; padding: 14px 12px; border-radius: 10px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; text-align: left; }
+  .big .meta { display: block; font-size: 14px; color: #aaa; margin-top: 2px; }
+  .big.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  .big.on .meta { color: #333; }
+  .big:disabled { opacity: 0.45; cursor: default; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid .big { text-align: center; padding: 18px 8px; }
+  .hint { color: #888; font-size: 14px; margin-top: 8px; line-height: 1.5; }
+  .searchWrap { position: relative; display: block; }
+  .searchWrap input { width: 100%; font-size: 18px; padding: 10px 38px 10px 12px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; }
+  .searchWrap input::placeholder { color: #888; }
+  .searchClear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: #999; font-size: 20px; cursor: pointer; padding: 4px 10px; }
+  .searchClear.hidden { display: none; }
+  .picker { margin-top: 10px; border: 1px solid #444; border-radius: 10px; background: #1c1c1c; padding: 6px 12px 12px; }
+  .picker.hidden { display: none; }
+  .connHead { margin-top: 14px; font-size: 15px; font-weight: bold; color: #ccc; }
+  .row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 2px; background: none; border: none; border-bottom: 1px solid #2a2a2a; color: #eee; font-size: 17px; text-align: left; cursor: pointer; }
+  .row .body { flex: 1; min-width: 0; }
+  /* room description under the name (v1.1.0): shows why a search
+     matched, so "bar" can be recognised without knowing the room.
+     Name and description are inline spans by default, so they run
+     together without a gap — both must be block to sit on their
+     own lines (v1.1.1 fix). */
+  .row .name { display: block; }
+  .row .desc { display: block; font-size: 14px; color: #aaa; margin-top: 2px; line-height: 1.4; }
+  /* spoiler detail line (v1.3.0): shown under a room's description
+     only while Spoilers are on, in gold so it reads as hidden info. */
+  .row .desc.spoiler { color: #e0a800; }
+  /* second-tier shortcut row (v1.3.0): chips under the category grid,
+     Nearest first, then each specific target. */
+  #tier2 { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  #tier2.hidden { display: none; }
+  #tier2 button { font-size: 16px; padding: 9px 14px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
+  #tier2 button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  /* third-tier room list (v1.4.2, FAZR only): every room holding the
+     tapped FAZR type, under tier 2. Same chip style and gold .on. */
+  #tier3 { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  #tier3.hidden { display: none; }
+  #tier3 button { font-size: 16px; padding: 9px 14px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
+  #tier3 button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
+  .tierHead { width: 100%; color: #aaa; font-size: 13px; margin: 2px 0 0; }
+  .row .meta { color: #aaa; font-size: 14px; white-space: nowrap; }
+  .row .chev { color: #aaa; font-size: 18px; }
+  .row.current { color: #e0a800; }
+  #route { margin-top: 16px; border: 1px solid #e0a800; border-radius: 10px; background: #1c1c1c; padding: 12px 14px; }
+  #route.hidden { display: none; }
+  /* Report nudge (v1.4.6): gold heads-up line under the problem
+     kinds; hidden until a pick contradicts what the app lists. */
+  #reportNudge.hidden { display: none; }
+  #route h2 { margin-top: 0; }
+  /* Numbered route steps (v1.3.2): a gold circle with the stop number;
+     the row you are standing in gets a dot instead of a number. The
+     step name flexes so the floor meta sits at the right edge. */
+  .row .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #e0a800; color: #111; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+  .row .stepnum.start { background: #333; color: #e0a800; }
+  /* Checked-off steps (v1.3.4): the number stays, the name strikes
+     through and greys out, and a gold check marks the row done — so a
+     walked step stays visible for backtracking instead of vanishing. */
+  .row.done .name { text-decoration: line-through; color: #888; }
+  .row.done .meta { color: #666; }
+  .row.done .stepnum { background: #333; color: #999; }
+  .row .doneMark { color: #e0a800; font-size: 18px; font-weight: bold; }
+  #route .row .name { flex: 1; }
+  .summary { font-size: 16px; color: #ddd; margin: 4px 0 8px; }
+  .via { text-align: center; color: #e0a800; font-size: 14px; padding: 10px 0 2px; }
+  /* Door direction (Via note) under a route step: which door to go
+     through to reach that room. Only rendered when a note exists. */
+  .viaNote { font-size: 14px; color: #e0a800; padding: 2px 2px 10px; line-height: 1.45; }
+  .empty { color: #888; padding: 14px 0; text-align: center; line-height: 1.5; }
+  .clearBtn { display: block; width: 100%; margin-top: 14px; font-size: 16px; padding: 11px 0; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; cursor: pointer; }
+  /* Room picker selects (v1.4.3 Report, v1.4.4 everywhere): full-width
+     dark selects to match the sheet and the pickers. */
+  .roomSel { width: 100%; font-size: 16px; padding: 10px; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; }
+  footer { color: #777; font-size: 12px; line-height: 1.6; padding: 0 14px 24px; max-width: 640px; margin: 0 auto; }
+  footer button { background: none; border: none; color: #e0a800; font-size: 12px; padding: 0; cursor: pointer; text-decoration: underline; }
+  /* detail sheet (ported from the Atlas9 Guide): About and Install open here. */
+  #sheetWrap { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 10; display: none; align-items: flex-end; justify-content: center; }
+  #sheetWrap.open { display: flex; }
+  #sheet { background: #1c1c1c; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 10px 18px 28px; }
+  /* Top close (v1.4.9): a sticky row holding an × at the top-right,
+     so a long sheet can be closed from the top without scrolling to
+     the Close button at the bottom. The row sticks to the top of
+     the sheet's scroll area with the sheet's own background, so
+     content slides under it. (v1.4.10: the grab handle is gone —
+     it was decoration promising a swipe-down the app doesn't have.) */
+  #sheet .sheetTop { position: sticky; top: 0; z-index: 2; display: flex; align-items: flex-start; justify-content: flex-end; background: #1c1c1c; }
+  #sheet .sheetX { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid #555; background: #2a2a2a; color: #eee; font-size: 17px; line-height: 1; cursor: pointer; }
+  #sheet h2 { margin: 0 0 4px; font-size: 22px; }
+  #sheet .close { display: block; width: 100%; margin-top: 18px; font-size: 16px; padding: 11px 0; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; cursor: pointer; }
+  #sheet.large { max-height: 95vh; padding: 16px 20px 32px; }
+  #sheet .aboutBody { margin-top: 12px; font-size: 16px; line-height: 1.6; color: #ddd; }
+  #sheet .aboutBody p { margin: 0 0 12px; }
+  /* Release Notes (v1.3.1): section heading + version lists in About. */
+  #sheet .aboutBody h3 { margin: 18px 0 6px; font-size: 17px; color: #fff; }
+  #sheet .aboutBody ul { margin: 0 0 12px; padding-left: 20px; }
+  #sheet .aboutBody li { margin-bottom: 4px; }
+  #sheet .steps { margin: 0 0 12px 20px; line-height: 1.6; }
+  #sheet .steps li { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div id="updateBar" style="position:fixed;top:0;left:0;right:0;z-index:5;display:none;background:#e0a800;color:#111;font-size:15px;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between"><span style="flex:1">A new version of Unofficial Atlas9 Wayfinder is available.</span><button id="updateBtn" style="font-size:15px;font-weight:bold;padding:6px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#e0a800;cursor:pointer;white-space:nowrap">Update</button><button id="updateDismissBtn" style="font-size:15px;font-weight:bold;padding:6px 14px;border-radius:8px;border:1px solid #111;background:transparent;color:#111;cursor:pointer;white-space:nowrap">Dismiss</button></div>
+<header>
+  <div class="toprow">
+    <h1>Unofficial Atlas9 Wayfinder <button id="ver" aria-label="Release notes"></button></h1>
+    <div class="topbtns">
+      <button id="configBtn">Config</button>
+      <button id="spoilerBtn" aria-pressed="false">Spoilers</button>
+      <button id="reportBtn" class="iconBtn" aria-label="Report a problem" title="Report a problem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-2.5 4L18 12H5"/></svg></button>
+      <button id="shareBtn" class="iconBtn" aria-label="Share this app" title="Share this app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 8l5-5 5 5"/><path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/></svg></button>
+    </div>
+  </div>
+</header>
+<main>
+  <h2>I am in…</h2>
+  <button class="big" id="fromBtn"></button>
+  <div class="picker hidden" id="fromPicker">
+    <p><select id="fromRoomSel" class="roomSel"></select></p>
+    <span class="searchWrap" style="margin-top:8px"><input id="fromSearch" type="search" placeholder="Search rooms…" autocomplete="off"><button id="fromClear" class="searchClear hidden" aria-label="Clear search">✕</button></span>
+    <div id="fromList"></div>
+  </div>
+
+  <h2>How do I get to…</h2>
+  <div class="grid" id="catGrid">
+    <button class="big" data-cat="elevator">Elevator</button>
+    <button class="big" data-cat="exit">Exit</button>
+    <button class="big" data-cat="fazr">FAZR</button>
+    <button class="big" data-cat="food">Food</button>
+    <button class="big" data-cat="restroom">Restroom</button>
+    <button class="big" data-cat="stairs">Stairs</button>
+  </div>
+  <div id="tier2" class="hidden"></div>
+  <div id="tier3" class="hidden"></div>
+
+  <h2>Or go to a room…</h2>
+  <p><select id="destRoomSel" class="roomSel"></select></p>
+  <span class="searchWrap"><input id="destSearch" type="search" placeholder="Search rooms…" autocomplete="off"><button id="destClear" class="searchClear hidden" aria-label="Clear search">✕</button></span>
+  <div id="destList"></div>
+
+  <div id="route" class="hidden"></div>
+</main>
+<footer>Routes use public connections only — no hidden doors — unless Spoilers are on. Some rooms and routes only appear with Spoilers on. Crawls are left out unless you turn them on in Config. Data from the Atlas9 Data spreadsheet, same rooms file as the Unofficial Atlas9 Field Guide (fan-made, not affiliated with Atlas9). <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
+<div id="sheetWrap"><div id="sheet"></div></div>
+<script>
+const APP_VERSION = '1.4.21';
+/* Release notes (v1.3.1): one short list per version, newest first in
+   About's Release Notes section. The What's new sheet shows only the
+   current version's list. Keep each note to one plain sentence — and
+   never name a hidden room or route in a note a spoilers-off user
+   could read. */
+const WHATS_NEW = {
+  '1.4.21': [
+    'The update bar now pops up over the title bar instead of pushing the page down, with Update and Dismiss buttons — dismissing hides it until a newer version appears.',
+  ],
+  '1.4.20': [
+    'Removed the direct Mesmerite–Jazz Club link — the route now goes through the Hypnotizer Room.',
+  ],
+  '1.4.19': [
+    'The update bar now sits right under the app name, in the fixed header.',
+    'Room pickers and search results are now one A–Z list. Config has a "Separate rooms by floor" switch if you prefer the Floor 1 / Floor 2 groups.',
+  ],
+  '1.4.18': [
+    '"I am in" and "Or go to a room" now end with "…" like "How do I get to…".',
+    'The shortcut buttons are now alphabetical: Elevator, Exit, FAZR, Food, Restroom, Stairs.',
+  ],
+  '1.4.17': [
+    'Your starting room and Config settings are now saved on this phone — Spoilers still starts off every time.',
+  ],
+  '1.4.16': [
+    'Config now says settings are not saved anywhere — they reset each time the app closes.',
+  ],
+  '1.4.15': [
+    'The Release Notes sheet now has a Check for updates button.',
+  ],
+  '1.4.14': [
+    'Added the Hypnotizer Room to Sapphire Jazz Club connection.',
+    'Letter Hallway description added.',
+  ],
+  '1.4.13': [
+    'Added Letter Hallway, between StarBot and Theater Upper.',
+  ],
+  '1.4.12': [
+    'Fixed sheets opening scrolled down.',
+  ],
+  '1.4.11': [
+    'Choosing a destination now clears the "Or go to a room" search, so stale results stop pushing the route down.',
+    'Sheets always open at the top now.',
+  ],
+  '1.4.10': [
+    'Grab bar removed from sheets — the × at the top-right is the way to close.',
+    'Tapping the version number opens the release notes.',
+  ],
+  '1.4.9': [
+    'Every sheet now has a × at the top-right, so you can close from the top without scrolling to the bottom.',
+  ],
+  '1.4.8': [
+    'Release notes corrected.',
+  ],
+  '1.4.7': [
+    'Removing Key of Color (not a real room).',
+  ],
+  '1.4.6': [
+    'Report now gives you a heads-up if the report does not match what the app lists — for example, saying a Computer is "there but not listed" in a room that already lists one. It never blocks you: a room can hold a second object of the same type.',
+  ],
+  '1.4.5': [
+    'After you pick a room in "I am in", the button stays at the top of the screen so you can see the room you picked — before, the view jumped down to the shortcut buttons.',
+    'The route now sits at the bottom of the screen, after "Or go to a room", so the page reads top to bottom: where you are, what you want, which room, then the route.',
+  ],
+  '1.4.4': [
+    'Every room chooser is now a picker followed by a search: "I am in", "Or go to a room" and Report all start with the room picker, and the long list of every room is gone — type in the search box to find a room by name.',
+    'The shortcut heading is now "How do I get to…" — the old heading claimed the route was the quickest, which the app cannot know.',
+  ],
+  '1.4.3': [
+    'The route box button is now Close: it clears the route, puts all the shortcut buttons back to normal, and takes you back to the top.',
+    'The header is shorter — the “Wayfinding only — no dossier.” line is gone.',
+    'Report now starts with a room picker, so you can report something in a different room than the one you are standing in.',
+  ],
+  '1.4.2': [
+    'Elevator and Exit now stay highlighted in gold when you tap them, like the other buttons — before, they routed without showing they were selected.',
+    'Tapping a FAZR type now lists every room holding one, so you can pick the exact room instead of just the nearest.',
+  ],
+  '1.4.1': [
+    'A category tap now highlights only Nearest, even when the nearest room is also listed as a specific option — before, both lit up at once.',
+  ],
+  '1.4.0': [
+    'Tapping a category now routes to the nearest one right away — Stairs, Food, Restroom and FAZR show the nearest route at once, and the sub-buttons refine it from there.',
+    'New Share icon up top: a QR code, a link to copy, or your phone’s share sheet.',
+    'New flag icon up top: report a FAZR, Computer, Movie Poster or INTERFAZE that is listed but not there, or there but not listed. It opens the report form pre-filled.',
+    'Tapping FAZR no longer highlights both Nearest and FAZR at once — they are separate options now.',
+  ],
+  '1.3.7': [
+    'The sub-option you tapped now stays highlighted in gold, like the category button above it, so you can see at a glance which option the route is showing. Picking a room from the search list clears the highlight.',
+  ],
+  '1.3.6': [
+    'Tapping a shortcut no longer scrolls the route to the top — the route appears right below the buttons, so you can tap through the options and glance at each one. Picking a room from the search list still scrolls to the route.',
+  ],
+  '1.3.5': [
+    'The six shortcut buttons now fit in two rows of three, with Food/Drink shortened to Food.',
+    'The What’s new sheet no longer has its own “Got it” button — the sheet’s Close button does the job.',
+  ],
+  '1.3.4': [
+    'Route steps now stay on screen as you walk: steps you have reached keep their numbers and are marked checked, and tapping one takes you back there.',
+    'Tapping a step no longer jumps the screen — the list stays where it is. Only picking a new destination moves the route to the top.',
+    'The six shortcut buttons are now just their names: Stairs, Elevator, Food/Drink, Restroom, Exit, FAZR.',
+  ],
+  '1.3.3': [
+    'Tapping a step now always lands the top of the route box at the top of the screen — the page has room to scroll there now.',
+  ],
+  '1.3.2': [
+    'Route steps are now numbered, so you can see which stop you are on while you walk.',
+    'Tapping a step now lands the route title at the top of the screen instead of jumping under the header.',
+    'Route steps no longer show a chevron — the number shows the order.',
+  ],
+  '1.3.1': [
+    'Spoilers no longer names anything hidden — About and the footer now just say it enables hidden routes and hidden items.',
+    'Config has a new Include crawls switch: routes can use the crawl passages. Off by default, just for fun.',
+    'Release Notes now live at the bottom of About, and a What’s new sheet appears once after each update.',
+  ],
+  '1.3.0': [
+    'Shortcuts are now two-tier: pick a category, then Nearest or a specific target — including all four staircases and all five FAZR types.',
+    'New Spoilers button up top. It enables hidden routes and hidden items, and it is off on every launch.',
+  ],
+  '1.2.0': [
+    'Config button up top, with Avoid stairs inside it.',
+    'New shortcuts: Food/Drink and INTERFAZE.',
+  ],
+};
+const RELEASE_VERSIONS = ['1.4.21', '1.4.20', '1.4.19', '1.4.18', '1.4.17', '1.4.16', '1.4.15', '1.4.14', '1.4.13', '1.4.12', '1.4.11', '1.4.10', '1.4.9', '1.4.8', '1.4.7', '1.4.6', '1.4.5', '1.4.4', '1.4.3', '1.4.2', '1.4.1', '1.4.0', '1.3.7', '1.3.6', '1.3.5', '1.3.4', '1.3.3', '1.3.2', '1.3.1', '1.3.0', '1.2.0'];
+document.getElementById('ver').textContent = 'v' + APP_VERSION;
+/* Version tap (v1.4.10): tapping the version number in the header
+   opens the release notes in their own sheet. */
+document.getElementById('ver').addEventListener('click', openReleaseNotes);
+/* Check for updates (shared by About and Release Notes, v1.4.15):
+   fetches version.json; a newer version closes the sheet and shows the
+   gold update bar, otherwise the message says you're current. */
+function runUpdateCheck(msgEl) {
+  msgEl.textContent = 'Checking…';
+  fetch('version.json?v=' + Date.now()).then(r => r.json()).then(v => {
+    const latest = (v && v.version) || '';
+    if (latest && latest !== APP_VERSION) {
+      msgEl.textContent = '';
+      closeSheet();
+      dismissedUpdateVersion = '';
+      updateBar.style.display = 'flex';
+    } else {
+      msgEl.textContent = 'You are on the latest version (v' + APP_VERSION + ').';
+    }
+  }).catch(() => { msgEl.textContent = 'Could not check — are you online?'; });
+}
+function openReleaseNotes() {
+  openSheet('<h2>Release Notes</h2><div class="aboutBody">' +
+    '<p><button id="notesCheckUpdate" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Check for updates</button> <span id="notesUpdateMsg" style="color:#999;font-size:14px"></span></p>' +
+    releaseNotesHTML() + '</div>', true);
+  document.getElementById('notesCheckUpdate').addEventListener('click', () => runUpdateCheck(document.getElementById('notesUpdateMsg')));
+}
+/* Rooms data — injected by build.py from atlas9-app-v2/rooms.json
+   (v1.17.2). Public connections are always used; spoilerConnections
+   and spoilerDetail are only read while Spoilers are on (v1.3.0) —
+   spoilers off never touches them, so the default graph stays
+   leak-proof. */
+const ROOMS = __ROOMS_JSON__;
+/* FAZR points — injected by build.py from the Guide's fazr.json:
+   {room, type, spoiler} only, no point descriptions. Per-type room
+   lists are derived from these, filtering spoiler points out unless
+   Spoilers are on. */
+const FAZR_POINTS = __FAZR_POINTS_JSON__;
+/* Door directions — injected by build.py from directions.csv (Via column).
+   Keys are "Room A|Room B" as written in the CSV; lookup tries both
+   orders, so one note covers the pair either way. Empty object until
+   Allen supplies the notes; routes render exactly as before with none. */
+const DIRECTIONS = __DIRECTIONS_JSON__;
+
+// __PURE_START__
+/* Routing — shared with the Atlas9 Guide's Wayfinder (v1.10.0, v1.14.0),
+   trimmed for this app: no spoilers toggle (public graph only, always),
+   no crawls toggle (crawls always excluded), no logged passages.
+   The graph is DIRECTIONAL with spoilers off: a room's public
+   Connections are its outgoing edges only. A hidden door's reverse
+   direction is a spoiler connection, so it is never an edge here.
+   STAIRS / ELEVATOR are the Level-0 connector rooms. */
+const STAIRS = ['Theater Stairs', 'Jazz Club Stairs', 'Scavengers Stairs', 'Stairs (Lobby/Starbot)'];
+const ELEVATOR = 'Elevator (Lobby/Starbot)';
+const CRAWLS = ['Theater Crawl', 'Hypnotizer Crawl', 'Concession Crawl'];
+const RESTROOMS = ['Restrooms (Lobby)', 'Restroom (Starbot)', 'Restroom (Splice Bros. Pizza)'];
+const EXIT = 'Containment Zone';
+/* Food/drink (v1.2.0): the rooms that serve it — the Lobby snack bar,
+   the Speakereasy bar, and Splice Bros Pizza & Pub. Curated like
+   RESTROOMS: a judgment call, not a keyword match (the Containment
+   Zone mentions Splice Bros. Pizza in its description but serves
+   nothing itself). */
+const FOOD_DRINK = ['Concessions (Lobby)', 'Speakereasy', 'Splice Bros Pizza & Pub'];
+/* Pickable rooms: real rooms on Floor 1 or 2. Excluded: the Level-0
+   connectors and the 3 crawls. Headshot Remixer is excluded too —
+   reachable only through hidden doors, so no public route to it
+   exists — unless Spoilers are on (v1.3.0), when it becomes pickable. */
+const PICKABLE = ROOMS.filter(r => (r.level === 1 || r.level === 2) && !CRAWLS.includes(r.name) && r.name !== 'Headshot Remixer');
+function pickableList(spoilersOn, includeCrawls) {
+  return ROOMS.filter(r => (r.level === 1 || r.level === 2) && (includeCrawls || !CRAWLS.includes(r.name)) && (spoilersOn || r.name !== 'Headshot Remixer'));
+}
+/* FAZR types in tier-2 order (v1.3.0, Allen: Portal included). */
+const FAZR_TYPES = ['FAZR', 'Movie Poster', 'Computer', 'INTERFAZE', 'FAZR-Portal'];
+/* Rooms holding a FAZR point of `type` ('ANY' = any type). Spoiler
+   points are filtered out unless Spoilers are on, and Headshot
+   Remixer is left out unless Spoilers are on — it holds a public FAZR
+   point but no public route reaches it. Sorted for stable lists. */
+function fazrRooms(type, spoilersOn) {
+  const rooms = new Set();
+  for (const p of FAZR_POINTS) {
+    if (type !== 'ANY' && p.type !== type) continue;
+    if (!spoilersOn && p.spoiler) continue;
+    if (p.room === 'Headshot Remixer' && !spoilersOn) continue;
+    rooms.add(p.room);
+  }
+  return [...rooms].sort();
+}
+/* Is the step from -> to a hidden-door edge? Used to mark route steps
+   while Spoilers are on. */
+const ROOM_BY_NAME = new Map(ROOMS.map(r => [r.name, r]));
+function isSpoilerEdge(from, to) {
+  const r = ROOM_BY_NAME.get(from);
+  return !!(r && (r.spoilerConnections || []).includes(to));
+}
+function buildGraph(spoilersOn) {
+  const g = new Map();
+  for (const r of ROOMS) g.set(r.name, new Set());
+  for (const r of ROOMS) {
+    for (const c of (r.connections || [])) {
+      if (g.has(c)) g.get(r.name).add(c);
+    }
+    /* Spoiler connections are edges only while Spoilers are on —
+       spoilers off never reads them. Crawls are never edges in
+       either graph: a crawl is not a walkable route. */
+    if (spoilersOn) {
+      for (const c of (r.spoilerConnections || [])) {
+        if (g.has(c)) g.get(r.name).add(c);
+      }
+    }
+  }
+  return g;
+}
+const GRAPH_PUBLIC = buildGraph(false);
+const GRAPH_SPOILER = buildGraph(true);
+function graphFor(spoilersOn) { return spoilersOn ? GRAPH_SPOILER : GRAPH_PUBLIC; }
+function excludedNodes(avoidStairs, includeCrawls) {
+  const ex = new Set();
+  /* Crawls are excluded unless the Config switch says otherwise
+     (v1.3.1, just for fun). A crawl is never a walkable route by
+     default — tight passages, not rooms. */
+  if (!includeCrawls) CRAWLS.forEach(n => ex.add(n));
+  if (avoidStairs) STAIRS.forEach(n => ex.add(n));
+  return ex;
+}
+/* BFS from `from` to `to` on the directional graph, skipping excluded
+   nodes. Returns the path (array of room names) or null. */
+function findRoute(from, to, avoidStairs, spoilersOn, includeCrawls) {
+  if (from === to) return [from];
+  const ex = excludedNodes(avoidStairs, includeCrawls);
+  if (ex.has(from) || ex.has(to)) return null;
+  const graph = graphFor(spoilersOn);
+  const prev = new Map([[from, null]]);
+  const q = [from];
+  while (q.length) {
+    const cur = q.shift();
+    for (const nb of (graph.get(cur) || [])) {
+      if (prev.has(nb) || ex.has(nb)) continue;
+      prev.set(nb, cur);
+      if (nb === to) {
+        const path = [to];
+        let p = cur;
+        while (p !== null) { path.unshift(p); p = prev.get(p); }
+        return path;
+      }
+      q.push(nb);
+    }
+  }
+  return null;
+}
+/* BFS from `from` to the nearest room in `targets` (fewest stops).
+   Returns the path or null. */
+function findNearest(from, targets, avoidStairs, spoilersOn, includeCrawls) {
+  const targetSet = new Set(targets);
+  if (targetSet.has(from)) return [from];
+  const ex = excludedNodes(avoidStairs, includeCrawls);
+  const graph = graphFor(spoilersOn);
+  const prev = new Map([[from, null]]);
+  const q = [from];
+  while (q.length) {
+    const cur = q.shift();
+    for (const nb of (graph.get(cur) || [])) {
+      if (prev.has(nb) || ex.has(nb)) continue;
+      prev.set(nb, cur);
+      if (targetSet.has(nb)) {
+        const path = [nb];
+        let p = cur;
+        while (p !== null) { path.unshift(p); p = prev.get(p); }
+        return path;
+      }
+      q.push(nb);
+    }
+  }
+  return null;
+}
+function floorLabel(l) {
+  if (l == null) return 'Floor ?';
+  if (l === 0) return 'Floor 1 & 2';
+  return 'Floor ' + l;
+}
+/* Row meta for a room: crawls read "Crawl" instead of a floor (v1.3.1). */
+function roomMeta(r) {
+  return CRAWLS.includes(r.name) ? 'Crawl' : floorLabel(r.level);
+}
+function routeSummary(path) {
+  const byName = new Map(ROOMS.map(r => [r.name, r]));
+  const stops = path.length - 1;
+  if (stops === 0) return "You're already there.";
+  let s = stops + (stops === 1 ? ' stop' : ' stops');
+  const startF = byName.get(path[0]).level;
+  const endF = byName.get(path[path.length - 1]).level;
+  const conns = [];
+  for (const n of path) {
+    const r = byName.get(n);
+    if (r.level === 0 && !conns.includes(n)) conns.push(n);
+  }
+  if (startF !== 0 && endF !== 0 && startF !== endF) {
+    s += ' · Floor ' + startF + ' → Floor ' + endF;
+    if (conns.length) s += ' via ' + conns.join(' + ');
+  } else if (conns.length) {
+    s += ' · via ' + conns.join(' + ');
+  } else if (startF !== 0) {
+    s += ' · Floor ' + startF;
+  }
+  return s;
+}
+/* Room search (v1.1.0): match the typed text against name, public
+   description and artists — so "bar" or "desk" finds a room even when
+   you don't know its name. Same haystack as the Guide's room search.
+   The spoiler detail joins the haystack only while Spoilers are on
+   (v1.3.0), so "soda machine" finds the Break Room only then. */
+function roomMatches(r, needle, spoilersOn) {
+  const n = (needle || '').trim().toLowerCase();
+  if (!n) return true;
+  const hay = [r.name, r.description || '', (r.artists || []).join(' '), spoilersOn ? (r.spoilerDetail || '') : ''].join(' ').toLowerCase();
+  return hay.includes(n);
+}
+/* Door direction for one step: the Via note for the connection
+   from -> to, or null when no note exists yet. `map` is the embedded
+   DIRECTIONS object; it is a parameter (not a global read) so the
+   routing test can check the lookup with a sample map. */
+function viaNote(map, from, to) {
+  if (!map) return null;
+  return map[from + '|' + to] || map[to + '|' + from] || null;
+}
+// __PURE_END__
+
+/* --- UI --- */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+const byName = new Map(ROOMS.map(r => [r.name, r]));
+let fromName = 'Lobby';
+let destName = null;
+let destLabel = '';
+let avoidStairs = false;
+/* Separate rooms by floor (v1.4.19, Allen): off by default — the room
+   pickers and search results are one A–Z list. On, they group under
+   Floor 1 and Floor 2 again. Saved with the other settings. */
+let separateFloors = false;
+/* Include crawls (v1.3.1, Allen: just for fun): saved on this phone
+   (v1.4.17) and restored on launch. While on, the three crawl passages
+   count as rooms. */
+let includeCrawls = false;
+/* Spoilers (v1.3.0): in-memory only, like the Field Guide — off on
+   every launch, never remembered. While on, hidden doors are edges,
+   Headshot Remixer is pickable, and spoiler FAZR points join the lists. */
+let spoilersOn = false;
+/* Saved settings (v1.4.17, Allen): Avoid stairs, Include crawls and the
+   starting room are saved on this phone only (localStorage) and restored
+   on launch. Spoilers are deliberately NOT saved — off on every launch,
+   never remembered. */
+const SETTINGS_KEY = 'a9nav-settings';
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    if (typeof s.avoidStairs === 'boolean') avoidStairs = s.avoidStairs;
+    if (typeof s.includeCrawls === 'boolean') includeCrawls = s.includeCrawls;
+    if (typeof s.separateFloors === 'boolean') separateFloors = s.separateFloors;
+    if (typeof s.fromName === 'string' && byName.has(s.fromName)) fromName = s.fromName;
+  } catch (e) { /* a bad stored value just means defaults */ }
+}
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ avoidStairs, includeCrawls, separateFloors, fromName })); } catch (e) {}
+}
+loadSettings();
+let activeCat = null;
+/* Route walk state (v1.3.4): the route is the full path from where you
+   started to the destination, and it stays on screen while you walk it.
+   Steps you have reached keep their numbers and are marked checked;
+   tapping one moves "I am in" back there. routeStart is the room the
+   route began in; routePath is the computed full path. A new
+   destination — or a move to a room off the route, or a toggle change
+   that breaks the route — starts a fresh route from "I am in". */
+let routeStart = null;
+let routePath = null;
+/* Recompute the stored route from its start (after a toggle change),
+   keeping the walked history when the new route still passes through
+   "I am in"; otherwise start a fresh route from "I am in". */
+function refreshRoute() {
+  if (!destName) return;
+  if (routeStart !== null) {
+    const p = findRoute(routeStart, destName, avoidStairs, spoilersOn, includeCrawls);
+    if (p && p.includes(fromName)) { routePath = p; return; }
+  }
+  routePath = findRoute(fromName, destName, avoidStairs, spoilersOn, includeCrawls);
+  routeStart = fromName;
+}
+
+const fromBtn = document.getElementById('fromBtn');
+const routeBox = document.getElementById('route');
+
+function renderFrom() {
+  const r = byName.get(fromName);
+  fromBtn.innerHTML = esc(fromName) + ' <span class="meta">' + esc(roomMeta(r)) + ' · tap to change</span>';
+  saveSettings();
+}
+/* If the room you are standing in stops being available — Spoilers
+   turned off while in Headshot Remixer, crawls turned off while in a
+   crawl — drop back to the Lobby instead of stranding the app on a
+   room it can no longer show or route from. */
+function sanitizeFrom() {
+  if (!spoilersOn && fromName === 'Headshot Remixer') fromName = 'Lobby';
+  if (!includeCrawls && CRAWLS.includes(fromName)) fromName = 'Lobby';
+  renderFrom();
+}
+/* Avoid stairs state (v1.2.0): the toggle lives in the Config sheet,
+   not on the main screen. This keeps the main screen in sync — the
+   Stairs shortcut disables while Avoid stairs is on, and the sheet's
+   own toggle/hint update if it is open. Safe to call before the sheet
+   exists (the sheet elements are guarded). */
+function renderAvoid() {
+  const stairsBtn = document.querySelector('#catGrid [data-cat="stairs"]');
+  /* The button is just its label now (v1.3.4, no subtitles) — while
+     Avoid stairs is on it is simply disabled; the Config sheet's hint
+     says how to turn it back off. */
+  stairsBtn.disabled = avoidStairs;
+  /* If Avoid stairs comes on while the Stairs tier is open, close it —
+     its options are all stairs. */
+  if (avoidStairs && activeCat === 'stairs') clearTier2();
+  const cfgBtn = document.getElementById('configAvoidBtn');
+  if (cfgBtn) {
+    cfgBtn.textContent = 'Avoid stairs: ' + (avoidStairs ? 'On' : 'Off');
+    cfgBtn.classList.toggle('on', avoidStairs);
+    cfgBtn.setAttribute('aria-pressed', String(avoidStairs));
+  }
+  const cfgHint = document.getElementById('configAvoidHint');
+  if (cfgHint) cfgHint.textContent = avoidStairs
+    ? 'Stairs excluded — routes use the elevator only.'
+    : 'Stairs and elevator both allowed — the shortest route wins.';
+  if (destName) { refreshRoute(); renderRoute(); }
+  saveSettings();
+}
+function roomListHTML(needle, excludeName, onCurrent) {
+  const cands = pickableList(spoilersOn, includeCrawls).filter(r => r.name !== excludeName && roomMatches(r, needle, spoilersOn));
+  let html = '';
+  /* v1.4.19, Allen: one A–Z list unless Config separates by floor. */
+  const groups = separateFloors ? [[1, 'Floor 1'], [2, 'Floor 2']] : [[null, '']];
+  for (const [lvl, label] of groups) {
+    const items = lvl === null ? cands.slice().sort((a, b) => a.name.localeCompare(b.name)) : cands.filter(r => r.level === lvl);
+    if (!items.length) continue;
+    if (label) html += '<div class="connHead">' + label + '</div>';
+    html += items.map(r => {
+      /* The "RESEARCH NEEDED" placeholder is not a description — hide
+         it so the row doesn't show working-note text. */
+      const desc = (r.description && !r.description.startsWith('RESEARCH NEEDED')) ? r.description : '';
+      /* Spoiler detail shows only while Spoilers are on, in gold. */
+      const sdet = (spoilersOn && r.spoilerDetail) ? r.spoilerDetail : '';
+      return '<button class="row' + (onCurrent && r.name === fromName ? ' current' : '') + '" data-room="' + esc(r.name) + '">' +
+        '<span class="body"><span class="name">' + esc(r.name) + '</span>' +
+        (desc ? '<span class="desc">' + esc(desc) + '</span>' : '') +
+        (sdet ? '<span class="desc spoiler">' + esc(sdet) + '</span>' : '') + '</span>' +
+        '<span class="meta">' + esc(roomMeta(r)) + '</span><span class="chev">›</span></button>';
+    }).join('');
+  }
+  return html || '<div class="empty">No rooms match.</div>';
+}
+/* Scroll the route title to the top of the visible screen (v1.3.2):
+   scrollIntoView alone lands the title UNDER the sticky header, so
+   the title reads as jumped off the top. Measure the header's real
+   height at tap time (it wraps on narrow phones) and offset by it.
+   Used only when a new destination is picked (v1.3.4) — step taps no
+   longer scroll, so a long route stays where it is while you walk. */
+function scrollRouteIntoView() {
+  const headerH = (document.querySelector('header') || { offsetHeight: 0 }).offsetHeight;
+  const top = routeBox.getBoundingClientRect().top + window.scrollY - headerH - 8;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+/* After picking a room in "I am in" (v1.4.5): the picker closing
+   collapses the page and the view pops down to the shortcut buttons,
+   so scroll the "I am in" button back to the top of the visible
+   screen, below the sticky header, so the room you picked stays
+   visible. Same measured smooth scroll the route box uses. */
+function scrollFromIntoView() {
+  const headerH = (document.querySelector('header') || { offsetHeight: 0 }).offsetHeight;
+  const top = fromBtn.getBoundingClientRect().top + window.scrollY - headerH - 8;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+function renderRoute() {
+  if (!destName) { routeBox.classList.add('hidden'); routeBox.innerHTML = ''; routePath = null; routeStart = null; return; }
+  /* Keep the walked route: reuse the stored path while it still runs
+     to this destination and still contains "I am in". Otherwise
+     compute a fresh route from "I am in". */
+  if (!routePath || routeStart === null || routePath[routePath.length - 1] !== destName || !routePath.includes(fromName)) {
+    routePath = findRoute(fromName, destName, avoidStairs, spoilersOn, includeCrawls);
+    routeStart = fromName;
+  }
+  const path = routePath;
+  let body = '';
+  if (path) {
+    const cur = path.indexOf(fromName);
+    let steps = '';
+    let lastFloored = null;
+    let pendingConn = null;
+    let prevName = null;
+    for (let i = 0; i < path.length; i++) {
+      const name = path[i];
+      const r = byName.get(name);
+      if (r.level === 0) {
+        pendingConn = name;
+      } else {
+        if (pendingConn && lastFloored !== null && r.level !== lastFloored) {
+          steps += '<div class="via">— via ' + esc(pendingConn) + ' —</div>';
+        }
+        pendingConn = null;
+        lastFloored = r.level;
+      }
+      /* Step numbers (v1.3.2, v1.3.4): the row you are standing in
+         gets a dot; each other row keeps its stop number, so the last
+         number matches the "N stops" count and the numbers never
+         change as you walk. Rows you have passed are marked done —
+         number kept, name struck through, gold check — and stay on
+         screen, so tapping one takes you back there. The start row,
+         once passed, shows a check in its badge (it never had a
+         number). The chevron is gone from steps — it implied "go
+         onward", the wrong idea; the number shows the order. Picker
+         rows keep their chevron: there it means "tap to choose this
+         room". */
+      const done = i < cur;
+      const isCurrent = i === cur;
+      const stepNum = isCurrent ? '•' : (i === 0 ? '✓' : String(i));
+      steps += '<button class="row' + (done ? ' done' : '') + (isCurrent ? ' current' : '') + '" data-step="' + esc(name) + '"><span class="stepnum' + (isCurrent ? ' start' : '') + '">' + stepNum + '</span><span class="name">' + esc(name) + '</span>' +
+        '<span class="meta">' + esc(roomMeta(r)) + '</span>' + (done && i > 0 ? '<span class="doneMark">✓</span>' : '') + '</button>';
+      /* Hidden-door step (v1.3.0): while Spoilers are on, mark a step
+         that arrived through a hidden door, so the route itself shows
+         which door was secret. */
+      if (prevName && spoilersOn && isSpoilerEdge(prevName, name)) {
+        steps += '<div class="viaNote">Hidden door</div>';
+      }
+      /* Door direction into this room, when one is on file for the
+         connection just walked (prevName -> name). The note is a
+         complete phrase, e.g. "through the double doors by the box
+         office" — shown verbatim. */
+      if (prevName) {
+        const note = viaNote(DIRECTIONS, prevName, name);
+        if (note) steps += '<div class="viaNote">' + esc(note) + '</div>';
+      }
+      prevName = name;
+    }
+    /* The count is the stops still to go (v1.3.4) — routeSummary on
+       the remaining path, so arriving reads "You're already there." */
+    body = '<div class="summary">' + esc(routeSummary(path.slice(cur))) + '</div>' + steps +
+      '<div class="hint">Tap a step to move “I am in” there as you walk. Tap a checked step to go back.</div>';
+  } else {
+    body = '<div class="empty">' + (avoidStairs
+      ? 'No route without stairs — try turning Avoid stairs off in Config.'
+      : 'No public route — this way uses a crawl or a hidden door.') + '</div>';
+  }
+  routeBox.innerHTML = '<h2>Route to ' + esc(destLabel) + '</h2>' + body +
+    '<button class="clearBtn" id="closeRoute">Close</button>';
+  routeBox.classList.remove('hidden');
+  /* Close (v1.4.3): a true clear — the route goes, every shortcut
+     button goes back to its default, and the page goes back to the
+     top. "I am in" stays where you arrived. */
+  document.getElementById('closeRoute').addEventListener('click', () => {
+    destName = null; destLabel = ''; renderRoute(); renderDestSel(); clearTier2(); window.scrollTo(0, 0);
+  });
+  routeBox.querySelectorAll('[data-step]').forEach(b => {
+    b.addEventListener('click', () => {
+      const name = b.dataset.step;
+      if (byName.get(name).level === 0) return; /* connectors aren't rooms to stand in */
+      fromName = name;
+      renderFrom();
+      renderDestSel();
+      renderDestList();
+      renderRoute();
+      /* No scroll on a step tap (v1.3.4): the list stays where it is,
+         so a long route doesn't jump back to the top. Only picking a
+         new destination scrolls the route box to the top. */
+    });
+  });
+}
+/* setDestination(name, label, scroll): scroll defaults to scrolling —
+   the room-search pick scrolls the route to the top because the route
+   sits above the search list. Shortcut picks (grid + tier 2) pass
+   false (v1.3.6): the route appears right below the buttons, so the
+   user can tap through sub-options and glance at each route without
+   the screen jumping. */
+/* Room <select> options (v1.4.4): every room chooser is a ring picker
+   followed by a search. Options are grouped Floor 1 / Floor 2, in
+   pickable order; `excludeName` leaves a room out (the destination
+   picker leaves out the room you are standing in, like its list). */
+function roomOptions(excludeName) {
+  const cands = pickableList(spoilersOn, includeCrawls).filter(r => r.name !== excludeName);
+  /* v1.4.19, Allen: one A–Z list unless Config separates by floor. */
+  if (!separateFloors) {
+    return cands.slice().sort((a, b) => a.name.localeCompare(b.name)).map(r => '<option value="' + esc(r.name) + '">' + esc(r.name) + '</option>').join('');
+  }
+  let html = '';
+  for (const [lvl, label] of [[1, 'Floor 1'], [2, 'Floor 2']]) {
+    const items = cands.filter(r => r.level === lvl);
+    if (!items.length) continue;
+    html += '<optgroup label="' + label + '">' + items.map(r => '<option value="' + esc(r.name) + '">' + esc(r.name) + '</option>').join('') + '</optgroup>';
+  }
+  return html;
+}
+/* Rebuild the two main-screen room pickers (v1.4.4). The "I am in"
+   picker shows the current room; the destination picker shows the
+   current destination, or its "Choose a room…" placeholder when
+   there is none. */
+function renderFromSel() {
+  const sel = document.getElementById('fromRoomSel');
+  sel.innerHTML = roomOptions(null);
+  sel.value = fromName;
+}
+function renderDestSel() {
+  const sel = document.getElementById('destRoomSel');
+  sel.innerHTML = '<option value="">Choose a room…</option>' + roomOptions(fromName);
+  sel.value = destName || '';
+}
+function setDestination(name, label, scroll) {
+  destName = name;
+  destLabel = label;
+  /* v1.4.11: choosing a destination clears the "Or go to a room"
+     search — stale results sat above the route box and pushed it
+     down after the user moved on (e.g. searched "Office", then
+     tapped Restroom). Every setDestination call site is a fresh
+     destination choice, so this is the single choke point. */
+  document.getElementById('destSearch').value = '';
+  document.getElementById('destClear').classList.add('hidden');
+  renderDestList();
+  renderRoute();
+  renderDestSel();
+  markTier2();
+  if (scroll !== false) scrollRouteIntoView();
+}
+function renderDestList() {
+  const q = document.getElementById('destSearch').value;
+  /* The long list is gone (v1.4.4) — the picker above covers
+     browsing, so an empty search shows only a hint. */
+  if (!q.trim()) {
+    document.getElementById('destList').innerHTML = '<div class="hint">Type to search rooms.</div>';
+    return;
+  }
+  document.getElementById('destList').innerHTML = roomListHTML(q, fromName, false);
+  document.querySelectorAll('#destList [data-room]').forEach(b => {
+    b.addEventListener('click', () => setDestination(b.dataset.room, b.dataset.room));
+  });
+}
+function renderFromList() {
+  const q = document.getElementById('fromSearch').value;
+  /* The long list is gone (v1.4.4) — the picker above covers
+     browsing, so an empty search shows only a hint. */
+  if (!q.trim()) {
+    document.getElementById('fromList').innerHTML = '<div class="hint">Type to search rooms.</div>';
+    return;
+  }
+  document.getElementById('fromList').innerHTML = roomListHTML(q, null, true);
+  document.querySelectorAll('#fromList [data-room]').forEach(b => {
+    b.addEventListener('click', () => {
+      fromName = b.dataset.room;
+      renderFrom();
+      renderFromSel();
+      renderFromList();
+      renderDestSel();
+      renderDestList();
+      if (destName) renderRoute();
+      document.getElementById('fromPicker').classList.add('hidden');
+      scrollFromIntoView();
+    });
+  });
+}
+function wireSearch(inputId, clearId, render) {
+  const input = document.getElementById(inputId);
+  const clear = document.getElementById(clearId);
+  function sync() { clear.classList.toggle('hidden', !input.value); }
+  input.addEventListener('input', () => { sync(); render(); });
+  clear.addEventListener('click', () => { input.value = ''; sync(); render(); input.focus(); });
+  sync();
+}
+fromBtn.addEventListener('click', () => {
+  renderFromSel();
+  document.getElementById('fromPicker').classList.toggle('hidden');
+});
+/* The two main-screen room pickers (v1.4.4): picking from the ring
+   does what tapping a search row did. */
+document.getElementById('fromRoomSel').addEventListener('change', (e) => {
+  fromName = e.target.value;
+  renderFrom();
+  renderFromSel();
+  renderFromList();
+  renderDestSel();
+  renderDestList();
+  if (destName) renderRoute();
+  document.getElementById('fromPicker').classList.add('hidden');
+  scrollFromIntoView();
+});
+document.getElementById('destRoomSel').addEventListener('change', (e) => {
+  if (!e.target.value) return;
+  setDestination(e.target.value, e.target.value);
+});
+
+/* --- Two-tier shortcuts (v1.3.0) --- */
+/* Tier 1 is the category grid. Elevator and Exit have a single target
+   each, so they route at once — no second tier for them. The rest open
+   tier 2 below the grid: Nearest first, then each specific target.
+   FAZR's tier 2 lists types (Portal included, Allen's call); tapping a
+   type routes to the nearest room holding one. */
+const tier2Box = document.getElementById('tier2');
+let tier2Opts = [];
+const tier3Box = document.getElementById('tier3');
+/* tier3Idx: index into tier2Opts of the FAZR type whose room list is
+   open at tier 3, or null. */
+let tier3Idx = null;
+/* markTier2 (v1.3.7): the tier-2 button that produced the current
+   destination shows the same gold .on state as the tier-1 buttons,
+   so you can see at a glance which sub-option you are looking at.
+   Derived from destName/destLabel, so it self-corrects whenever the
+   destination changes — a room-search pick clears it, a fresh
+   tier-2 tap sets it. */
+function markTier2() {
+  /* Nearest-default (v1.4.1): a nearest route's destination is also
+     one of the specific options (nearest stairs from the Lobby IS
+     Stairs (Lobby/Starbot)), so without this the gold would land on
+     both — the same double-highlight the FAZR fix just cured. A route
+     that came from a Nearest option lights only Nearest; a route to a
+     specific room lights only that room. */
+  const fromNearest = tier2Opts.some(o => !o.dest && destLabel && destLabel.indexOf(o.prefix + ' (') === 0);
+  tier2Box.querySelectorAll('[data-tier]').forEach(b => {
+    const o = tier2Opts[+b.dataset.tier];
+    if (!o) { b.classList.remove('on'); return; }
+    /* Third level (v1.4.2): a FAZR type stays gold while its room
+       list is open, like a category stays gold while its tier 2 is
+       open. */
+    const on = o.dest
+      ? destName === o.dest && !fromNearest
+      : (!!destLabel && destLabel.indexOf(o.prefix + ' (') === 0) || +b.dataset.tier === tier3Idx;
+    b.classList.toggle('on', on);
+  });
+  markTier3();
+}
+function markTier3() {
+  /* Third level (v1.4.2): a room is gold only when the route came
+     from tapping that room — a nearest route leaves the list dark,
+     the same rule as the tier-2 specifics (v1.4.1). */
+  const fromNearest = tier2Opts.some(o => !o.dest && destLabel && destLabel.indexOf(o.prefix + ' (') === 0);
+  tier3Box.querySelectorAll('[data-tier3]').forEach(b => {
+    b.classList.toggle('on', destName === b.dataset.tier3 && !fromNearest);
+  });
+}
+function tier2Options(cat) {
+  const nearest = (targets, prefix) => ({ label: 'Nearest', targets, prefix });
+  switch (cat) {
+    case 'stairs':
+      return [nearest(STAIRS, 'Nearest stairs'),
+        ...STAIRS.map(n => ({ label: n, dest: n }))];
+    case 'food':
+      return [nearest(FOOD_DRINK, 'Nearest food/drink'),
+        ...FOOD_DRINK.map(n => ({ label: n, dest: n }))];
+    case 'restroom':
+      return [nearest(RESTROOMS, 'Nearest restroom'),
+        ...RESTROOMS.map(n => ({ label: n, dest: n }))];
+    case 'fazr':
+      return [nearest(fazrRooms('ANY', spoilersOn), 'Nearest FAZR point'),
+        ...FAZR_TYPES.map(t => ({ label: t, targets: fazrRooms(t, spoilersOn), prefix: 'Nearest ' + t }))];
+  }
+  return [];
+}
+function clearTier2() {
+  clearTier3();
+  activeCat = null;
+  tier2Box.classList.add('hidden');
+  tier2Box.innerHTML = '';
+  document.querySelectorAll('#catGrid .big').forEach(b => b.classList.remove('on'));
+}
+/* Third level (v1.4.2, FAZR only): tapping a FAZR type lists every
+   room holding one, so you can pick the exact room instead of the
+   nearest. The type tap still routes to the nearest first (v1.4.0);
+   the list sits underneath for refining. */
+function renderTier3(idx) {
+  tier3Idx = idx;
+  const o = tier2Opts[idx];
+  const head = o.label === 'Nearest' ? 'All FAZR rooms' : o.label + ' rooms';
+  tier3Box.innerHTML = '<div class="tierHead">' + esc(head) + '</div>' +
+    o.targets.map(r => '<button data-tier3="' + esc(r) + '">' + esc(r) + '</button>').join('');
+  tier3Box.classList.remove('hidden');
+  tier3Box.querySelectorAll('[data-tier3]').forEach(b => {
+    b.addEventListener('click', () => setDestination(b.dataset.tier3, b.dataset.tier3, false));
+  });
+  markTier2();
+}
+function clearTier3() {
+  tier3Idx = null;
+  tier3Box.classList.add('hidden');
+  tier3Box.innerHTML = '';
+}
+/* routeTierOpt (v1.4.0): one tier-2 option, Nearest or specific —
+   the tier-2 tap handler and the category tap (Nearest-default) share
+   it, so both route the same way. */
+function routeTierOpt(o) {
+  if (o.dest) { setDestination(o.dest, o.dest, false); return; }
+  const p = findNearest(fromName, o.targets, avoidStairs, spoilersOn, includeCrawls);
+  if (p) setDestination(p[p.length - 1], o.prefix + ' (' + p[p.length - 1] + ')', false);
+}
+function renderTier2(cat) {
+  clearTier3();
+  activeCat = cat;
+  document.querySelectorAll('#catGrid .big').forEach(b => b.classList.toggle('on', b.dataset.cat === cat));
+  const opts = tier2Opts = tier2Options(cat);
+  tier2Box.innerHTML = opts.map((o, i) => '<button data-tier="' + i + '">' + esc(o.label) + '</button>').join('');
+  tier2Box.classList.remove('hidden');
+  tier2Box.querySelectorAll('[data-tier]').forEach(b => {
+    b.addEventListener('click', () => {
+      const o = opts[+b.dataset.tier];
+      routeTierOpt(o);
+      /* Third level (v1.4.2, FAZR only): tapping a FAZR type also
+         lists every room of that type underneath, so you can pick the
+         exact room instead of the nearest. The other categories
+         already list every option at tier 2. */
+      if (activeCat === 'fazr' && o.targets) renderTier3(+b.dataset.tier);
+    });
+  });
+  markTier2();
+}
+document.querySelectorAll('#catGrid [data-cat]').forEach(b => {
+  b.addEventListener('click', () => {
+    const cat = b.dataset.cat;
+    if (cat === 'elevator') {
+      clearTier2();
+      /* Selected feedback (v1.4.2): any selected button should be
+         gold — Elevator and Exit never were, so a tap gave no
+         feedback that it was selected. */
+      b.classList.add('on');
+      const p = findNearest(fromName, [ELEVATOR], avoidStairs, spoilersOn, includeCrawls);
+      if (p) setDestination(p[p.length - 1], 'Nearest elevator', false);
+      return;
+    }
+    if (cat === 'exit') {
+      clearTier2();
+      b.classList.add('on');
+      setDestination(EXIT, 'Exit (Containment Zone)', false);
+      return;
+    }
+    if (activeCat === cat) { clearTier2(); return; }
+    renderTier2(cat);
+    /* Nearest-default (v1.4.0): a multi-choice category routes to
+       its nearest right away, with Nearest gold — the sub-buttons
+       refine it from there. */
+    routeTierOpt(tier2Opts[0]);
+  });
+});
+
+/* --- Spoilers toggle (v1.3.0) --- */
+/* Same pill + gold-on style as the Field Guide. Off on every launch,
+   never remembered. Turning it on re-renders the lists and any shown
+   route, since the graph itself changes. */
+const spoilerBtn = document.getElementById('spoilerBtn');
+function renderSpoilers() {
+  spoilerBtn.classList.toggle('on', spoilersOn);
+  spoilerBtn.setAttribute('aria-pressed', String(spoilersOn));
+  sanitizeFrom();
+  renderFromSel();
+  renderFromList();
+  renderDestSel();
+  renderDestList();
+  if (destName) { refreshRoute(); renderRoute(); }
+  if (activeCat === 'fazr') {
+    /* Third level (v1.4.2): the room lists depend on Spoilers, so
+       re-open the open type's list with fresh targets. */
+    const keep3 = tier3Idx;
+    renderTier2('fazr');
+    if (keep3 !== null) renderTier3(keep3);
+  }
+}
+spoilerBtn.addEventListener('click', () => {
+  spoilersOn = !spoilersOn;
+  renderSpoilers();
+});
+
+/* --- Share + Report (v1.4.0) --- */
+/* Share (Allen, 2026-11-20): an icon, not a pill — the standard share
+   glyph — in the header next to Config/Spoilers. The sheet has a QR
+   code for the app, a link to copy, and the phone's share sheet. The
+   QR is a data URI embedded by build.py, so the app stays one
+   self-contained file. */
+const SHARE_URL = 'https://parkhopping.com/a9nav/';
+const SHARE_QR = '__SHARE_QR__';
+function shareHTML() {
+  return '<h2>Share A9 Wayfinder</h2>' +
+    '<div class="aboutBody">' +
+    '<p style="text-align:center"><img src="' + SHARE_QR + '" alt="QR code for A9 Wayfinder" style="width:200px;height:200px"></p>' +
+    '<p style="text-align:center">' + SHARE_URL + '</p>' +
+    '<p><button class="big" id="shareCopyBtn">Copy link</button></p>' +
+    '<p><button class="big" id="shareNativeBtn">Share…</button></p>' +
+    '</div>';
+}
+function openShare() {
+  openSheet(shareHTML(), true);
+  const copyBtn = document.getElementById('shareCopyBtn');
+  copyBtn.addEventListener('click', () => {
+    const done = () => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy link'; }, 1500); };
+    const fallbackCopy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = SHARE_URL;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (err) { /* the link stays on screen */ }
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(SHARE_URL).then(done).catch(fallbackCopy);
+    } else { fallbackCopy(); }
+  });
+  const nativeBtn = document.getElementById('shareNativeBtn');
+  if (navigator.share) {
+    nativeBtn.addEventListener('click', () => { navigator.share({ title: 'Unofficial Atlas9 Wayfinder', url: SHARE_URL }).catch(() => {}); });
+  } else { nativeBtn.style.display = 'none'; }
+}
+document.getElementById('shareBtn').addEventListener('click', openShare);
+
+/* Report (Allen, 2026-11-20): a small flag icon in the sticky header,
+   always visible mid-walk. The sheet is tap-only — no typing in the
+   app (typing details here would be wasted: the form opens next and
+   the details get typed once, there). Item type defaults to the
+   current destination's type when it is a findable type; problem kind
+   must be picked; the room comes from the sheet's own room picker
+   (v1.4.3), defaulting to "I am in". The button opens the Guide's
+   research form pre-filled
+   (type → about, room → where, problem kind → found). Responses go to
+   Allen for review; nothing writes to the sheet or the app. */
+const RESEARCH_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSceMVSAV7Ftea5aQto59eDOZGeZrIZKFcddHl3MkiY3V77pGA/viewform';
+const RESEARCH_FORM_ENTRY = { about: '2144553325', found: '1939760705', where: '828332630' };
+const REPORT_KINDS = ['Listed here but not actually there', 'There but not listed'];
+let reportType = 'FAZR';
+let reportKind = '';
+let reportRoom = '';
+/* First item type recorded for a room (v1.4.3): the default type when
+   the Report room changes. A room with nothing recorded falls back
+   to FAZR. */
+function firstTypeForRoom(room) {
+  const pts = FAZR_POINTS.filter(p => p.room === room);
+  return pts.length ? pts[0].type : 'FAZR';
+}
+function defaultReportType() {
+  for (const t of ['Movie Poster', 'Computer', 'INTERFAZE', 'FAZR-Portal']) {
+    if (destLabel && destLabel.indexOf('Nearest ' + t + ' (') === 0) return t;
+  }
+  if (destLabel && destLabel.indexOf('Nearest FAZR') === 0) return 'FAZR';
+  return firstTypeForRoom(reportRoom);
+}
+function reportHTML() {
+  return '<h2>Report a problem</h2>' +
+    '<div class="aboutBody">' +
+    '<p>Something wrong or missing — a FAZR, Computer, Movie Poster or INTERFAZE that has moved or is not listed. Pick the room, then what it is and what is wrong, then the report form opens pre-filled. Nothing is saved here.</p>' +
+    '<p><strong>Room</strong></p>' +
+    '<p><select id="reportRoomSel" class="roomSel">' + pickableList(spoilersOn, includeCrawls).map(r => '<option value="' + esc(r.name) + '"' + (r.name === reportRoom ? ' selected' : '') + '>' + esc(r.name) + '</option>').join('') + '</select></p>' +
+    '<span class="searchWrap"><input id="reportSearch" type="search" placeholder="Search rooms…" autocomplete="off"></span>' +
+    '<div id="reportList"></div>' +
+    '<p><strong>What is it?</strong></p>' +
+    FAZR_TYPES.map(t => '<p><button class="big reportType' + (t === reportType ? ' on' : '') + '" data-type="' + t + '">' + t + '</button></p>').join('') +
+    '<p><strong>What is wrong?</strong></p>' +
+    REPORT_KINDS.map(k => '<p><button class="big reportKind" data-kind="' + esc(k) + '">' + k + '</button></p>').join('') +
+    '<p id="reportNudge" class="viaNote hidden"></p>' +
+    '<p><button class="big" id="reportOpenBtn" disabled>Open the report form</button></p>' +
+    '</div>';
+}
+function openReport() {
+  reportRoom = fromName;
+  reportType = defaultReportType();
+  reportKind = '';
+  openSheet(reportHTML(), true);
+  const openBtn = document.getElementById('reportOpenBtn');
+  const syncOpen = () => { openBtn.disabled = !reportKind; };
+  /* Nudge (v1.4.6): the kinds only make sense one way round for a
+     given room + type — "There but not listed" means the room does
+     not list one, "Listed here but not actually there" means it
+     does. If the pick contradicts what the app lists, say so — but
+     never block it, since a room can hold a second object of the
+     same type that is not listed yet. */
+  const nudgeEl = document.getElementById('reportNudge');
+  const syncNudge = () => {
+    let msg = '';
+    if (reportKind && reportType) {
+      const listed = fazrRooms(reportType, spoilersOn).indexOf(reportRoom) >= 0;
+      if (reportKind === 'There but not listed' && listed) msg = 'Heads up: this room already lists a ' + reportType + ' — is this a different one?';
+      if (reportKind === 'Listed here but not actually there' && !listed) msg = 'Heads up: this room does not list a ' + reportType + ' — is that the right type?';
+    }
+    nudgeEl.textContent = msg;
+    nudgeEl.classList.toggle('hidden', !msg);
+  };
+  document.getElementById('reportRoomSel').addEventListener('change', (e) => {
+    reportRoom = e.target.value;
+    reportType = firstTypeForRoom(reportRoom);
+    sheet.querySelectorAll('.reportType').forEach(x => x.classList.toggle('on', x.dataset.type === reportType));
+    syncNudge();
+  });
+  /* Report room search (v1.4.4): the picker covers browsing, the
+     search covers finding a room by name. A tap sets the picker. */
+  const reportSearch = document.getElementById('reportSearch');
+  const renderReportList = () => {
+    const q = reportSearch.value.trim();
+    const list = document.getElementById('reportList');
+    if (!q) { list.innerHTML = ''; return; }
+    list.innerHTML = roomListHTML(q, null, false);
+    list.querySelectorAll('[data-room]').forEach(b => {
+      b.addEventListener('click', () => {
+        reportRoom = b.dataset.room;
+        reportType = firstTypeForRoom(reportRoom);
+        document.getElementById('reportRoomSel').value = reportRoom;
+        sheet.querySelectorAll('.reportType').forEach(x => x.classList.toggle('on', x.dataset.type === reportType));
+        reportSearch.value = '';
+        list.innerHTML = '';
+        syncNudge();
+      });
+    });
+  };
+  reportSearch.addEventListener('input', renderReportList);
+  sheet.querySelectorAll('.reportType').forEach(b => {
+    b.addEventListener('click', () => {
+      reportType = b.dataset.type;
+      sheet.querySelectorAll('.reportType').forEach(x => x.classList.toggle('on', x === b));
+      syncNudge();
+    });
+  });
+  sheet.querySelectorAll('.reportKind').forEach(b => {
+    b.addEventListener('click', () => {
+      reportKind = b.dataset.kind;
+      sheet.querySelectorAll('.reportKind').forEach(x => x.classList.toggle('on', x === b));
+      syncOpen();
+      syncNudge();
+    });
+  });
+  openBtn.addEventListener('click', () => {
+    if (!reportKind) return;
+    const params = {};
+    params[RESEARCH_FORM_ENTRY.about] = reportType;
+    params[RESEARCH_FORM_ENTRY.found] = reportKind;
+    params[RESEARCH_FORM_ENTRY.where] = reportRoom;
+    let url = RESEARCH_FORM_URL + '?usp=pp_url';
+    for (const k in params) url += '&entry.' + k + '=' + encodeURIComponent(params[k] || '');
+    window.open(url, '_blank');
+  });
+  syncOpen();
+  syncNudge();
+}
+document.getElementById('reportBtn').addEventListener('click', openReport);
+wireSearch('fromSearch', 'fromClear', renderFromList);
+wireSearch('destSearch', 'destClear', renderDestList);
+sanitizeFrom();
+renderFrom();
+renderAvoid();
+renderFromSel();
+renderFromList();
+renderDestSel();
+renderDestList();
+
+/* --- App infrastructure, ported from the Atlas9 Guide --- */
+/* Detail sheet: About and Install open here. */
+const sheetWrap = document.getElementById('sheetWrap');
+const sheet = document.getElementById('sheet');
+function openSheet(html, large, noClose) {
+  sheet.innerHTML = '<div class="sheetTop">' +
+    (noClose ? '' : '<button class="sheetX" id="sheetX" aria-label="Close">✕</button>') + '</div>' + html +
+    (noClose ? '' : '<button class="close" id="sheetClose">Close</button>');
+  sheet.classList.toggle('large', !!large);
+  sheetWrap.classList.add('open');
+  /* v1.4.12: the scroll reset must run AFTER the sheet is shown.
+     v1.4.11 set scrollTop = 0 while the sheet was still hidden
+     (display:none) — a no-op — so a new sheet kept the previous
+     sheet's scroll position. The rAF repeat covers scroll
+     anchoring re-applying the old offset after layout. */
+  sheet.scrollTop = 0;
+  requestAnimationFrame(() => { sheet.scrollTop = 0; });
+  sheetWrap.classList.add('open');
+  const sc = document.getElementById('sheetClose');
+  if (sc) sc.addEventListener('click', closeSheet);
+  const sx = document.getElementById('sheetX');
+  if (sx) sx.addEventListener('click', closeSheet);
+}
+function closeSheet() { sheetWrap.classList.remove('open'); sheet.classList.remove('large'); }
+sheetWrap.addEventListener('click', (e) => { if (e.target === sheetWrap) closeSheet(); });
+
+/* Config (v1.2.0): the stairs/elevator choice lives here, not on the
+   main screen — like the Field Guide's Profile button top-right.
+   Defaults live here; Avoid stairs is the first one. */
+/* Include crawls state (v1.3.1): same pattern as Avoid stairs — the
+   sheet's own toggle/hint update if it is open, and the lists and any
+   shown route re-render, since the graph itself changes. */
+function renderCrawls() {
+  const cfgBtn = document.getElementById('configCrawlsBtn');
+  if (cfgBtn) {
+    cfgBtn.textContent = 'Include crawls: ' + (includeCrawls ? 'On' : 'Off');
+    cfgBtn.classList.toggle('on', includeCrawls);
+    cfgBtn.setAttribute('aria-pressed', String(includeCrawls));
+  }
+  const cfgHint = document.getElementById('configCrawlsHint');
+  if (cfgHint) cfgHint.textContent = includeCrawls
+    ? 'Crawls are routable — the tight passages count as rooms.'
+    : 'Crawls left out — routes use proper rooms only.';
+  sanitizeFrom();
+  renderFromSel();
+  renderFromList();
+  renderDestSel();
+  renderDestList();
+  if (destName) { refreshRoute(); renderRoute(); }
+}
+/* Separate rooms by floor (v1.4.19, Allen): off (the default) the room
+   pickers and search results are one A–Z list; on they group under
+   Floor 1 and Floor 2 again. Saved with the other settings. */
+function renderFloors() {
+  const cfgBtn = document.getElementById('configFloorsBtn');
+  if (cfgBtn) {
+    cfgBtn.textContent = 'Separate rooms by floor: ' + (separateFloors ? 'On' : 'Off');
+    cfgBtn.classList.toggle('on', separateFloors);
+    cfgBtn.setAttribute('aria-pressed', String(separateFloors));
+  }
+  const cfgHint = document.getElementById('configFloorsHint');
+  if (cfgHint) cfgHint.textContent = separateFloors
+    ? 'Room pickers and search results group rooms under Floor 1 and Floor 2.'
+    : 'Room pickers and search results show one A–Z list.';
+  renderFromSel();
+  renderFromList();
+  renderDestSel();
+  renderDestList();
+  saveSettings();
+}
+function configHTML() {
+  return '<h2>Config</h2>' +
+    '<div class="aboutBody">' +
+    '<p><button class="big" id="configAvoidBtn" aria-pressed="false"></button></p>' +
+    '<p class="hint" id="configAvoidHint"></p>' +
+    '<p><button class="big" id="configCrawlsBtn" aria-pressed="false"></button></p>' +
+    '<p class="hint" id="configCrawlsHint"></p>' +
+    '<p><button class="big" id="configFloorsBtn" aria-pressed="false"></button></p>' +
+    '<p class="hint" id="configFloorsHint"></p>' +
+    '<p>Defaults live here. More options can be added as the app grows.</p>' +
+    '<p>Your settings are saved on this phone only. An app update may reset them — that’s expected, not a bug.</p>' +
+    '</div>';
+}
+function openConfig() {
+  openSheet(configHTML(), true);
+  renderAvoid();
+  renderCrawls();
+  renderFloors();
+  document.getElementById('configAvoidBtn').addEventListener('click', () => {
+    avoidStairs = !avoidStairs;
+    renderAvoid();
+  });
+  document.getElementById('configCrawlsBtn').addEventListener('click', () => {
+    includeCrawls = !includeCrawls;
+    renderCrawls();
+  });
+  document.getElementById('configFloorsBtn').addEventListener('click', () => {
+    separateFloors = !separateFloors;
+    renderFloors();
+  });
+}
+document.getElementById('configBtn').addEventListener('click', openConfig);
+
+/* About / first-run: explains the app. Unofficial Atlas9 Wayfinder stores nothing —
+   no account, no saved finds. The starting room and Avoid stairs last
+   only while the page is open. */
+const WELCOME_KEY = 'a9nav-welcomed';
+/* Release Notes section (v1.3.1): every shipped version, newest first.
+   The What's new sheet after an update shows only the new version. */
+function releaseNotesHTML() {
+  let html = '';
+  for (const v of RELEASE_VERSIONS) {
+    const notes = WHATS_NEW[v] || [];
+    html += '<p><strong>v' + v + '</strong></p><ul>' + notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
+  }
+  return html;
+}
+/* What's new sheet (v1.3.1): the current version's notes only, shown
+   once after an update. The wording stays vague on purpose — a
+   spoilers-off user reads this, so no hidden room or route is named. */
+function whatsNewHTML(version) {
+  const notes = WHATS_NEW[version] || [];
+  /* No "Got it" button here (v1.3.5) — the sheet's own Close button
+     dismisses it, like every other sheet. */
+  return '<h2>What’s new in v' + version + '</h2>' +
+    '<div class="aboutBody">' +
+    (notes.length ? '<ul>' + notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '<p>No notes for this version.</p>') +
+    '</div>';
+}
+function openWhatsNew(version) {
+  openSheet(whatsNewHTML(version), true);
+}
+function aboutHTML() {
+  return '<h2>About this app</h2>' +
+    '<div class="aboutBody">' +
+    '<p><button id="aboutCheckUpdate" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Check for updates</button> <span id="aboutUpdateMsg" style="color:#999;font-size:14px"></span></p>' +
+    (isStandalone ? '' : '<p><button id="aboutInstall" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Install on Home Screen</button></p>') +
+    '<p>Unofficial Atlas9 Wayfinder is a fan-made wayfinding tool for the Atlas9 experience in Kansas City, KS. It is not affiliated with Atlas9.</p>' +
+    '<p>Pick the room you are in, then pick a category — Stairs, Elevator, Food, Restroom, Exit or FAZR — and choose Nearest or a specific one. FAZR offers FAZR, Movie Poster, Computer, INTERFAZE and FAZR-Portal. Or pick any room to go to: search matches room names and descriptions, so “guitar” or “bar” finds a room even when you don’t know its name.</p>' +
+    '<p><strong>Config</strong> (top right) holds <strong>Avoid stairs</strong>, which routes by elevator only, and <strong>Include crawls</strong>, which lets routes use the crawl passages. <strong>Spoilers</strong> (top right) enables hidden routes and hidden items. Spoilers are off on every launch.</p>' +
+    '<p>The <strong>flag</strong> (top right) reports a FAZR, Computer, Movie Poster or INTERFAZE that is listed but not there, or there but not listed. The <strong>share</strong> icon (top right) shares the app with a QR code or a link.</p>' +
+    '<p>Your starting room and settings are saved on this phone only. There is no account and nothing is sent to a server. <strong>Spoilers</strong> are never saved — they start off every time you open the app.</p>' +
+    '<h3>Release Notes</h3>' + releaseNotesHTML() +
+    '</div>';
+}
+function openAbout() {
+  openSheet(aboutHTML(), true);
+  const inst = document.getElementById('aboutInstall');
+  if (inst) inst.addEventListener('click', openInstall);
+  document.getElementById('aboutCheckUpdate').addEventListener('click', () => runUpdateCheck(document.getElementById('aboutUpdateMsg')));
+}
+/* Install on Home Screen: iPhone Safari and Android Chrome offer no
+   JavaScript install prompt the app can trigger, so the instructions open
+   as a sheet right here on top of the app — adding from here adds
+   A9 Wayfinder itself, not an instructions page. */
+const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+function installHTML() {
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  let steps;
+  if (isIOS) {
+    steps = '<ol class="steps"><li>Open A9 Wayfinder in <strong>Safari</strong>. If you are reading this inside another app, use its share menu and choose “Open in Safari”.</li><li>Tap the <strong>Page Menu</strong> button — the three-line icon — then tap <strong>Share</strong>. (If your tabs sit at the bottom or top of the screen, tap the <strong>Share</strong> button — the square with an arrow — directly.)</li><li>Scroll down and tap <strong>“Add to Home Screen”</strong>. (Don’t see it? Scroll to the very bottom, tap <strong>Edit Actions</strong>, then tap <strong>+ Add to Home Screen</strong>.)</li><li>Turn on <strong>Open as Web App</strong>.</li><li>Tap <strong>Add</strong>. A9 Wayfinder appears on your Home Screen like an app.</li></ol><p>On older iOS, tap the Share button at the bottom of the screen, then “Add to Home Screen”.</p>';
+  } else if (isAndroid) {
+    steps = '<ol class="steps"><li>Tap the <strong>⋮ menu</strong> in the top right of Chrome.</li><li>Tap <strong>“Add to Home screen”</strong> (or “Install app”).</li><li>Tap <strong>Add</strong> / <strong>Install</strong>. A9 Wayfinder appears on your Home Screen like an app.</li></ol>';
+  } else {
+    steps = '<p>On an <strong>iPhone</strong>, open A9 Wayfinder in Safari, tap the Page Menu button (three-line icon), then Share, then “Add to Home Screen”, turn on “Open as Web App”, and tap Add. On <strong>Android</strong>, open it in Chrome, tap the ⋮ menu, then “Add to Home screen”. There is no install button the app itself can show — your phone adds it from the browser menu.</p>';
+  }
+  return '<h2>Install on Home Screen</h2>' +
+    '<div class="aboutBody">' +
+    '<p>Adding A9 Wayfinder to your Home Screen makes it open like an app — full screen, with its own icon.</p>' +
+    steps +
+    '<p>These instructions open right here on top of A9 Wayfinder, so what you add is the app itself — not an instructions page.</p>' +
+    '</div>';
+}
+function openInstall() { openSheet(installHTML(), true); }
+if (isStandalone) { document.getElementById('installBtn').style.display = 'none'; }
+else { document.getElementById('installBtn').addEventListener('click', openInstall); }
+document.getElementById('aboutBtn').addEventListener('click', openAbout);
+
+/* Update check: iOS home-screen apps resume from the background without
+   reloading, so a new version would sit unseen until the app is force-quit.
+   When the page becomes visible again (and every 5 minutes while open), fetch
+   version.json and offer a one-tap Update that reloads the page. */
+const updateBar = document.getElementById('updateBar');
+document.getElementById('updateBtn').addEventListener('click', () => location.reload());
+/* Dismiss (v1.4.21): hides the bar until a newer version appears — the
+   5-minute / visibility checks must not pop it straight back. A manual
+   "Check for updates" clears the dismissal (see runUpdateCheck). */
+let latestSeenVersion = '';
+let dismissedUpdateVersion = '';
+document.getElementById('updateDismissBtn').addEventListener('click', () => {
+  dismissedUpdateVersion = latestSeenVersion;
+  updateBar.style.display = 'none';
+});
+let updateChecked = false;
+function checkForUpdate(quiet) {
+  fetch('version.json?v=' + Date.now()).then(r => r.json()).then(v => {
+    const latest = (v && v.version) || '';
+    latestSeenVersion = latest;
+    if (latest && latest !== APP_VERSION && latest !== dismissedUpdateVersion) {
+      updateBar.style.display = 'flex';
+    } else if (!quiet) {
+      updateBar.style.display = 'none';
+    }
+    updateChecked = true;
+  }).catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(true); });
+window.addEventListener('pageshow', () => checkForUpdate(true));
+setInterval(() => { if (!document.hidden) checkForUpdate(true); }, 5 * 60 * 1000);
+
+/* First run: show About once, so a new user sees what the app is. */
+const wasWelcomed = !!localStorage.getItem(WELCOME_KEY);
+if (!wasWelcomed) {
+  localStorage.setItem(WELCOME_KEY, '1');
+  openAbout();
+}
+/* What's new (v1.3.1): after an update, show the new version's notes
+   once. A stored version that differs means a normal update; a
+   welcomed user with no stored version is upgrading from before this
+   screen existed (1.3.0 or earlier) — they get it too. First install
+   shows About instead, never What's new. */
+const SEEN_VERSION_KEY = 'a9nav-seen-version';
+const seenVersion = localStorage.getItem(SEEN_VERSION_KEY);
+if ((seenVersion && seenVersion !== APP_VERSION) || (!seenVersion && wasWelcomed)) {
+  openWhatsNew(APP_VERSION);
+}
+localStorage.setItem(SEEN_VERSION_KEY, APP_VERSION);
+</script>
+</body>
+</html>

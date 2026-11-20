@@ -9,6 +9,11 @@ experience in Kansas City, KS). Two snapshots live side by side:
 - **V1/** — the spreadsheet version. Data generated from the "Atlas9 Data"
   Google spreadsheet (sheet-driven builders). Version 1.9.3. Live at
   https://parkhopping.com/a9-v2/
+- **Wayfinder/** — the wayfinding-only app ("Unofficial Atlas9
+  Wayfinder"). One self-contained `index.html` (data embedded) plus its
+  build source (`index.html.template`, `build.py`, `rooms.json`,
+  `directions.csv`, `test_routing.js`). Live at
+  https://parkhopping.com/a9nav/
 
 V0 is the original app, kept as a snapshot. V1 is the current,
 sheet-driven app. Both are static files (one `index.html` plus JSON data

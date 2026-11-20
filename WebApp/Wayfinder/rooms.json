@@ -1,0 +1,953 @@
+{
+  "generated": "2026-11-20",
+  "source": "Atlas9 Data — Rooms + Connections",
+  "count": 59,
+  "rooms": [
+    {
+      "name": "Agent Onboarding area (lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "entrance area with a TV set mounted up on the wall.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby"
+      ]
+    },
+    {
+      "name": "Arcade",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "arcade games and two photo booths.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "One of the Photobooths is a secret entrance to Headshot Remixer.",
+      "connections": [
+        "Lobby",
+        "PhotoBooth (Left)"
+      ]
+    },
+    {
+      "name": "Atlas9 Storage",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "storage room where the Polybius arcade machine is.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Employee Break Room",
+        "Sapphire Jazz Club",
+        "Sapphire Stroll"
+      ]
+    },
+    {
+      "name": "Theater",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Joshuah Jest"
+      ],
+      "description": "movie theater. Stairs connect it to Floor 2.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby",
+        "Theater Crawl",
+        "Theater Stairs"
+      ]
+    },
+    {
+      "name": "Theater Upper",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Joshuah Jest"
+      ],
+      "description": "movie theater. Stairs connect it to Floor 1.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Projection Room",
+        "Theater Stairs",
+        "Letter Hallway"
+      ]
+    },
+    {
+      "name": "Projection Room",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "HOLOMAX projector.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "Secret door into Speakereasy.",
+      "connections": [
+        "Sapphire Jazz Club Balcony",
+        "Theater Upper"
+      ],
+      "spoilerConnections": [
+        "Speakereasy"
+      ]
+    },
+    {
+      "name": "Box Office",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "ticket counter.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
+    },
+    {
+      "name": "Chant of the Mesmerite",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "mirrored chambers that contorts the scene with subtle interactive displays that react as visitors move.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Mirror Brick Hallway"
+      ]
+    },
+    {
+      "name": "Concession Caverns",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Dennis Butt",
+        "Jason Comotto"
+      ],
+      "description": "giant popcorn, candy and soda cup.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Concession Crawl",
+        "Licorice Lounge",
+        "Party Room (Fun Zone)",
+        "Prototyzer",
+        "Scavengers"
+      ]
+    },
+    {
+      "name": "Concessions (Lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "snack bar.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby"
+      ]
+    },
+    {
+      "name": "Containment Zone",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "entrance area with Box Office, RV, Splice Bros. Pizza and gift shop.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Box Office",
+        "Gift Shop",
+        "Lobby",
+        "Splice Bros Pizza & Pub",
+        "VERA"
+      ]
+    },
+    {
+      "name": "Crystal Cave, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Dennis Butt"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Scavengers"
+      ]
+    },
+    {
+      "name": "Dub Den",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "color changing walls and podium station in the middle with controls that make sound loops.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Film Storage",
+        "Sapphire Jazz Club Balcony"
+      ]
+    },
+    {
+      "name": "Elevator (Lobby/Starbot)",
+      "official": false,
+      "level": 0,
+      "section": "other",
+      "artists": [],
+      "description": "takes you up to Starbot.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby",
+        "StarBot"
+      ]
+    },
+    {
+      "name": "Employee Break Room",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "sink, cabinets, refrigerator, trash can and TV set.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "Hidden door behind soda machine. Trash can screams. Refrigerator makes noise when opened.",
+      "connections": [
+        "Atlas9 Storage",
+        "Lobby",
+        "Sapphire Stroll",
+        "Theater Manager’s Office"
+      ],
+      "spoilerConnections": [
+        "Headshot Remixer"
+      ]
+    },
+    {
+      "name": "FACADE Field Lab",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley",
+        "Tinius"
+      ],
+      "description": "agents room.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby",
+        "Power Supply",
+        "Theater Crawl"
+      ]
+    },
+    {
+      "name": "Film Storage",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "desk with computer, couch bed, and film canisters.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Dub Den",
+        "StarBot"
+      ]
+    },
+    {
+      "name": "Gift Shop",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "gift shop in the containment zone.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
+    },
+    {
+      "name": "Grayscale Swords",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Austin Lionberger"
+      ],
+      "description": "table and grey weapons on the wall.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Sapphire Jazz Club Balcony",
+        "Scavengers Upper",
+        "Scavengers/School Desks"
+      ]
+    },
+    {
+      "name": "Headshot Remixer",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "portraits all over the walls.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Employee Break Room",
+        "PhotoBooth (Left)"
+      ]
+    },
+    {
+      "name": "Hypnotizer Room, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Jeremy Collins"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Hypnotizer Crawl",
+        "Mesmerite, The",
+        "Sapphire Jazz Club"
+      ]
+    },
+    {
+      "name": "Letter Hallway",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "Hallway with red letters on the ceiling.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Theater Upper",
+        "StarBot"
+      ]
+    },
+    {
+      "name": "Licorice Lounge",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Dennis Butt"
+      ],
+      "description": "red licorice room.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Concession Caverns"
+      ]
+    },
+    {
+      "name": "Lobby",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "arcade, agent onboarding, concessions, stairs, elevator and large restrooms.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Agent Onboarding area (lobby)",
+        "Arcade",
+        "Concessions (Lobby)",
+        "Containment Zone",
+        "Elevator (Lobby/Starbot)",
+        "Employee Break Room",
+        "FACADE Field Lab",
+        "MossMan",
+        "Restrooms (Lobby)",
+        "Sapphire Stroll",
+        "Stairs (Lobby/Starbot)",
+        "Theater"
+      ]
+    },
+    {
+      "name": "Malachi’s Alley",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "alley with drawings on the walls.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Sapphire Jazz Club Balcony",
+        "Victor’s Study"
+      ]
+    },
+    {
+      "name": "Mesmerite, The",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Tyler Schrader"
+      ],
+      "description": "large color changing sculpture.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Hypnotizer Room, The",
+        "Round Mirrors"
+      ]
+    },
+    {
+      "name": "Mirror Brick Hallway",
+      "official": false,
+      "level": 2,
+      "section": "other",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Chant of the Mesmerite",
+        "Temple of the Iris",
+        "Victor’s Study"
+      ]
+    },
+    {
+      "name": "MossMan",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Rachel Eilts"
+      ],
+      "description": "inner lobby overgrown with vegetation.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "Look for the moss covered arm.",
+      "connections": [
+        "Lobby",
+        "Power Supply",
+        "Prototyzer",
+        "Sapphire Jazz Club",
+        "Sapphire Stroll"
+      ]
+    },
+    {
+      "name": "Power Supply",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "desks and machine with two levers.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "FACADE Field Lab",
+        "MossMan",
+        "Scavengers",
+        "Theater Crawl"
+      ]
+    },
+    {
+      "name": "Prototyzer",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "projection screen and sample station.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Concession Caverns",
+        "MossMan",
+        "Scavengers"
+      ]
+    },
+    {
+      "name": "Restroom (Starbot)",
+      "official": false,
+      "level": 2,
+      "section": "other",
+      "artists": [],
+      "description": "single restroom.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "StarBot"
+      ]
+    },
+    {
+      "name": "Restroom (Splice Bros. Pizza)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "single restroom.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Splice Bros Pizza & Pub"
+      ]
+    },
+    {
+      "name": "Restrooms (Lobby)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "large, multi-stall restrooms.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby"
+      ]
+    },
+    {
+      "name": "Sapphire Jazz Club",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Chase Hanna"
+      ],
+      "description": "performance area with small stage with microphone stand, and circular tower in the middle. Stairs lead to level 2.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Atlas9 Storage",
+        "Concession Crawl",
+        "Jazz Club Stairs",
+        "MossMan",
+        "Party Room (Fun Zone)",
+        "Sapphire Stroll",
+        "Hypnotizer Room, The"
+      ]
+    },
+    {
+      "name": "Sapphire Jazz Club Balcony",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Chase Hanna"
+      ],
+      "description": "balcony looking down on the Sapphire Jazz Club. Stairs lead to level 1.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Dub Den",
+        "Grayscale Swords",
+        "Jazz Club Stairs",
+        "Malachi’s Alley",
+        "Projection Room"
+      ]
+    },
+    {
+      "name": "Sapphire Stroll",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "prism mirror hallway.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Atlas9 Storage",
+        "Employee Break Room",
+        "Lobby",
+        "MossMan",
+        "Sapphire Jazz Club"
+      ]
+    },
+    {
+      "name": "Scavengers",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Stephanie Bloss",
+        "Scott Seetin",
+        "Dennis Butt"
+      ],
+      "description": "cartoon-like underwater area with squid, random toys and netting.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Concession Caverns",
+        "Crystal Cave, The",
+        "Power Supply",
+        "Prototyzer",
+        "Scavengers/TV Den"
+      ]
+    },
+    {
+      "name": "Scavengers/TV Den",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Erick Bachmann"
+      ],
+      "description": "wall of TVs and giant guitar.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Scavengers",
+        "Scavengers Stairs"
+      ]
+    },
+    {
+      "name": "Speakereasy",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "bar serving beer, wine, cocktails and mocktails, small plates and desserts.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "It sprang to life when the Holomax malfunction unleashed a cinemorphic bloom of speakers overhead and conjured a bar beneath them.",
+      "connections": [
+        "Projection Room",
+        "StarBot"
+      ]
+    },
+    {
+      "name": "Splice Bros Pizza & Pub",
+      "official": true,
+      "level": 1,
+      "section": "other",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "pizza restaurant with bar, pool table and a few cocktail arcade games.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Containment Zone",
+        "Restroom (Splice Bros. Pizza)"
+      ]
+    },
+    {
+      "name": "Stairs (Lobby/Starbot)",
+      "official": false,
+      "level": 0,
+      "section": "other",
+      "artists": [],
+      "description": "takes you up to Starbot",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Lobby",
+        "StarBot"
+      ]
+    },
+    {
+      "name": "StarBot",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Tinius"
+      ],
+      "description": "sci-fi area. Contains elevator, stairs and single restroom.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Elevator (Lobby/Starbot)",
+        "Film Storage",
+        "Restroom (Starbot)",
+        "Speakereasy",
+        "Stairs (Lobby/Starbot)",
+        "Letter Hallway"
+      ]
+    },
+    {
+      "name": "Temple of the Iris",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Mirror Brick Hallway"
+      ]
+    },
+    {
+      "name": "Theater Manager’s Office",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Cory Hinesley"
+      ],
+      "description": "office with the desk, computer and filing cabinets.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "FAZR hidden behind filing cabinet. Research board hidden behind the filing cabinet, with “BLAIR'S SECRET STASH KEEP OUT” in red tape lettering across the top.",
+      "connections": [
+        "Employee Break Room"
+      ]
+    },
+    {
+      "name": "Party Room (Fun Zone)",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [
+        "Jason Comotto"
+      ],
+      "description": "party room with the giant table, trash can, and presents.",
+      "photo": null,
+      "spoiler": false,
+      "spoilerDetail": "Secret crawl under the table.",
+      "connections": [
+        "Concession Caverns",
+        "Sapphire Jazz Club"
+      ],
+      "spoilerConnections": [
+        "Hypnotizer Crawl"
+      ]
+    },
+    {
+      "name": "VERA",
+      "official": true,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "RV in the Containment Zone.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Containment Zone"
+      ]
+    },
+    {
+      "name": "Victor’s Study",
+      "official": true,
+      "level": 2,
+      "section": "rooms",
+      "artists": [
+        "Haze Labs"
+      ],
+      "description": "dark room with chairs in the corner and artwork on the upper walls.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Malachi’s Alley",
+        "Mirror Brick Hallway"
+      ]
+    },
+    {
+      "name": "Round Mirrors",
+      "official": false,
+      "level": 1,
+      "section": "rooms",
+      "artists": [],
+      "description": "round mirrors on the wall. Crawl leads to the Hypnotizer Room.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Hypnotizer Crawl",
+        "Mesmerite, The"
+      ]
+    },
+    {
+      "name": "Scavengers Upper",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "RESEARCH NEEDED. Submit information.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Grayscale Swords",
+        "Scavengers/Battle Drums",
+        "Scavengers/Green Hallway"
+      ]
+    },
+    {
+      "name": "Theater Crawl",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [
+        "Austin Lionberger"
+      ],
+      "description": "crawl connecting Theater, FACADE Field Lab, and Power Supply",
+      "photo": null,
+      "spoiler": true,
+      "connections": [
+        "FACADE Field Lab",
+        "Power Supply",
+        "Theater"
+      ]
+    },
+    {
+      "name": "Hypnotizer Crawl",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "crawl connecting Party Room (Fun Zone), the Hypnotizer Room, and Round Mirrors",
+      "photo": null,
+      "spoiler": true,
+      "connections": [
+        "Hypnotizer Room, The",
+        "Party Room (Fun Zone)",
+        "Round Mirrors"
+      ]
+    },
+    {
+      "name": "Concession Crawl",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "crawl connecting Sapphire Jazz Club and Concession Caverns",
+      "photo": null,
+      "spoiler": true,
+      "connections": [
+        "Concession Caverns",
+        "Sapphire Jazz Club"
+      ]
+    },
+    {
+      "name": "Theater Stairs",
+      "official": false,
+      "level": 0,
+      "section": "other",
+      "artists": [],
+      "description": "stairs connecting Theater and Theater Upper",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Theater",
+        "Theater Upper"
+      ]
+    },
+    {
+      "name": "Jazz Club Stairs",
+      "official": false,
+      "level": 0,
+      "section": "other",
+      "artists": [],
+      "description": "stairs connecting Sapphire Jazz Club and Sapphire Jazz Club Balcony",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Sapphire Jazz Club",
+        "Sapphire Jazz Club Balcony"
+      ]
+    },
+    {
+      "name": "PhotoBooth (Left)",
+      "official": false,
+      "level": 1,
+      "section": "other",
+      "artists": [],
+      "description": "photo booth in the Arcade",
+      "photo": null,
+      "spoiler": true,
+      "spoilerDetail": "passage through the back of the booth leads to the Headshot Remixer; a FAZR is hidden inside",
+      "connections": [
+        "Arcade"
+      ],
+      "spoilerConnections": [
+        "Headshot Remixer"
+      ]
+    },
+    {
+      "name": "Scavengers/Battle Drums",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "battle drums",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Scavengers Upper",
+        "Scavengers/Green Hallway"
+      ]
+    },
+    {
+      "name": "Scavengers/Green Hallway",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "green hallway with dashed lines along the wall like on a treasure map, leading to an ‘X’ on the wall above a green treasure chest.",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Scavengers Stairs",
+        "Scavengers Upper",
+        "Scavengers/Battle Drums",
+        "Scavengers/School Desks"
+      ]
+    },
+    {
+      "name": "Scavengers/School Desks",
+      "official": false,
+      "level": 2,
+      "section": "rooms",
+      "artists": [],
+      "description": "school desks",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Grayscale Swords",
+        "Scavengers/Green Hallway"
+      ]
+    },
+    {
+      "name": "Scavengers Stairs",
+      "official": false,
+      "level": 0,
+      "section": "other",
+      "artists": [],
+      "description": "stairs connecting Scavengers/TV Den and Scavengers/Green Hallway",
+      "photo": null,
+      "spoiler": false,
+      "connections": [
+        "Scavengers/Green Hallway",
+        "Scavengers/TV Den"
+      ]
+    }
+  ]
+}
