@@ -31,10 +31,11 @@
   .subtabs button { flex: 1; font-size: 15px; padding: 8px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1c; color: #ccc; cursor: pointer; }
   .subtabs button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
   .subtabs.hidden { display: none; }
-  /* narrow screens (v1.12.1): wrap the 6 Dossier tabs 3+3 and the 5 FAZR
-     type filters 3+2, all buttons equal width so both rows look even.
-     The 4-button Rooms filter still fits in one row at 390px, so it is
-     left alone. Wide screens keep the single row exactly as before. */
+  /* narrow screens (v1.12.1, updated v1.16.0): wrap the 6 Dossier tabs 3+3
+     and the 6 FAZR type filters 3+3, all buttons equal width so both rows
+     look even. The 4-button Rooms filter still fits in one row at 390px,
+     so it is left alone. Wide screens keep the single row exactly as
+     before. */
   @media (max-width: 600px) {
     .subtabs { flex-wrap: wrap; }
     .subtabs button { flex: 0 0 calc((100% - 16px) / 3); }
@@ -58,6 +59,9 @@
   #sheet h2 .unconf { color: #e0a800; font-weight: normal; font-size: 14px; }
   #sheet .meta { color: #aaa; font-size: 15px; margin: 2px 0; }
   #sheet .desc { margin-top: 12px; font-size: 16px; line-height: 1.55; color: #ddd; }
+  /* spoiler detail (v1.16.0, two-field room model): the hidden thing, shown
+     only with spoilers on — gold left border so it reads as spoiler content. */
+  #sheet .desc.spoilerDetail { border-left: 3px solid #e0a800; padding-left: 12px; }
   #sheet .notes { margin-top: 12px; font-size: 15px; line-height: 1.5; color: #bbb; font-style: italic; }
   #sheet .photo { width: 100%; border-radius: 10px; margin-top: 12px; }
   #sheet .close { display: block; width: 100%; margin-top: 18px; font-size: 16px; padding: 11px 0; border-radius: 8px; border: 1px solid #555; background: #2a2a2a; color: #eee; cursor: pointer; }
@@ -189,15 +193,16 @@
     <button data-fazrtype="Computer">Computer</button>
     <button data-fazrtype="Movie Poster">Movie Poster</button>
     <button data-fazrtype="INTERFAZE">INTERFAZE</button>
+    <button data-fazrtype="FAZR-Portal">FAZR-Portal</button>
   </div>
 </header>
 <div id="updateBar" style="display:none;background:#e0a800;color:#111;font-size:15px;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between"><span>A new version of the guide is available.</span><button id="updateBtn" style="font-size:15px;font-weight:bold;padding:6px 14px;border-radius:8px;border:1px solid #111;background:#111;color:#e0a800;cursor:pointer;white-space:nowrap">Update</button></div>
 <div id="count"></div>
 <div id="list"></div>
 <div id="sheetWrap"><div id="sheet"></div></div>
-<footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
+<footer>Researcher mode is the research tool — log what you find while you explore, and things stay hidden until you report them. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.15.1';
+const APP_VERSION = '1.16.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -212,10 +217,9 @@ let data = { rooms: [], people: [], phones: [], telephones: [], timeline: [], fa
 let tab = 'hunt';
 let dossier = 'rooms';
 let level = 'all';
-/* FAZR Dossier tab (v1.11.0): type filter state — 'all' or one of the four
-   types present in fazr.json (FAZR / Computer / Movie Poster / INTERFAZE).
-   Checkpoint and Portal do not exist in the data yet, so they get no
-   filter button. */
+/* FAZR Dossier tab (v1.11.0, updated v1.16.0): type filter state — 'all'
+   or one of the five types present in fazr.json (FAZR / Computer /
+   Movie Poster / INTERFAZE / FAZR-Portal). */
 let fazrType = 'all';
 const VISIT_KEY = 'a9-visited-rooms';
 let visited = new Set(JSON.parse(localStorage.getItem(VISIT_KEY) || '[]'));
@@ -314,8 +318,21 @@ function fazrKey(f) {
   const group = data.fazr.filter(x => x.room === f.room && x.type === f.type);
   return f.room + '|' + f.type + '|#' + group.indexOf(f);
 }
-/* researcher profile (optional): agent name/handle + contact, stored on the
-   phone; prefilled into every report form, and editable per-submission */
+/* Secret passages found (v1.16.0, Log a Find): a hidden connection you
+   logged — "fromRoom|toRoom" — so Wayfinder can route through it and the
+   room sheet can show it even with spoilers off. Only the passage you
+   found is revealed, never the others. */
+const FOUND_PASSAGES_KEY = 'a9-found-passages';
+let foundPassages = new Set(JSON.parse(localStorage.getItem(FOUND_PASSAGES_KEY) || '[]'));
+function saveFoundPassages() { localStorage.setItem(FOUND_PASSAGES_KEY, JSON.stringify([...foundPassages])); }
+function passageKey(from, to) { return from + '|' + to; }
+/* A spoiler FAZR point is visible when spoilers are on, or when you have
+   logged it (v1.16.0): logging a find reveals just that one point, so it
+   shows in the FAZR list, the room sheet's FAZR section and search even
+   with spoilers off. */
+function fazrVisible(f) {
+  return !noSpoilers || !f.spoiler || foundFazr.has(fazrKey(f));
+}
 const PROFILE_KEY = 'a9-profile';
 let profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
 function saveProfile() { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); }
@@ -404,7 +421,7 @@ function aboutHTML() {
   return '<h2>About this app</h2>' +
     '<div class="aboutBody">' +
     '<p>The Atlas9 Guide is a fan-made research tool and reference for the Atlas9 experience in Kansas City, KS. It is not affiliated with Atlas9.</p>' +
-    '<p><strong>Researcher mode</strong> is the research tool: type a phone number you found and it tells you whether it is known — without saying what it is for, so nothing is spoiled. <strong>Dossier mode</strong> is the full reference, with spoilers: rooms, people, phones, and phone numbers with their details.</p>' +
+    '<p><strong>Researcher mode</strong> is the research tool: log what you find while you explore — a room, a FAZR point, a phone number, a phone, or a secret passage. Things stay hidden until you report them, so nothing is spoiled. <strong>Dossier mode</strong> is the full reference, with spoilers: rooms, people, phones, and phone numbers with their details.</p>' +
     '<p><strong>Nothing you do here is stored on a server.</strong> Your profile, the numbers you found, and the rooms you marked visited are saved only on this device. If you delete the app or clear its data, they will be lost.</p>' +
     '<p><strong>The only thing that ever leaves your device is a report you choose to send.</strong> When you tap “Report this find,” “Report this number,” or “Submit a research note,” that report — and only that report — is sent to Allen for review. Nothing is sent automatically.</p>' +
     '<p>Found something that belongs in the Dossier — a detail, a correction, a sighting? <button id="aboutResearchNote" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Submit a research note</button></p>' +
@@ -469,13 +486,28 @@ function floorLabel(l) {
   if (l === 0) return 'Floor 1 & 2';
   return 'Floor ' + l;
 }
+/* Two-field room model (v1.16.0, Allen 2026-11-19): the Description is
+   ALWAYS public — it describes the room so you know if you are in it —
+   and the Spoiler detail shows only with spoilers on. Spoiler? just
+   marks that the room has a secret; it no longer hides the Description. */
 function descFor(r) {
-  if (noSpoilers && r.spoiler) return '<span class="spoilerHidden">Description hidden in no-spoilers mode.</span>';
   return esc(r.description || '');
 }
 function descText(r) {
-  if (noSpoilers && r.spoiler) return '';
   return r.description || '';
+}
+/* Spoiler detail, for the room detail sheet (v1.16.0): rendered only
+   with spoilers on, and only when the room has one. In the list rows the
+   Description alone shows; the detail sheet is where the secret reads. */
+function spoilerDetailHTML(r) {
+  if (noSpoilers || !r.spoilerDetail) return '';
+  return '<div class="desc spoilerDetail"><b>Spoiler:</b> ' + esc(r.spoilerDetail) + '</div>';
+}
+/* Room search haystack (v1.16.0, two-field model): name + public
+   Description + artists always; the Spoiler detail only with spoilers
+   on, so a hidden detail is never findable by search while hidden. */
+function roomSearchHay(r) {
+  return [r.name, descText(r), (r.artists || []).join(' '), (!noSpoilers && r.spoilerDetail ? r.spoilerDetail : '')].join(' ');
 }
 /* FAZR Dossier tab (v1.11.0): one row per FAZR point. Spoiler points
    (v1.15.0) are hidden entirely with spoilers off — the list, the room
@@ -527,7 +559,12 @@ function roomSheet(r) {
      shown only with spoilers on — omitted entirely with spoilers off,
      no placeholder, so nothing hints a hidden connection exists. */
   const connNames = [...(r.connections || [])];
-  if (!noSpoilers) connNames.push(...(r.spoilerConnections || []));
+  /* Spoiler connections (v1.14.0, updated v1.16.0): shown with spoilers
+     on, or when you have logged that passage (v1.16.0) — a discovered
+     passage is yours to see. Otherwise omitted entirely, no placeholder. */
+  for (const c of (r.spoilerConnections || [])) {
+    if (!noSpoilers || foundPassages.has(passageKey(r.name, c))) connNames.push(c);
+  }
   const conns = connNames.map(name => {
     const target = data.rooms.find(x => x.name === name);
     if (!target) { console.warn('Connects to: no room named "' + name + '" (from "' + r.name + '")'); return null; }
@@ -545,7 +582,7 @@ function roomSheet(r) {
      nothing visible remains, the whole FAZR section is omitted. Rows are
      plain (not tappable) — the FAZR detail sheet opens from the FAZR
      list, not from the room sheet. */
-  const roomFazr = (data.fazr || []).filter(f => f.room === r.name && (!noSpoilers || !f.spoiler));
+  const roomFazr = (data.fazr || []).filter(f => f.room === r.name && fazrVisible(f));
   const fazrHTML = roomFazr.length
     ? '<div class="connHead">FAZR:</div>' + roomFazr.map(f =>
         '<div class="fazrRow">' + esc((f.type ? f.type + ' — ' : '') + (f.description || '')) + '</div>'
@@ -557,9 +594,11 @@ function roomSheet(r) {
     (r.official ? '<div class="meta">Official exhibit name</div>' : '') +
     photo +
     '<div class="desc">' + descFor(r) + '</div>' +
+    spoilerDetailHTML(r) +
     connHTML +
     fazrHTML +
     '<button class="transcriptBtn" id="sheetWayfinder">Wayfinder</button>' +
+    '<button class="transcriptBtn" id="sheetLogFind">Log a Find</button>' +
     '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
     '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetVisit">' + (done ? '✓ Visited' : 'Mark visited') + '</button>' +
     '<button class="close" id="sheetClose">Close</button></div>'
@@ -573,6 +612,20 @@ function roomSheet(r) {
   });
   document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Room: ' + r.name));
   document.getElementById('sheetWayfinder').addEventListener('click', () => wayfinderSheet(r));
+  /* Log a Find (v1.16.0): jump to the Researcher screen with this room
+     pre-filled — the room is the master, so the user picks what they
+     found without re-picking the room. */
+  document.getElementById('sheetLogFind').addEventListener('click', () => {
+    tab = 'hunt';
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
+    document.querySelector('.tabs button[data-tab="hunt"]').classList.add('on');
+    lf.room = r;
+    lf.type = null;
+    lf.step = 'options';
+    lf.msg = '';
+    closeSheet();
+    render();
+  });
   document.querySelectorAll('#sheet .connRow').forEach(b => {
     b.addEventListener('click', () => roomSheet(conns[+b.dataset.ci]));
   });
@@ -615,6 +668,14 @@ function wfBuildGraph(spoilersOn) {
         g.get(c).add(r.name);
       }
     }
+  }
+  /* Discovered secret passages (v1.16.0, Log a Find): a passage you
+     logged is a known edge for you even with spoilers off. The reverse
+     direction is already public, so only the discovered direction is
+     added here. */
+  for (const k of foundPassages) {
+    const [a, b] = k.split('|');
+    if (g.has(a) && g.has(b)) g.get(a).add(b);
   }
   return g;
 }
@@ -815,6 +876,11 @@ function phoneSheet(p) {
     : '';
   const foundIn = foundInHTML(numberSibs(p));
   const is8000 = normNum(p.number) === '8000';
+  /* Detailed number-report path (Allen, 2026-11-19): the number-report
+     form stays for reporting what a number says, for numbers with no
+     recording yet. Log a Find routes new numbers to the research-notes
+     form instead; this button is the detailed path. */
+  const hasRec = numberSibs(p).some(x => x.recording);
   openSheet(
     '<h2>' + esc(p.number) + unconf + '</h2>' +
     descHTML +
@@ -822,6 +888,7 @@ function phoneSheet(p) {
     foundIn +
     (dates ? '<div class="meta">' + esc(dates) + '</div>' : '') +
     '<button class="transcriptBtn" id="sheetNote">Submit a research note</button>' +
+    (hasRec ? '' : '<button class="transcriptBtn" id="sheetReportSays">Report what this number says</button>') +
     (tr && !noSpoilers ? '<button class="transcriptBtn" id="trBtn">Show transcript</button><div class="transcript hidden" id="trText">' + esc(tr) + '</div>' : '') +
     '<div class="btnRow"><button class="visitBtn' + (done ? ' done' : '') + '" id="sheetFound">' + (done ? '✓ Found' : 'Mark found') + '</button>' +
     '<button class="close" id="sheetClose">Close</button></div>'
@@ -834,6 +901,11 @@ function phoneSheet(p) {
     render();
   });
   document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Phone: ' + p.number + (descs && !noSpoilers ? ' — ' + descs : '')));
+  const reportSays = document.getElementById('sheetReportSays');
+  if (reportSays) reportSays.addEventListener('click', () => {
+    const params = Object.assign({ [FORM_ENTRY.number]: p.number }, profileParams());
+    window.open(formUrlWith(params), '_blank');
+  });
   const trBtn = document.getElementById('trBtn');
   if (trBtn) trBtn.addEventListener('click', () => {
     const t = document.getElementById('trText');
@@ -878,11 +950,11 @@ function telephoneSheet(t) {
    carries no research flag, so the baked text is the signal.
    "Mark found" button (v1.13.0): same as the telephone sheet's. */
 function fazrSheet(f) {
-  /* (v1.15.0): a spoiler point opened with spoilers off — reachable only
-     via a stale link, since the list, room section and search all hide
-     it — shows nothing about the point: no room, type, description or
-     photo. */
-  if (noSpoilers && f.spoiler) {
+  /* (v1.15.0, updated v1.16.0): a spoiler point opened with spoilers off
+     — reachable only via a stale link, since the list, room section and
+     search all hide it — shows nothing about the point, UNLESS you have
+     logged it (then it is yours to see: you found it). */
+  if (noSpoilers && f.spoiler && !foundFazr.has(fazrKey(f))) {
     openSheet('<h2>Hidden FAZR</h2><div class="desc">This FAZR point is hidden. Turn spoilers on to see it.</div><div class="btnRow"><button class="close" id="sheetClose">Close</button></div>', false, true);
     return;
   }
@@ -928,7 +1000,7 @@ function attachRoomPicker(input, listEl) {
     const needle = input.value.trim().toLowerCase();
     if (needle.length < 2) { listEl.classList.add('hidden'); listEl.innerHTML = ''; return; }
     const matches = data.rooms.filter(r => {
-      const hay = [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase();
+      const hay = roomSearchHay(r).toLowerCase();
       return hay.includes(needle);
     }).slice(0, 8);
     if (!matches.length) { listEl.classList.add('hidden'); listEl.innerHTML = ''; return; }
@@ -994,104 +1066,149 @@ function foundCount() {
   for (const k of found) if (known[k]) n++;
   return n;
 }
-function foundListHTML() {
-  const known = knownNumbers();
-  const keys = [...found].filter(k => known[k]).sort();
-  if (!keys.length) return '<div class="empty">No numbers found yet — start hunting!</div>';
-  return keys.map(k => {
-    const p = known[k];
-    const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
-    const hasRec = data.phones.some(x => normNum(x.number) === k && x.recording);
-    const hint = hasRec ? '' : ' <span style="color:#e0a800;font-size:13px">· no recording yet</span>';
-    return '<div class="item" data-k="' + k + '"><div class="body"><div class="name">' + esc(p.number) + unconf + hint + '</div></div><button class="delBtn" data-k="' + k + '" aria-label="Remove from found">✕</button></div>';
-  }).join('');
+/* Log a Find (v1.16.0, Allen 2026-11-19): the Researcher screen is the
+   logging interface. Pick what you found, then find the room — the room
+   is the master. lf holds the in-progress log: the type, the room
+   (pre-filled from a room sheet, or picked in the flow), and the step.
+   Go back is always available: if you pick a type and don't see what
+   you found, back out and try another type — the room stays picked.
+   Types: Room, the five FAZR types, Phone # (a number), Phone (a
+   physical phone), Secret Passage (a hidden connection). */
+const LF_TYPES = [
+  { id: 'room', label: 'Room' },
+  { id: 'Movie Poster', label: 'Movie Poster' },
+  { id: 'Computer', label: 'Computer' },
+  { id: 'FAZR', label: 'FAZR' },
+  { id: 'INTERFAZE', label: 'INTERFAZE' },
+  { id: 'FAZR-Portal', label: 'FAZR-Portal' },
+  { id: 'phone-number', label: 'Phone #' },
+  { id: 'phone', label: 'Phone' },
+  { id: 'passage', label: 'Secret Passage' },
+];
+const LF_FAZR_TYPES = ['Movie Poster', 'Computer', 'FAZR', 'INTERFAZE', 'FAZR-Portal'];
+let lf = { type: null, room: null, step: 'options', dest: null, msg: '' };
+function lfReset() { lf = { type: null, room: null, step: 'options', dest: null, msg: '' }; }
+/* A report of something new goes to the research-notes form (Allen,
+   2026-11-19: one form for all new-item reports). about = the type,
+   found = what was found (+ notes, when given), where = the room
+   (optional — leave it blank if you don't know it). The number-report
+   form stays for the detailed number-report path in Dossier; Log a Find
+   does not route to it. */
+function openResearchReport(about, found, where, notes) {
+  const params = {};
+  if (about) params[RESEARCH_FORM_ENTRY.about] = about;
+  const foundText = (found || '') + (notes ? ' — ' + notes : '');
+  if (foundText) params[RESEARCH_FORM_ENTRY.found] = foundText;
+  if (where) params[RESEARCH_FORM_ENTRY.where] = where;
+  if (profile.agent) params[RESEARCH_FORM_ENTRY.agent] = profile.agent;
+  if (profile.email) params[RESEARCH_FORM_ENTRY.email] = profile.email;
+  if (profile.text) params[RESEARCH_FORM_ENTRY.text] = profile.text;
+  window.open(researchUrlWith(params), '_blank');
 }
-function attachFoundListTaps() {
-  list.querySelectorAll('#foundList .item').forEach(el => {
-    el.addEventListener('click', () => foundNumberSheet(el.dataset.k));
-  });
-  list.querySelectorAll('#foundList .delBtn').forEach(b => {
-    b.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const k = b.dataset.k;
-      const p = knownNumbers()[k];
-      openSheet(
-        '<h2>Remove this number?</h2>' +
-        '<div class="desc">Remove ' + esc(p ? p.number : k) + ' from the numbers you found? You can find it again with the dial pad.</div>' +
-        '<button id="delConfirm" style="display:block;width:100%;margin-top:18px;font-size:17px;padding:12px 0;border-radius:8px;border:1px solid #c0392b;background:#c0392b;color:#fff;font-weight:bold;cursor:pointer">Remove</button>'
-      );
-      document.getElementById('delConfirm').addEventListener('click', () => {
-        found.delete(k);
-        saveFound();
-        closeSheet();
-        updateFoundList();
+/* Room search list for the Log a Find flows (v1.16.0): matches by name
+   or description terms (Allen, 2026-11-19) — you search for the room
+   either by known name, which you wouldn't know if you didn't know the
+   room existed yet, or by description terms. Each row shows the name,
+   floor and description so you can recognise a room you can't name. */
+function lfRoomMatchesHTML(needle) {
+  const n = (needle || '').trim().toLowerCase();
+  if (n.length < 2) return '<div class="empty">Type at least 2 characters to search rooms.</div>';
+  const matches = data.rooms.filter(r => roomSearchHay(r).toLowerCase().includes(n)).slice(0, 8);
+  if (!matches.length) return '<div class="empty">No rooms match.</div>';
+  return matches.map(r =>
+    '<button class="connRow" data-lfroom="' + esc(r.name) + '|' + r.level + '"><span class="name">' + esc(r.name) + '</span>' +
+    (r.level == null ? '' : '<span class="meta">' + floorLabel(r.level) + '</span>') +
+    '<span class="chev">›</span></button>' +
+    (r.description ? '<div style="color:#aaa;font-size:14px;padding:0 2px 10px">' + esc(r.description) + '</div>' : '')
+  ).join('');
+}
+function lfRoomPickerHTML(title, hint) {
+  return '<div class="huntBox"><div class="big">' + esc(title) + '</div>' +
+    '<div style="color:#aaa;font-size:15px;line-height:1.5">' + hint + '</div>' +
+    '<input id="lfRoomSearch" type="search" placeholder="Search rooms by name or description…" autocomplete="off" style="width:100%;font-size:18px;padding:10px 12px;border-radius:8px;border:1px solid #555;background:#222;color:#eee;margin-top:12px">' +
+    '<div id="lfRoomList" style="margin-top:6px">' + lfRoomMatchesHTML('') + '</div>' +
+    '<div id="lfRoomNew"></div>' +
+    '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back</button></div>';
+}
+function lfAttachRoomPicker(onPick) {
+  const search = document.getElementById('lfRoomSearch');
+  const listEl = document.getElementById('lfRoomList');
+  const newEl = document.getElementById('lfRoomNew');
+  function refresh() {
+    listEl.innerHTML = lfRoomMatchesHTML(search.value);
+    listEl.querySelectorAll('[data-lfroom]').forEach(b => {
+      b.addEventListener('click', () => {
+        const parts = b.dataset.lfroom.split('|');
+        const r = data.rooms.find(x => x.name === parts[0] && String(x.level) === parts[1]);
+        if (r) onPick(r);
       });
     });
-  });
-}
-function foundNumberSheet(k) {
-  const known = knownNumbers();
-  const p = known[k];
-  if (!p) return;
-  const rows = data.phones.filter(x => normNum(x.number) === k);
-  const hasRec = rows.some(x => x.recording);
-  const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
-  if (hasRec) {
-    openSheet(
-      '<h2>' + esc(p.number) + unconf + '</h2>' +
-      '<div class="desc">This number has a recording on file.</div>' +
-      foundInHTML(rows)
-    );
-    return;
+    /* No match and enough text to be a real search: offer to report a
+       room we don't have (v1.16.0) — a new room is a submission, not a
+       checkoff, until we verify and add it. */
+    const needle = search.value.trim();
+    if (needle.length >= 2 && !data.rooms.some(r => roomSearchHay(r).toLowerCase().includes(needle.toLowerCase()))) {
+      newEl.innerHTML = '<div class="result new" style="margin-top:10px"><div class="rtitle">Don’t see it?</div>' +
+        '<div class="rdesc">This room isn’t in the guide yet. You can report it and we’ll check it out.</div>' +
+        '<button class="submitBtn" id="lfNewRoom" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report this room</button></div>';
+      document.getElementById('lfNewRoom').addEventListener('click', () => {
+        openResearchReport('Room', needle, '', '');
+      });
+    } else {
+      newEl.innerHTML = '';
+    }
   }
-  openSheet(
-    '<h2>' + esc(p.number) + unconf + '</h2>' +
-    '<div class="desc">We do not have a recording for this number yet. If you called it, what did it say?</div>' +
-    foundInHTML(rows) +
-    '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">What does this number say?<textarea id="saysText" style="width:100%;font-size:16px;padding:10px;border-radius:8px;border:1px solid #555;background:#222;color:#eee;margin-top:4px;font-family:inherit;min-height:70px" placeholder="Describe what you heard when you called it."></textarea></label>' +
-    profileFieldsHTML('fs') +
-    '<button class="submitBtn" id="saysGo">Report what it says</button>'
-  );
-  document.getElementById('saysGo').addEventListener('click', () => {
-    const said = document.getElementById('saysText').value.trim();
-    const pv = profileValues('fs');
-    const params = {};
-    params[FORM_ENTRY.number] = p.number;
-    params[FORM_ENTRY.said] = said;
-    if (pv.agent) params[FORM_ENTRY.agent] = pv.agent;
-    if (pv.email) params[FORM_ENTRY.email] = pv.email;
-    if (pv.text) params[FORM_ENTRY.text] = pv.text;
-    window.open(formUrlWith(params), '_blank');
-  });
+  search.addEventListener('input', refresh);
+  document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; render(); });
+  refresh();
 }
-function updateFoundList() {
-  const el = document.getElementById('foundList');
-  if (el) { el.innerHTML = foundListHTML(); attachFoundListTaps(); }
-  const prog = document.querySelector('.progress');
-  if (prog) {
-    const known = knownNumbers();
-    const n = foundCount();
-    const total = Object.keys(known).length;
-    const pct = total ? Math.round(n / total * 100) : 0;
-    prog.innerHTML = 'You found ' + n + ' of ' + total + ' known numbers<div class="bar"><i style="width:' + pct + '%"></i></div>';
+/* FAZR points of one type in one room, for the Log a Find item step
+   (v1.16.0). A hidden (spoiler) point is listed here when you are logging
+   it — you found it in person, so it is yours to mark. Tapping one marks
+   it found; that also reveals it in the FAZR list and the room sheet
+   from then on (v1.16.0, fazrVisible). */
+function lfFazrItemsHTML(type, room) {
+  const items = data.fazr.filter(f => f.room === room.name && f.type === type);
+  if (!items.length) {
+    return '<div class="empty">No ' + esc(type) + ' recorded in ' + esc(room.name) + ' yet.</div>' +
+      '<div class="result new"><div class="rtitle">Found one we don’t have?</div>' +
+      '<div class="rdesc">If there’s a ' + esc(type) + ' in this room that isn’t listed, report it — it goes to Allen for review.</div>' +
+      '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">Notes <span style="color:#888">(optional)</span><textarea id="lfNewNotes" placeholder="Where exactly did you find it? What does it look like?"></textarea></label>' +
+      '<button class="submitBtn" id="lfNewFazr" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report a new ' + esc(type) + '</button></div>';
   }
+  return items.map(f => {
+    const done = foundFazr.has(fazrKey(f));
+    return '<div class="item" data-lffazr="' + data.fazr.indexOf(f) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(fazrKey(f)) + '" aria-label="Mark found">✓</button>' +
+      '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></div>' +
+      '<div class="desc">' + fazrDescHTML(f) + '</div></div></div>';
+  }).join('') +
+    '<div class="result new" style="margin-top:12px"><div class="rtitle">Found a different one?</div>' +
+    '<div class="rdesc">If there’s another ' + esc(type) + ' in this room that isn’t listed, report it.</div>' +
+    '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">Notes <span style="color:#888">(optional)</span><textarea id="lfNewNotes" placeholder="Where exactly did you find it? What does it look like?"></textarea></label>' +
+    '<button class="submitBtn" id="lfNewFazr" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report a new ' + esc(type) + '</button></div>';
 }
-function refreshHuntClear() {
-  const inp = document.getElementById('huntInput');
-  const c = document.getElementById('huntClear');
-  if (inp && c) c.classList.toggle('hidden', !inp.value);
+function lfOptionsHTML() {
+  const nRooms = visited.size;
+  const nFazr = foundFazr.size;
+  const nNums = foundCount();
+  const roomLine = lf.room
+    ? '<div style="color:#e0a800;font-size:15px;margin-bottom:10px">Room: <b>' + esc(lf.room.name) + '</b> (' + floorLabel(lf.room.level) + ') · <button id="lfClearRoom" style="background:none;border:none;color:#e0a800;font-size:14px;padding:0;cursor:pointer;text-decoration:underline">change</button></div>'
+    : '';
+  return '<div class="huntBox"><div class="big">Log a find</div>' +
+    '<div style="color:#aaa;font-size:15px;line-height:1.5;margin-bottom:12px">What did you find? Pick the kind of thing, then the room it’s in. Hidden things stay hidden until you report them — logging one reveals just that one, never the others.</div>' +
+    roomLine +
+    LF_TYPES.map(t =>
+      '<button class="transcriptBtn" data-lftype="' + esc(t.id) + '" style="display:block;width:100%;margin-top:8px;font-size:17px;padding:13px 0;border-radius:10px;border:1px solid #555;background:#222;color:#eee;cursor:pointer;text-align:center">' + esc(t.label) + '</button>'
+    ).join('') +
+    '<div class="progress" style="margin-top:18px">' + nRooms + ' rooms visited · ' + nFazr + ' FAZR points found · ' + nNums + ' numbers found</div></div>';
 }
-function huntHTML() {
-  const known = knownNumbers();
-  const total = Object.keys(known).length;
-  const n = foundCount();
-  const pct = total ? Math.round(n / total * 100) : 0;
+function lfPhoneHTML() {
   const ro = hasKeyboard ? '' : ' readonly';
-  return '<div class="huntBox"><div class="big">Phone hunt</div>' +
-    '<div class="progress">You found ' + n + ' of ' + total + ' known numbers<div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+  return '<div class="huntBox"><div class="big">Phone #</div>' +
+    '<div style="color:#aaa;font-size:15px;line-height:1.5">Type the number you found. The keypad pops up to type it, then goes away when you submit or cancel.</div>' +
     '<div style="height:12px"></div>' +
-    '<div class="huntRow"><span class="huntInputWrap"><input id="huntInput" type="text" placeholder="Type a number…"' + ro + ' autocomplete="off" autocapitalize="characters"><button id="huntClear" class="huntClear hidden" aria-label="Clear number">✕</button></span><button id="huntGo">Check</button></div>' +
-    '<div class="dialpad" id="dialpad">' +
+    '<div class="huntRow"><span class="huntInputWrap"><input id="lfPhoneInput" type="text" placeholder="Type a number…"' + ro + ' autocomplete="off" autocapitalize="characters"><button id="lfPhoneClear" class="huntClear hidden" aria-label="Clear number">✕</button></span><button id="lfPhoneGo">Check</button></div>' +
+    '<div class="dialpad" id="lfDialpad">' +
       ['1|', '2|ABC', '3|DEF', '4|GHI', '5|JKL', '6|MNO', '7|PQRS', '8|TUV', '9|WXYZ', '', '0|+', 'back|⌫'].map(d => {
         if (!d) return '<span></span>';
         const parts = d.split('|');
@@ -1099,13 +1216,12 @@ function huntHTML() {
         return '<button data-d="' + parts[0] + '">' + parts[0] + (parts[1] ? '<span class="sub">' + parts[1] + '</span>' : '') + '</button>';
       }).join('') +
     '</div>' +
-    '<div id="huntResult"></div>' +
-    '<div class="big" style="margin-top:18px">Numbers you found</div>' +
-    '<div id="foundList">' + foundListHTML() + '</div></div>';
+    '<div id="lfPhoneResult"></div>' +
+    '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back</button></div>';
 }
-function huntCheck(raw) {
+function lfPhoneCheck(raw) {
   const k = normNum(raw);
-  const res = document.getElementById('huntResult');
+  const res = document.getElementById('lfPhoneResult');
   if (!k) { res.innerHTML = ''; return; }
   const known = knownNumbers();
   const p = known[k];
@@ -1113,44 +1229,30 @@ function huntCheck(raw) {
     const isNew = !found.has(k);
     found.add(k);
     saveFound();
-    const known = knownNumbers();
     const n = foundCount();
     const total = Object.keys(known).length;
     const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
-    updateFoundList();
     res.innerHTML = '<div class="result good"><div class="rtitle">' + (p.confirmed ? '✓ Confirmed!' : 'Known — but unconfirmed') + '</div>' +
       '<div class="rmeta">' + esc(p.number) + unconf + '</div>' +
       '<div class="rdesc">' + (isNew ? 'Added to your found count.' : 'You already found this one.') + ' ' + n + ' of ' + total + ' found.</div>' +
       foundInHTML(data.phones.filter(x => normNum(x.number) === k)) +
-      '<label>What room did you find it in? <span style="color:#888">(optional)</span><input id="cfRoom" type="text" placeholder="Type a room name, or describe where you are" autocomplete="off"><div class="roomList hidden" id="cfRoomList"></div></label>' +
-      '<label>Any other notes? <span style="color:#888">(optional)</span><textarea id="cfNotes" placeholder="e.g. written on the wall by the projector"></textarea></label>' +
-      profileFieldsHTML('cf') +
-      '<button class="submitBtn" id="cfGo">Report this find</button>' +
-      '<button class="cancelBtn" id="cfCancel">Cancel</button></div>';
-    attachRoomPicker(document.getElementById('cfRoom'), document.getElementById('cfRoomList'));
-    document.getElementById('cfCancel').addEventListener('click', () => {
-      document.getElementById('huntResult').innerHTML = '';
-      const inp = document.getElementById('huntInput');
-      if (inp) inp.value = '';
-      refreshHuntClear();
+      '<label>What room did you find it in? <span style="color:#888">(optional)</span><input id="lfPhRoom" type="text" placeholder="Type a room name, or leave it blank" autocomplete="off"><div class="roomList hidden" id="lfPhRoomList"></div></label>' +
+      '<label>Any other notes? <span style="color:#888">(optional)</span><textarea id="lfPhNotes" placeholder="e.g. written on the wall by the projector; what it said when you called"></textarea></label>' +
+      profileFieldsHTML('lfph') +
+      '<button class="submitBtn" id="lfPhGo">Report this find</button>' +
+      '<button class="cancelBtn" id="lfPhCancel">Done</button></div>';
+    attachRoomPicker(document.getElementById('lfPhRoom'), document.getElementById('lfPhRoomList'));
+    document.getElementById('lfPhCancel').addEventListener('click', () => { lfReset(); render(); });
+    document.getElementById('lfPhGo').addEventListener('click', () => {
+      const room = document.getElementById('lfPhRoom').value.trim();
+      const notes = document.getElementById('lfPhNotes').value.trim();
+      const pv = profileValues('lfph');
+      openResearchReport('Phone #', p.number, room, notes);
+      if (pv.agent || pv.email || pv.text) { profile = pv; saveProfile(); setProfileBtn(); }
     });
-    attachRoomPicker(document.getElementById('cfRoom'), document.getElementById('cfRoomList'));
-    document.getElementById('cfGo').addEventListener('click', () => {
-      const room = document.getElementById('cfRoom').value.trim();
-      const notes = document.getElementById('cfNotes').value.trim();
-      const pv = profileValues('cf');
-      const params = {};
-      params[FORM_ENTRY.number] = p.number;
-      params[FORM_ENTRY.room] = room;
-      params[FORM_ENTRY.said] = notes;
-      if (pv.agent) params[FORM_ENTRY.agent] = pv.agent;
-      if (pv.email) params[FORM_ENTRY.email] = pv.email;
-      if (pv.text) params[FORM_ENTRY.text] = pv.text;
-      window.open(formUrlWith(params), '_blank');
-    });
-    const inp = document.getElementById('huntInput');
+    const inp = document.getElementById('lfPhoneInput');
     if (inp) inp.value = '';
-    refreshHuntClear();
+    document.getElementById('lfPhoneClear').classList.add('hidden');
   } else {
     /* Digit-count warning (Allen, 2026-11-18): 23 of the 24 known numbers
        are 6 digits (8000, the voicemail number, is the only 4-digit one —
@@ -1160,50 +1262,238 @@ function huntCheck(raw) {
       res.innerHTML = '<div class="result warn"><div class="rtitle">Double-check this number</div>' +
         '<div class="rmeta">' + esc(raw.trim()) + '</div>' +
         '<div class="rdesc">Currently known numbers appear to be 6 digits, and this one has ' + k.length + '. Are you sure you typed it right?</div>' +
-        '<button class="submitBtn" id="digitGo">Yes — report it</button>' +
-        '<button class="cancelBtn" id="digitFix">No — let me fix it</button></div>';
-      document.getElementById('digitGo').addEventListener('click', () => showNewNumberForm(raw));
-      document.getElementById('digitFix').addEventListener('click', () => { res.innerHTML = ''; });
+        '<button class="submitBtn" id="lfDigitGo">Yes — report it</button>' +
+        '<button class="cancelBtn" id="lfDigitFix">No — let me fix it</button></div>';
+      document.getElementById('lfDigitGo').addEventListener('click', () => lfPhoneNewForm(raw));
+      document.getElementById('lfDigitFix').addEventListener('click', () => { res.innerHTML = ''; });
       return;
     }
-    showNewNumberForm(raw);
+    lfPhoneNewForm(raw);
   }
 }
-function showNewNumberForm(raw) {
-  const res = document.getElementById('huntResult');
+function lfPhoneNewForm(raw) {
+  const res = document.getElementById('lfPhoneResult');
   res.innerHTML = '<div class="result new"><div class="rtitle">Not in the guide yet</div>' +
       '<div class="rmeta">' + esc(raw.trim()) + '</div>' +
-      '<div class="rdesc">This number is not in the Telephone Directory. Found something new? Tell us about it — it goes to Allen for review.</div>' +
-      '<label>Which room did you find it in?<input id="subRoom" type="text" placeholder="Type a room name, or describe where you are" autocomplete="off"><div class="roomList hidden" id="subRoomList"></div></label>' +
-      '<label>On what did you find the number?<input id="subOn" type="text" placeholder="e.g. note on wall, business card"></label>' +
-      '<label>What does this number do when you call?<textarea id="subSaid" placeholder="Describe what happens when you call it — what you hear, what it says."></textarea></label>' +
-      profileFieldsHTML('sub') +
-      '<button class="submitBtn" id="subGo">Report this number</button>' +
-      '<button class="cancelBtn" id="subCancel">Cancel</button></div>';
-    attachRoomPicker(document.getElementById('subRoom'), document.getElementById('subRoomList'));
-    document.getElementById('subCancel').addEventListener('click', () => {
-      document.getElementById('huntResult').innerHTML = '';
-      const inp = document.getElementById('huntInput');
-      if (inp) inp.value = '';
-      refreshHuntClear();
-    });
-    attachRoomPicker(document.getElementById('subRoom'), document.getElementById('subRoomList'));
-    document.getElementById('subGo').addEventListener('click', () => {
-      const room = document.getElementById('subRoom').value.trim();
-      const onwhat = document.getElementById('subOn').value.trim();
-      const said = document.getElementById('subSaid').value.trim();
-      const pv = profileValues('sub');
-      const params = {};
-      params[FORM_ENTRY.number] = raw.trim();
-      params[FORM_ENTRY.room] = room;
-      params[FORM_ENTRY.onwhat] = onwhat;
-      params[FORM_ENTRY.said] = said;
-      if (pv.agent) params[FORM_ENTRY.agent] = pv.agent;
-      if (pv.email) params[FORM_ENTRY.email] = pv.email;
-      if (pv.text) params[FORM_ENTRY.text] = pv.text;
-      window.open(formUrlWith(params), '_blank');
+      '<div class="rdesc">This number is not in the Telephone Directory. Found something new? Tell us about it — it goes to Allen for review. Reporting it doesn’t check it off; it becomes checkable once we verify and add it.</div>' +
+      '<label>Which room did you find it in? <span style="color:#888">(optional)</span><input id="lfNewRoom" type="text" placeholder="Type a room name, or leave it blank" autocomplete="off"><div class="roomList hidden" id="lfNewRoomList"></div></label>' +
+      '<label>What does this number do when you call? <span style="color:#888">(optional)</span><textarea id="lfNewSaid" placeholder="Describe what happens when you call it — what you hear, what it says."></textarea></label>' +
+      profileFieldsHTML('lfnew') +
+      '<button class="submitBtn" id="lfNewGo">Report this number</button>' +
+      '<button class="cancelBtn" id="lfNewCancel">Cancel</button></div>';
+    attachRoomPicker(document.getElementById('lfNewRoom'), document.getElementById('lfNewRoomList'));
+    document.getElementById('lfNewCancel').addEventListener('click', () => { res.innerHTML = ''; });
+    document.getElementById('lfNewGo').addEventListener('click', () => {
+      const room = document.getElementById('lfNewRoom').value.trim();
+      const said = document.getElementById('lfNewSaid').value.trim();
+      const pv = profileValues('lfnew');
+      openResearchReport('Phone #', raw.trim(), room, said);
+      if (pv.agent || pv.email || pv.text) { profile = pv; saveProfile(); setProfileBtn(); }
     });
 }
+/* Secret Passage (v1.16.0, Allen 2026-11-19): you report the DESTINATION.
+   If you don't know where it goes, you don't really know what it is yet —
+   no partial credit, no "unknown destination" log. If the passage is a
+   known hidden connection, logging it reveals it for you and Wayfinder
+   can use it. If it's a public connection already, it isn't a secret.
+   If it's neither, it's a new passage — report it. */
+function lfPassageResolve(from, to) {
+  if ((from.connections || []).includes(to.name)) {
+    lf.step = 'done';
+    lf.msg = '<div class="result"><div class="rtitle">Already a public connection</div>' +
+      '<div class="rdesc">' + esc(from.name) + ' already connects to ' + esc(to.name) + ' in the open — that’s not a secret passage.</div></div>';
+    render();
+    return;
+  }
+  if ((from.spoilerConnections || []).includes(to.name)) {
+    const k = passageKey(from.name, to.name);
+    const isNew = !foundPassages.has(k);
+    foundPassages.add(k);
+    saveFoundPassages();
+    lf.step = 'done';
+    lf.msg = '<div class="result good"><div class="rtitle">✓ Secret passage found!</div>' +
+      '<div class="rdesc">' + esc(from.name) + ' → ' + esc(to.name) + (isNew ? ' — revealed for you. Wayfinder can now use it, and it shows on the room sheet.' : ' — you already logged this one.') + '</div></div>';
+    render();
+    return;
+  }
+  lf.step = 'done';
+  lf.msg = '<div class="result new"><div class="rtitle">A passage we don’t have</div>' +
+    '<div class="rdesc">' + esc(from.name) + ' → ' + esc(to.name) + ' isn’t in the guide. Report it and we’ll check it out.</div>' +
+    '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">Notes <span style="color:#888">(optional)</span><textarea id="lfPassNotes" placeholder="What did the passage look like? A door, a curtain, a crawl?"></textarea></label>' +
+    '<button class="submitBtn" id="lfPassGo" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report this passage</button></div>';
+  render();
+  document.getElementById('lfPassGo').addEventListener('click', () => {
+    const notes = (document.getElementById('lfPassNotes') || {}).value || '';
+    openResearchReport('Secret Passage', from.name + ' → ' + to.name, from.name, notes.trim());
+  });
+}
+function logFindHTML() {
+  if (lf.step === 'options') return lfOptionsHTML();
+  if (lf.step === 'done') {
+    return '<div class="huntBox">' + lf.msg +
+      '<button class="transcriptBtn" id="lfAgain" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:12px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Log another find</button>' +
+      '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back to options</button></div>';
+  }
+  if (lf.step === 'phone-number') return lfPhoneHTML();
+  if (lf.step === 'room') {
+    return lfRoomPickerHTML(
+      lf.type === 'room' ? 'Room' : 'Which room?',
+      lf.type === 'room'
+        ? 'Search for the room you’re in, by name or by what it looks like. Tapping it marks it visited.'
+        : 'Search for the room you’re in, by name or by what it looks like. The room stays picked if you go back and try another kind of find.'
+    );
+  }
+  if (lf.step === 'dest') {
+    return lfRoomPickerHTML(
+      'What room does it connect with?',
+      'You found a secret passage in <b>' + esc(lf.room.name) + '</b>. Pick the room it goes to — by name, or by what it looks like. You have to name the destination to get credit: if you don’t know where it goes, you don’t really know what it is yet.'
+    );
+  }
+  /* items step: FAZR types and Phone in the picked room. */
+  if (lf.step === 'items') {
+    const room = lf.room;
+    let body = '';
+    if (LF_FAZR_TYPES.includes(lf.type)) {
+      body = lfFazrItemsHTML(lf.type, room);
+    } else if (lf.type === 'phone') {
+      const phones = data.telephones.filter(t => t.name === room.name);
+      if (!phones.length) {
+        body = '<div class="empty">No phone recorded in ' + esc(room.name) + ' yet.</div>' +
+          '<div class="result new"><div class="rtitle">Found a phone we don’t have?</div>' +
+          '<div class="rdesc">If there’s a phone in this room that isn’t listed, report it — it goes to Allen for review.</div>' +
+          '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">Notes <span style="color:#888">(optional)</span><textarea id="lfNewNotes" placeholder="What does the phone look like? Where exactly is it?"></textarea></label>' +
+          '<button class="submitBtn" id="lfNewPhone" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report a new phone</button></div>';
+      } else {
+        body = phones.map(t => {
+          const done = foundTelephones.has(telephoneKey(t));
+          return '<div class="item" data-lftel="' + esc(telephoneKey(t)) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(telephoneKey(t)) + '" aria-label="Mark found">✓</button>' +
+            '<div class="body"><div class="name">' + esc(t.name) + '</div>' +
+            '<div class="meta">Floor ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
+        }).join('') +
+          '<div class="result new" style="margin-top:12px"><div class="rtitle">Found a different phone?</div>' +
+          '<div class="rdesc">If there’s another phone in this room that isn’t listed, report it.</div>' +
+          '<label style="display:block;margin-top:12px;font-size:14px;color:#aaa">Notes <span style="color:#888">(optional)</span><textarea id="lfNewNotes" placeholder="What does the phone look like? Where exactly is it?"></textarea></label>' +
+          '<button class="submitBtn" id="lfNewPhone" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report a new phone</button></div>';
+      }
+    }
+    return '<div class="huntBox"><div class="big">' + esc(lf.type === 'phone' ? 'Phone' : lf.type) + ' in ' + esc(room.name) + '</div>' +
+      body +
+      '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back</button></div>';
+  }
+  return lfOptionsHTML();
+}
+function lfAttach() {
+  if (lf.step === 'options') {
+    const clearBtn = document.getElementById('lfClearRoom');
+    if (clearBtn) clearBtn.addEventListener('click', () => { lf.room = null; render(); });
+    document.querySelectorAll('[data-lftype]').forEach(b => {
+      b.addEventListener('click', () => {
+        lf.type = b.dataset.lftype;
+        lf.dest = null;
+        lf.msg = '';
+        if (lf.type === 'phone-number') { lf.step = 'phone-number'; render(); return; }
+        if (lf.room) { lf.step = 'items'; render(); return; }
+        lf.step = 'room';
+        render();
+      });
+    });
+    return;
+  }
+  if (lf.step === 'done') {
+    document.getElementById('lfAgain').addEventListener('click', () => { lfReset(); render(); });
+    document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; lf.msg = ''; render(); });
+    return;
+  }
+  if (lf.step === 'phone-number') {
+    const inp = document.getElementById('lfPhoneInput');
+    const go = document.getElementById('lfPhoneGo');
+    const run = () => lfPhoneCheck(inp.value);
+    go.addEventListener('click', run);
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+    if (hasKeyboard) inp.addEventListener('input', () => {
+      const clean = inp.value.toUpperCase().replace(/[^0-9A-Z-]/g, '');
+      if (clean !== inp.value) inp.value = clean;
+      document.getElementById('lfPhoneClear').classList.toggle('hidden', !inp.value);
+    });
+    document.getElementById('lfPhoneClear').addEventListener('click', () => {
+      inp.value = '';
+      document.getElementById('lfPhoneResult').innerHTML = '';
+      document.getElementById('lfPhoneClear').classList.add('hidden');
+    });
+    document.querySelectorAll('#lfDialpad button').forEach(b => {
+      b.addEventListener('click', () => {
+        const d = b.dataset.d;
+        if (d === 'back') inp.value = inp.value.slice(0, -1);
+        else inp.value += d;
+        document.getElementById('lfPhoneClear').classList.toggle('hidden', !inp.value);
+      });
+    });
+    document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; render(); });
+    return;
+  }
+  if (lf.step === 'room') {
+    lfAttachRoomPicker((r) => {
+      if (lf.type === 'room') {
+        const k = roomKey(r);
+        const isNew = !visited.has(k);
+        visited.add(k);
+        saveVisited();
+        lf.step = 'done';
+        lf.msg = '<div class="result good"><div class="rtitle">✓ ' + esc(r.name) + ' marked visited</div>' +
+          '<div class="rdesc">' + (isNew ? 'Added to your visited rooms.' : 'You already marked this one visited.') + '</div></div>';
+        render();
+        return;
+      }
+      if (lf.type === 'passage') { lf.room = r; lf.step = 'dest'; render(); return; }
+      lf.room = r;
+      lf.step = 'items';
+      render();
+    });
+    return;
+  }
+  if (lf.step === 'dest') {
+    lfAttachRoomPicker((r) => {
+      lf.dest = r;
+      lfPassageResolve(lf.room, r);
+    });
+    return;
+  }
+  if (lf.step === 'items') {
+    document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; render(); });
+    /* FAZR rows: tap the row (or its checkmark) to mark the point found.
+       A hidden point you log is revealed for you from then on. */
+    list.querySelectorAll('[data-lffazr]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const f = data.fazr[+el.dataset.lffazr];
+        if (!f) return;
+        const k = fazrKey(f);
+        if (foundFazr.has(k)) foundFazr.delete(k); else foundFazr.add(k);
+        saveFoundFazr();
+        render();
+      });
+    });
+    list.querySelectorAll('[data-lftel]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const k = el.dataset.lftel;
+        if (foundTelephones.has(k)) foundTelephones.delete(k); else foundTelephones.add(k);
+        saveFoundTelephones();
+        render();
+      });
+    });
+    const newFazr = document.getElementById('lfNewFazr');
+    if (newFazr) newFazr.addEventListener('click', () => {
+      const notes = (document.getElementById('lfNewNotes') || {}).value || '';
+      openResearchReport(lf.type, '', lf.room.name, notes.trim());
+    });
+    const newPhone = document.getElementById('lfNewPhone');
+    if (newPhone) newPhone.addEventListener('click', () => {
+      const notes = (document.getElementById('lfNewNotes') || {}).value || '';
+      openResearchReport('Phone', '', lf.room.name, notes.trim());
+    });
+    return;
+  }
+}
+
 
 function render() {
   const needle = q.value.trim().toLowerCase();
@@ -1214,32 +1504,8 @@ function render() {
     fazrTypeFilters.classList.add('hidden');
     dossierTabs.classList.add('hidden');
     count.textContent = '';
-    list.innerHTML = huntHTML();
-    attachFoundListTaps();
-    const inp = document.getElementById('huntInput');
-    const go = document.getElementById('huntGo');
-    const run = () => huntCheck(inp.value);
-    go.addEventListener('click', run);
-    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
-    if (hasKeyboard) inp.addEventListener('input', () => {
-      const clean = inp.value.toUpperCase().replace(/[^0-9A-Z-]/g, '');
-      if (clean !== inp.value) inp.value = clean;
-      refreshHuntClear();
-    });
-    document.getElementById('huntClear').addEventListener('click', () => {
-      inp.value = '';
-      document.getElementById('huntResult').innerHTML = '';
-      refreshHuntClear();
-    });
-    document.querySelectorAll('#dialpad button').forEach(b => {
-      b.addEventListener('click', () => {
-        const d = b.dataset.d;
-        if (d === 'back') inp.value = inp.value.slice(0, -1);
-        else inp.value += d;
-        refreshHuntClear();
-      });
-    });
-    refreshHuntClear();
+    list.innerHTML = logFindHTML();
+    lfAttach();
     return;
   }
   q.classList.remove('hidden');
@@ -1257,12 +1523,12 @@ function render() {
     const rm = data.rooms.filter(r => {
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
       else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
-      return [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase().includes(needle);
+      return roomSearchHay(r).toLowerCase().includes(needle);
     });
     const pp = data.people.filter(p => [p.name, p.description].join(' ').toLowerCase().includes(needle));
     const tel = data.telephones.filter(t => [t.name, t.description].join(' ').toLowerCase().includes(needle));
     const ph = uniqueNumbers().filter(p => numberMatches(p, needle));
-    const fz = data.fazr.filter(f => (!noSpoilers || !f.spoiler) && (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
+    const fz = data.fazr.filter(f => fazrVisible(f) && (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
     const total = rm.length + pp.length + tel.length + ph.length + fz.length;
     count.textContent = total + ' result' + (total === 1 ? '' : 's') + ' for “' + q.value.trim() + '”';
     let html = '';
@@ -1474,7 +1740,7 @@ function render() {
        points are hidden (no "33 of 36"). */
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.remove('hidden');
-    const visibleFazr = data.fazr.filter(f => !noSpoilers || !f.spoiler);
+    const visibleFazr = data.fazr.filter(f => fazrVisible(f));
     items = visibleFazr.filter(f => fazrType === 'all' || f.type === fazrType);
     const foundVisible = visibleFazr.filter(f => foundFazr.has(fazrKey(f))).length;
     count.textContent = items.length + ' of ' + visibleFazr.length + ' FAZR points · ' + foundVisible + ' found';

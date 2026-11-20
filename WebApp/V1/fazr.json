@@ -1,7 +1,7 @@
 {
-  "generated": "2026-11-20",
+  "generated": "2026-11-19",
   "source": "Atlas9 Data — FAZR",
-  "count": 36,
+  "count": 45,
   "fazr": [
     {
       "room": "Arcade",
@@ -253,6 +253,69 @@
       "type": "INTERFAZE",
       "spoiler": false,
       "description": "INTERFAZE screen",
+      "photo": null
+    },
+    {
+      "room": "Lobby",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 1 — entrance to Sapphire Stroll",
+      "photo": null
+    },
+    {
+      "room": "Scavengers/School Desks",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 2 — toys area",
+      "photo": null
+    },
+    {
+      "room": "Employee Break Room",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 3 — cigarette machine",
+      "photo": null
+    },
+    {
+      "room": "Sapphire Jazz Club",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 4 — Fun Zone (party room)",
+      "photo": null
+    },
+    {
+      "room": "Scavengers",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 5 — battle / delayered posters",
+      "photo": null
+    },
+    {
+      "room": "MossMan",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 6 — jungle",
+      "photo": null
+    },
+    {
+      "room": "Sapphire Jazz Club Balcony",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 7 — adjacent to the Projection Room",
+      "photo": null
+    },
+    {
+      "room": "Lobby",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 8 — entrance to FACADE Field Lab",
+      "photo": null
+    },
+    {
+      "room": "Lobby",
+      "type": "FAZR-Portal",
+      "spoiler": false,
+      "description": "Portal 9 — entrance to Theater",
       "photo": null
     }
   ]
