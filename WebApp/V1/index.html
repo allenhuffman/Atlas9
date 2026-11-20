@@ -31,6 +31,16 @@
   .subtabs button { flex: 1; font-size: 15px; padding: 8px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1c; color: #ccc; cursor: pointer; }
   .subtabs button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
   .subtabs.hidden { display: none; }
+  /* narrow screens (v1.12.1): wrap the 6 Dossier tabs 3+3 and the 5 FAZR
+     type filters 3+2, all buttons equal width so both rows look even.
+     The 4-button Rooms filter still fits in one row at 390px, so it is
+     left alone. Wide screens keep the single row exactly as before. */
+  @media (max-width: 600px) {
+    .subtabs { flex-wrap: wrap; }
+    .subtabs button { flex: 0 0 calc((100% - 16px) / 3); }
+    #fazrTypeFilters { flex-wrap: wrap; }
+    #fazrTypeFilters button { flex: 0 0 calc((100% - 16px) / 3); }
+  }
   .hidden { display: none; }
   #count { color: #999; font-size: 13px; padding: 8px 14px 0; }
   #list { padding: 6px 14px 30px; }
@@ -187,7 +197,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.12.1';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
