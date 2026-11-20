@@ -79,8 +79,13 @@
   #sheet .connRow .meta { color: #aaa; font-size: 14px; white-space: nowrap; }
   #sheet .connRow .chev { color: #aaa; font-size: 18px; }
   /* FAZR rows (v1.9.7): same look as "Connects to:" rows, but plain text
-     (not tappable) — a FAZR point has no detail sheet. */
+     (not tappable) — the FAZR detail sheet opens from the FAZR list,
+     not from the room sheet. */
   #sheet .fazrRow { padding: 12px 2px; border-bottom: 1px solid #2a2a2a; color: #eee; font-size: 16px; }
+  /* FAZR detail sheet (v1.12.0): the room name at the top is a tappable
+     title (h2-styled button) that opens the room's detail sheet. */
+  #sheet .titleLink { display: flex; align-items: center; gap: 10px; width: 100%; padding: 0; margin: 0 0 4px; background: none; border: none; color: #eee; font-size: 22px; font-weight: bold; text-align: left; cursor: pointer; font-family: inherit; }
+  #sheet .titleLink .chev { color: #aaa; font-size: 18px; margin-left: auto; }
   /* Wayfinder (v1.10.0): the floor-change divider between route steps. */
   #sheet .wfVia { text-align: center; color: #e0a800; font-size: 14px; padding: 10px 0 2px; }
   #sheet .wfSummary { margin-top: 6px; font-size: 16px; color: #ddd; }
@@ -90,8 +95,9 @@
   .item .name { font-size: 18px; font-weight: bold; }
   .item .name .star { color: #e0a800; }
   .item .name .unconf { color: #e0a800; font-weight: normal; font-size: 14px; }
-  /* FAZR Dossier tab (v1.11.0): small type badge next to the room name. */
-  .item .fazrType { font-size: 12px; font-weight: normal; color: #e0a800; border: 1px solid #555; border-radius: 10px; padding: 2px 8px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
+  /* FAZR Dossier tab (v1.11.0): small type badge next to the room name.
+     Unscoped (v1.12.0) so the FAZR detail sheet title can reuse it. */
+  .fazrType { font-size: 12px; font-weight: normal; color: #e0a800; border: 1px solid #555; border-radius: 10px; padding: 2px 8px; margin-left: 6px; vertical-align: 2px; white-space: nowrap; }
   .item .meta { color: #aaa; font-size: 14px; margin-top: 2px; }
   .item .desc { margin-top: 6px; font-size: 15px; line-height: 1.45; color: #ddd; }
   .item .desc:empty { display: none; }
@@ -181,7 +187,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode is the research tool — it confirms a number without saying what it is for. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.11.0';
+const APP_VERSION = '1.12.0';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -507,7 +513,8 @@ function roomSheet(r) {
   /* "FAZR:" (v1.9.7): FAZR points in this room, from fazr.json. Public
      points always show type + description; spoiler points show a
      placeholder with spoilers off, same as room descriptions. Rows are
-     plain (not tappable) — a FAZR point has no detail sheet. */
+     plain (not tappable) — the FAZR detail sheet opens from the FAZR
+     list, not from the room sheet. */
   const roomFazr = (data.fazr || []).filter(f => f.room === r.name);
   const fazrHTML = roomFazr.length
     ? '<div class="connHead">FAZR:</div>' + roomFazr.map(f => {
@@ -810,6 +817,33 @@ function telephoneSheet(t) {
     render();
   });
   document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Phone: ' + t.name + ' — ' + t.description));
+}
+/* FAZR detail sheet (v1.12.0, Allen 2026-11-19): FAZR points work like
+   phones — the FAZR list opens a page for that FAZR point, with room to
+   add details later. The room name at the top is tappable and opens the
+   room's detail sheet. The photo shows large when one exists (Mesmerite
+   only, for now). The "Submit information" button appears only when the
+   builder baked "RESEARCH NEEDED. Submit information." into the
+   description (blank description + Research needed?=TRUE) — fazr.json
+   carries no research flag, so the baked text is the signal. */
+function fazrSheet(f) {
+  const room = data.rooms.find(x => x.name === f.room);
+  const photo = f.photo ? '<img class="photo" src="' + esc(f.photo) + '" alt="">' : '';
+  const needsResearch = (f.description || '').indexOf('RESEARCH NEEDED') === 0;
+  const floorMeta = room && room.level != null ? '<div class="meta">' + floorLabel(room.level) + '</div>' : '';
+  openSheet(
+    '<button class="titleLink" id="sheetRoom"><span>' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></span><span class="chev">›</span></button>' +
+    floorMeta +
+    photo +
+    '<div class="desc">' + fazrDescHTML(f) + '</div>' +
+    (needsResearch ? '<button class="transcriptBtn" id="sheetNote">Submit information</button>' : '') +
+    '<button class="close" id="sheetClose">Close</button>'
+  , false, true);
+  document.getElementById('sheetRoom').addEventListener('click', () => {
+    if (room) roomSheet(room);
+  });
+  const note = document.getElementById('sheetNote');
+  if (note) note.addEventListener('click', () => openResearchNote('FAZR: ' + f.room + ' — ' + f.type));
 }
 function transcriptText(p) {
   if (!p.transcript) return '';
@@ -1206,7 +1240,7 @@ function render() {
     }
     if (fz.length) {
       html += '<div style="color:#e0a800;font-size:13px;font-weight:bold;padding:12px 0 0">FAZR</div>';
-      html += fz.map((f) => fazrItemHTML(f, ' data-kind="fazr" data-name="' + esc(f.room) + '"')).join('');
+      html += fz.map((f) => fazrItemHTML(f, ' data-kind="fazr" data-name="' + data.fazr.indexOf(f) + '"')).join('');
     }
     list.innerHTML = html || '<div class="empty">Nothing matches.</div>';
     list.querySelectorAll('.check').forEach(b => {
@@ -1245,8 +1279,8 @@ function render() {
           const t = data.telephones.find(x => telephoneKey(x) === el.dataset.name);
           if (t) telephoneSheet(t);
         } else if (kind === 'fazr') {
-          const r = data.rooms.find(x => x.name === el.dataset.name);
-          if (r) roomSheet(r);
+          const f = data.fazr[+el.dataset.name];
+          if (f) fazrSheet(f);
         } else {
           const p = data.phones.find(x => x.number === el.dataset.name);
           if (p) phoneSheet(p);
@@ -1362,19 +1396,15 @@ function render() {
     /* FAZR points (v1.11.0): one row per point — room name + type badge +
        description, thumbnail where one exists (Mesmerite only, for now).
        The type filter row above the list filters by type. Tapping a row
-       opens that room's detail sheet. No checklist — FAZR points are
-       reference, not a hunt. */
+       opens that FAZR point's detail sheet (v1.12.0). No checklist — FAZR
+       points are reference, not a hunt. */
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.remove('hidden');
     items = data.fazr.filter(f => fazrType === 'all' || f.type === fazrType);
     count.textContent = items.length + ' of ' + data.fazr.length + ' FAZR points';
     list.innerHTML = items.length ? items.map((f, i) => fazrItemHTML(f, ' data-i="' + i + '"')).join('') : '<div class="empty">No FAZR points match.</div>';
     list.querySelectorAll('.item').forEach(el => {
-      el.addEventListener('click', () => {
-        const f = items[+el.dataset.i];
-        const r = data.rooms.find(x => x.name === f.room);
-        if (r) roomSheet(r);
-      });
+      el.addEventListener('click', () => fazrSheet(items[+el.dataset.i]));
     });
   } else {
     levelFilters.classList.add('hidden');
