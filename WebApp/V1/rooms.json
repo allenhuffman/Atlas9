@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-19",
-  "source": "Atlas9 Data — Rooms",
+  "generated": "2026-11-20",
+  "source": "Atlas9 Data — Rooms + Connections",
   "count": 59,
   "rooms": [
     {
@@ -27,8 +27,8 @@
       "spoiler": false,
       "spoilerDetail": "One of the Photobooths is a secret entrance to Headshot Remixer.",
       "connections": [
-        "PhotoBooth (Left)",
-        "Lobby"
+        "Lobby",
+        "PhotoBooth (Left)"
       ]
     },
     {
@@ -78,7 +78,8 @@
       "spoiler": false,
       "connections": [
         "Projection Room",
-        "Theater Stairs"
+        "Theater Stairs",
+        "Letter Hallway"
       ]
     },
     {
@@ -142,11 +143,11 @@
       "photo": null,
       "spoiler": false,
       "connections": [
+        "Concession Crawl",
+        "Licorice Lounge",
         "Party Room (Fun Zone)",
         "Prototyzer",
-        "Licorice Lounge",
-        "Scavengers",
-        "Concession Crawl"
+        "Scavengers"
       ]
     },
     {
@@ -172,10 +173,10 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Gift Shop",
         "Box Office",
-        "Splice Bros Pizza & Pub",
+        "Gift Shop",
         "Lobby",
+        "Splice Bros Pizza & Pub",
         "VERA"
       ]
     },
@@ -235,10 +236,10 @@
       "spoiler": false,
       "spoilerDetail": "Hidden door behind soda machine. Trash can screams. Refrigerator makes noise when opened.",
       "connections": [
-        "Theater Manager’s Office",
-        "Sapphire Stroll",
         "Atlas9 Storage",
-        "Lobby"
+        "Lobby",
+        "Sapphire Stroll",
+        "Theater Manager’s Office"
       ],
       "spoilerConnections": [
         "Headshot Remixer"
@@ -258,8 +259,8 @@
       "spoiler": false,
       "connections": [
         "Lobby",
-        "Theater Crawl",
-        "Power Supply"
+        "Power Supply",
+        "Theater Crawl"
       ]
     },
     {
@@ -270,7 +271,7 @@
       "artists": [
         "Cory Hinesley"
       ],
-      "description": "desk with computer, couch bed, and film cannisters.",
+      "description": "desk with computer, couch bed, and film canisters.",
       "photo": null,
       "spoiler": false,
       "connections": [
@@ -334,23 +335,23 @@
       "photo": null,
       "spoiler": false,
       "connections": [
+        "Hypnotizer Crawl",
         "Mesmerite, The",
-        "Hypnotizer Crawl"
+        "Sapphire Jazz Club"
       ]
     },
     {
-      "name": "Key of Color",
-      "official": true,
-      "level": 1,
+      "name": "Letter Hallway",
+      "official": false,
+      "level": 2,
       "section": "rooms",
-      "artists": [
-        "Erick Bachmann"
-      ],
-      "description": "mound room in Scavengers.",
+      "artists": [],
+      "description": "Hallway with red letters on the ceiling.",
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Scavengers/TV Den"
+        "Theater Upper",
+        "StarBot"
       ]
     },
     {
@@ -378,18 +379,18 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "FACADE Field Lab",
-        "Theater",
         "Agent Onboarding area (lobby)",
         "Arcade",
         "Concessions (Lobby)",
-        "MossMan",
-        "Sapphire Stroll",
+        "Containment Zone",
         "Elevator (Lobby/Starbot)",
-        "Stairs (Lobby/Starbot)",
         "Employee Break Room",
+        "FACADE Field Lab",
+        "MossMan",
         "Restrooms (Lobby)",
-        "Containment Zone"
+        "Sapphire Stroll",
+        "Stairs (Lobby/Starbot)",
+        "Theater"
       ]
     },
     {
@@ -404,8 +405,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Victor’s Study",
-        "Sapphire Jazz Club Balcony"
+        "Sapphire Jazz Club Balcony",
+        "Victor’s Study"
       ]
     },
     {
@@ -421,8 +422,7 @@
       "spoiler": false,
       "connections": [
         "Hypnotizer Room, The",
-        "Round Mirrors",
-        "Sapphire Jazz Club"
+        "Round Mirrors"
       ]
     },
     {
@@ -450,16 +450,16 @@
       "artists": [
         "Rachel Eilts"
       ],
-      "description": "inner lobby overgrown with vegitation.",
+      "description": "inner lobby overgrown with vegetation.",
       "photo": null,
       "spoiler": false,
       "spoilerDetail": "Look for the moss covered arm.",
       "connections": [
-        "Sapphire Jazz Club",
+        "Lobby",
         "Power Supply",
         "Prototyzer",
-        "Sapphire Stroll",
-        "Lobby"
+        "Sapphire Jazz Club",
+        "Sapphire Stroll"
       ]
     },
     {
@@ -472,9 +472,10 @@
       "photo": null,
       "spoiler": false,
       "connections": [
+        "FACADE Field Lab",
         "MossMan",
-        "Theater Crawl",
-        "FACADE Field Lab"
+        "Scavengers",
+        "Theater Crawl"
       ]
     },
     {
@@ -487,6 +488,7 @@
       "photo": null,
       "spoiler": false,
       "connections": [
+        "Concession Caverns",
         "MossMan",
         "Scavengers"
       ]
@@ -542,13 +544,13 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Party Room (Fun Zone)",
-        "MossMan",
-        "Sapphire Stroll",
         "Atlas9 Storage",
         "Concession Crawl",
         "Jazz Club Stairs",
-        "Mesmerite, The"
+        "MossMan",
+        "Party Room (Fun Zone)",
+        "Sapphire Stroll",
+        "Hypnotizer Room, The"
       ]
     },
     {
@@ -563,11 +565,11 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Malachi’s Alley",
         "Dub Den",
-        "Projection Room",
+        "Grayscale Swords",
         "Jazz Club Stairs",
-        "Grayscale Swords"
+        "Malachi’s Alley",
+        "Projection Room"
       ]
     },
     {
@@ -580,10 +582,11 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Employee Break Room",
-        "Sapphire Jazz Club",
         "Atlas9 Storage",
-        "Lobby"
+        "Employee Break Room",
+        "Lobby",
+        "MossMan",
+        "Sapphire Jazz Club"
       ]
     },
     {
@@ -601,10 +604,10 @@
       "spoiler": false,
       "connections": [
         "Concession Caverns",
+        "Crystal Cave, The",
         "Power Supply",
         "Prototyzer",
-        "Scavengers/TV Den",
-        "Crystal Cave, The"
+        "Scavengers/TV Den"
       ]
     },
     {
@@ -620,8 +623,7 @@
       "spoiler": false,
       "connections": [
         "Scavengers",
-        "Scavengers Stairs",
-        "Key of Color"
+        "Scavengers Stairs"
       ]
     },
     {
@@ -677,15 +679,16 @@
       "artists": [
         "Tinius"
       ],
-      "description": "sci-fie area. Contains elevator, stairs and single restroom.",
+      "description": "sci-fi area. Contains elevator, stairs and single restroom.",
       "photo": null,
       "spoiler": false,
       "connections": [
+        "Elevator (Lobby/Starbot)",
         "Film Storage",
-        "Speakereasy",
         "Restroom (Starbot)",
+        "Speakereasy",
         "Stairs (Lobby/Starbot)",
-        "Elevator (Lobby/Starbot)"
+        "Letter Hallway"
       ]
     },
     {
@@ -778,8 +781,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Mesmerite, The",
-        "Hypnotizer Crawl"
+        "Hypnotizer Crawl",
+        "Mesmerite, The"
       ]
     },
     {
@@ -809,9 +812,9 @@
       "photo": null,
       "spoiler": true,
       "connections": [
-        "Theater",
         "FACADE Field Lab",
-        "Power Supply"
+        "Power Supply",
+        "Theater"
       ]
     },
     {
@@ -824,8 +827,8 @@
       "photo": null,
       "spoiler": true,
       "connections": [
-        "Party Room (Fun Zone)",
         "Hypnotizer Room, The",
+        "Party Room (Fun Zone)",
         "Round Mirrors"
       ]
     },
@@ -839,8 +842,8 @@
       "photo": null,
       "spoiler": true,
       "connections": [
-        "Sapphire Jazz Club",
-        "Concession Caverns"
+        "Concession Caverns",
+        "Sapphire Jazz Club"
       ]
     },
     {
@@ -912,10 +915,10 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Scavengers/Battle Drums",
+        "Scavengers Stairs",
         "Scavengers Upper",
-        "Scavengers/School Desks",
-        "Scavengers Stairs"
+        "Scavengers/Battle Drums",
+        "Scavengers/School Desks"
       ]
     },
     {
@@ -942,8 +945,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Scavengers/TV Den",
-        "Scavengers/Green Hallway"
+        "Scavengers/Green Hallway",
+        "Scavengers/TV Den"
       ]
     }
   ]
