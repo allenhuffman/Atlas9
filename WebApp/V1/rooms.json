@@ -632,7 +632,7 @@
       "artists": [],
       "description": "bar serving beer, wine, cocktails and mocktails, small plates and desserts.",
       "photo": null,
-      "spoiler": true,
+      "spoiler": false,
       "spoilerDetail": "It sprang to life when the Holomax malfunction unleashed a cinemorphic bloom of speakers overhead and conjured a bar beneath them.",
       "connections": [
         "Projection Room",
