@@ -22,7 +22,13 @@
   .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
   .tabs button { flex: 1; font-size: 16px; padding: 10px 0; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
   .tabs button.on { background: #e0a800; border-color: #e0a800; color: #111; font-weight: bold; }
-  #q { width: 100%; font-size: 18px; padding: 10px 12px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; }
+  #q { width: 100%; font-size: 18px; padding: 10px 38px 10px 12px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; }
+  /* search clear buttons (v1.17.1): an explicit x at the right of every
+     search box — the native type=search clear button does not reliably
+     appear in the installed (standalone) app, so each box gets its own. */
+  .searchWrap { position: relative; display: block; }
+  .searchClear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: #999; font-size: 20px; cursor: pointer; padding: 4px 10px; }
+  .searchClear.hidden { display: none; }
   #q::placeholder { color: #888; }
   .filters { display: flex; gap: 8px; margin-top: 10px; }
   .filters button { flex: 1; font-size: 16px; padding: 9px 0; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
@@ -177,10 +183,11 @@
     <button data-dossier="people">People</button>
     <button data-dossier="phones">Phones</button>
     <button data-dossier="numbers">Numbers</button>
-    <button data-dossier="timeline">Timeline</button>
     <button data-dossier="fazr">FAZR</button>
+    <button data-dossier="timeline">Timeline</button>
+    <button data-dossier="report">Report</button>
   </div>
-  <input id="q" type="search" placeholder="Search…" autocomplete="off">
+  <span class="searchWrap"><input id="q" type="search" placeholder="Search…" autocomplete="off"><button id="qClear" class="searchClear hidden" aria-label="Clear search">✕</button></span>
   <div class="filters" id="levelFilters">
     <button data-level="all" class="on">All</button>
     <button data-level="1">Floor 1</button>
@@ -200,9 +207,9 @@
 <div id="count"></div>
 <div id="list"></div>
 <div id="sheetWrap"><div id="sheet"></div></div>
-<footer>Researcher mode is the research tool — log what you find while you explore, and things stay hidden until you report them. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
+<footer>Researcher mode shows only what you have found — rooms visited, phones, numbers, and FAZR points found — with a Report button to log new finds. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.16.0';
+const APP_VERSION = '1.17.1';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -228,6 +235,27 @@ let visited = new Set(JSON.parse(localStorage.getItem(VISIT_KEY) || '[]'));
 if (visited.has('1|Film Reel Storage')) { visited.delete('1|Film Reel Storage'); visited.add('2|Film Reel Storage'); saveVisited(); }
 function roomKey(r) { return r.level + '|' + r.name; }
 function saveVisited() { localStorage.setItem(VISIT_KEY, JSON.stringify([...visited])); }
+/* Counts that survive renames (v1.17.1): a visited/found key is only
+   counted when it still resolves to a current room, telephone or FAZR
+   point — a renamed room (or a reworded FAZR description) orphans its
+   old key, and the raw set size reads high, as the v1.17.0 browser
+   check showed ("2 rooms visited" with only Lobby listed). Stale keys
+   are NOT deleted — a future rename back would revive them. */
+function visitedCount() {
+  let n = 0;
+  visited.forEach(k => { if (data.rooms.some(r => roomKey(r) === k)) n++; });
+  return n;
+}
+function foundFazrCount() {
+  let n = 0;
+  foundFazr.forEach(k => { if (data.fazr.some(f => fazrKey(f) === k)) n++; });
+  return n;
+}
+function foundTelephonesCount() {
+  let n = 0;
+  foundTelephones.forEach(k => { if (data.telephones.some(t => telephoneKey(t) === k)) n++; });
+  return n;
+}
 /* Spoilers always start OFF on every launch (Allen, 2026-11-18) — the toggle
    still works within a session, but the on-state is never remembered. */
 let noSpoilers = true;
@@ -294,7 +322,7 @@ function numberRowHTML(p) {
   const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
   const desc = !noSpoilers ? numberDescs(p).join(' · ') : '';
   const needs = numberNeeds(p);
-  const done = foundPhones.has(phoneKey(p));
+  const done = numberFound(p);
   return '<div class="body"><div class="name">' + esc(p.number) + unconf + '</div>' +
     (desc ? '<div class="meta">' + esc(desc) + '</div>' : '') +
     (needs ? '<div class="meta">' + esc(needs) + '</div>' : '') +
@@ -421,7 +449,7 @@ function aboutHTML() {
   return '<h2>About this app</h2>' +
     '<div class="aboutBody">' +
     '<p>The Atlas9 Guide is a fan-made research tool and reference for the Atlas9 experience in Kansas City, KS. It is not affiliated with Atlas9.</p>' +
-    '<p><strong>Researcher mode</strong> is the research tool: log what you find while you explore — a room, a FAZR point, a phone number, a phone, or a secret passage. Things stay hidden until you report them, so nothing is spoiled. <strong>Dossier mode</strong> is the full reference, with spoilers: rooms, people, phones, and phone numbers with their details.</p>' +
+    '<p><strong>Researcher mode</strong> shows only what you have found — the rooms you visited, the phones, numbers, and FAZR points you found. Tap <strong>Report</strong> to log a new find: a room, a FAZR point, a phone number, a phone, or a secret passage. Things stay hidden until you report them, so nothing is spoiled. <strong>Dossier mode</strong> is the full reference, with spoilers: rooms, people, phones, and phone numbers with their details.</p>' +
     '<p><strong>Nothing you do here is stored on a server.</strong> Your profile, the numbers you found, and the rooms you marked visited are saved only on this device. If you delete the app or clear its data, they will be lost.</p>' +
     '<p><strong>The only thing that ever leaves your device is a report you choose to send.</strong> When you tap “Report this find,” “Report this number,” or “Submit a research note,” that report — and only that report — is sent to Allen for review. Nothing is sent automatically.</p>' +
     '<p>Found something that belongs in the Dossier — a detail, a correction, a sighting? <button id="aboutResearchNote" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Submit a research note</button></p>' +
@@ -612,11 +640,12 @@ function roomSheet(r) {
   });
   document.getElementById('sheetNote').addEventListener('click', () => openResearchNote('Room: ' + r.name));
   document.getElementById('sheetWayfinder').addEventListener('click', () => wayfinderSheet(r));
-  /* Log a Find (v1.16.0): jump to the Researcher screen with this room
-     pre-filled — the room is the master, so the user picks what they
-     found without re-picking the room. */
+  /* Log a Find (v1.16.0, Report screen since v1.17.0): jump to the Report
+     screen with this room pre-filled — the room is the master, so the
+     user picks what they found without re-picking the room. */
   document.getElementById('sheetLogFind').addEventListener('click', () => {
     tab = 'hunt';
+    dossier = 'report';
     document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
     document.querySelector('.tabs button[data-tab="hunt"]').classList.add('on');
     lf.room = r;
@@ -818,7 +847,7 @@ function renderWayfinder() {
     '<button data-wfcrawl="off"' + (!wfCrawls ? ' class="on"' : '') + '>Crawls off</button></div>' +
     routeHTML +
     '<div class="connHead">Where to?</div>' +
-    '<input id="wfSearch" type="search" placeholder="Search rooms…" autocomplete="off" style="width:100%;font-size:18px;padding:10px 12px;border-radius:8px;border:1px solid #555;background:#222;color:#eee;margin-top:6px">' +
+    '<span class="searchWrap" style="margin-top:6px"><input id="wfSearch" type="search" placeholder="Search rooms…" autocomplete="off" style="width:100%;font-size:18px;padding:10px 38px 10px 12px;border-radius:8px;border:1px solid #555;background:#222;color:#eee"><button id="wfSearchClear" class="searchClear hidden" aria-label="Clear search">✕</button></span>' +
     '<div id="wfDestList">' + wfDestListHTML('') + '</div>'
   , true);
   const search = document.getElementById('wfSearch');
@@ -826,6 +855,17 @@ function renderWayfinder() {
     document.getElementById('wfDestList').innerHTML = wfDestListHTML(search.value);
     wfAttachDest();
   });
+  const wfClear = document.getElementById('wfSearchClear');
+  function syncWfClear() { if (wfClear) wfClear.classList.toggle('hidden', !search.value); }
+  search.addEventListener('input', syncWfClear);
+  if (wfClear) wfClear.addEventListener('click', () => {
+    search.value = '';
+    document.getElementById('wfDestList').innerHTML = wfDestListHTML('');
+    wfAttachDest();
+    syncWfClear();
+    search.focus();
+  });
+  syncWfClear();
   document.querySelectorAll('#sheet [data-wfconn]').forEach(b => {
     b.addEventListener('click', () => {
       wfConnector = b.dataset.wfconn;
@@ -868,7 +908,7 @@ function phoneSheet(p) {
   const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
   const dates = [p.recording ? 'Recording: ' + p.recording : '', p.photo ? 'Photo: ' + p.photo : ''].filter(Boolean).join(' · ');
   const tr = transcriptText(p);
-  const done = foundPhones.has(phoneKey(p));
+  const done = numberFound(p);
   const descs = numberDescs(p).join(' · ');
   /* with spoilers off the sheet shows no spoiler content at all (Allen, 2026-11-18): no descriptions (placeholder instead, same as rooms), no 8000 line, no location, no transcript button. The old "Found:" fallback leaked the room with spoilers off, and with spoilers on the list covers it, so the line is gone entirely */
   const descHTML = descs
@@ -894,9 +934,7 @@ function phoneSheet(p) {
     '<button class="close" id="sheetClose">Close</button></div>'
   , false, true);
   document.getElementById('sheetFound').addEventListener('click', () => {
-    const k = phoneKey(p);
-    if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
-    saveFoundPhones();
+    markNumberFound(phoneKey(p), !numberFound(p));
     phoneSheet(p);
     render();
   });
@@ -1060,11 +1098,22 @@ function foundInHTML(rows) {
   if (!lines.length) return '';
   return '<div class="foundIn"><strong>Found in:</strong>' + lines.join('') + '</div>';
 }
+/* v1.17.0: the hunt's `found` set (normNum keys, e.g. '314101') and the
+   Numbers list's `foundPhones` set (number-string keys, e.g. '314-101')
+   track the same finds, but they were never synced — a number found via
+   the hunt never showed in the Numbers list, and vice versa. Keep them
+   in sync on every write, and read either set so checkmarks saved before
+   the sync still show. */
+function numberFound(p) { return foundPhones.has(phoneKey(p)) || found.has(normNum(p.number)); }
+function markNumberFound(num, on) {
+  const k = normNum(num);
+  if (on) { found.add(k); foundPhones.add(num); }
+  else { found.delete(k); foundPhones.delete(num); }
+  saveFound(); saveFoundPhones();
+}
+function foundNumbersCount() { return uniqueNumbers().filter(numberFound).length; }
 function foundCount() {
-  const known = knownNumbers();
-  let n = 0;
-  for (const k of found) if (known[k]) n++;
-  return n;
+  return foundNumbersCount();
 }
 /* Log a Find (v1.16.0, Allen 2026-11-19): the Researcher screen is the
    logging interface. Pick what you found, then find the room — the room
@@ -1086,8 +1135,22 @@ const LF_TYPES = [
   { id: 'passage', label: 'Secret Passage' },
 ];
 const LF_FAZR_TYPES = ['Movie Poster', 'Computer', 'FAZR', 'INTERFAZE', 'FAZR-Portal'];
-let lf = { type: null, room: null, step: 'options', dest: null, msg: '' };
-function lfReset() { lf = { type: null, room: null, step: 'options', dest: null, msg: '' }; }
+let lf = { type: null, room: null, step: 'options', dest: null, msg: '', returnTo: 'rooms', returnFazrType: null };
+function lfReset() { lf = { type: null, room: null, step: 'options', dest: null, msg: '', returnTo: 'rooms', returnFazrType: null }; }
+/* Researcher redesign (v1.17.0, Allen 2026-11-19): after a report, back
+   to the list — the category that was reported (a phone # returns to the
+   Numbers list, a FAZR point to the FAZR list with its type filter on). */
+function lfGoToList(cat, fazrTypeValue) {
+  const c = cat || 'rooms';
+  lfReset();
+  tab = 'hunt';
+  dossier = c;
+  if (c === 'fazr' && fazrTypeValue) {
+    fazrType = fazrTypeValue;
+    document.querySelectorAll('#fazrTypeFilters button').forEach(x => x.classList.toggle('on', x.dataset.fazrtype === fazrTypeValue));
+  }
+  render();
+}
 /* A report of something new goes to the research-notes form (Allen,
    2026-11-19: one form for all new-item reports). about = the type,
    found = what was found (+ notes, when given), where = the room
@@ -1115,17 +1178,22 @@ function lfRoomMatchesHTML(needle) {
   if (n.length < 2) return '<div class="empty">Type at least 2 characters to search rooms.</div>';
   const matches = data.rooms.filter(r => roomSearchHay(r).toLowerCase().includes(n)).slice(0, 8);
   if (!matches.length) return '<div class="empty">No rooms match.</div>';
+  /* Dossier-style rows (v1.17.1): the old .connRow buttons render outside
+     #sheet, so the #sheet-scoped .connRow CSS never applied — they showed
+     as unstyled white pills with name, floor and chevron mashed together
+     ("Projection RoomFloor 2>"). These match the Dossier room rows. */
   return matches.map(r =>
-    '<button class="connRow" data-lfroom="' + esc(r.name) + '|' + r.level + '"><span class="name">' + esc(r.name) + '</span>' +
-    (r.level == null ? '' : '<span class="meta">' + floorLabel(r.level) + '</span>') +
-    '<span class="chev">›</span></button>' +
-    (r.description ? '<div style="color:#aaa;font-size:14px;padding:0 2px 10px">' + esc(r.description) + '</div>' : '')
+    '<div class="item" data-lfroom="' + esc(r.name) + '|' + r.level + '"><div class="body">' +
+    '<div class="name">' + esc(r.name) + (r.official ? ' <span class="star">*</span>' : '') + '</div>' +
+    (r.level == null ? '' : '<div class="meta">' + floorLabel(r.level) + '</div>') +
+    (r.description ? '<div class="desc">' + esc(r.description) + '</div>' : '') +
+    '</div><span style="color:#aaa;font-size:18px">›</span></div>'
   ).join('');
 }
 function lfRoomPickerHTML(title, hint) {
   return '<div class="huntBox"><div class="big">' + esc(title) + '</div>' +
     '<div style="color:#aaa;font-size:15px;line-height:1.5">' + hint + '</div>' +
-    '<input id="lfRoomSearch" type="search" placeholder="Search rooms by name or description…" autocomplete="off" style="width:100%;font-size:18px;padding:10px 12px;border-radius:8px;border:1px solid #555;background:#222;color:#eee;margin-top:12px">' +
+    '<span class="searchWrap" style="margin-top:12px"><input id="lfRoomSearch" type="search" placeholder="Search rooms by name or description…" autocomplete="off" style="width:100%;font-size:18px;padding:10px 38px 10px 12px;border-radius:8px;border:1px solid #555;background:#222;color:#eee"><button id="lfRoomSearchClear" class="searchClear hidden" aria-label="Clear search">✕</button></span>' +
     '<div id="lfRoomList" style="margin-top:6px">' + lfRoomMatchesHTML('') + '</div>' +
     '<div id="lfRoomNew"></div>' +
     '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back</button></div>';
@@ -1135,6 +1203,8 @@ function lfAttachRoomPicker(onPick) {
   const listEl = document.getElementById('lfRoomList');
   const newEl = document.getElementById('lfRoomNew');
   function refresh() {
+    const clr = document.getElementById('lfRoomSearchClear');
+    if (clr) clr.classList.toggle('hidden', !search.value);
     listEl.innerHTML = lfRoomMatchesHTML(search.value);
     listEl.querySelectorAll('[data-lfroom]').forEach(b => {
       b.addEventListener('click', () => {
@@ -1153,12 +1223,15 @@ function lfAttachRoomPicker(onPick) {
         '<button class="submitBtn" id="lfNewRoom" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report this room</button></div>';
       document.getElementById('lfNewRoom').addEventListener('click', () => {
         openResearchReport('Room', needle, '', '');
+        lfGoToList('rooms');
       });
     } else {
       newEl.innerHTML = '';
     }
   }
   search.addEventListener('input', refresh);
+  const lfClear = document.getElementById('lfRoomSearchClear');
+  if (lfClear) lfClear.addEventListener('click', () => { search.value = ''; search.focus(); refresh(); });
   document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; render(); });
   refresh();
 }
@@ -1188,8 +1261,8 @@ function lfFazrItemsHTML(type, room) {
     '<button class="submitBtn" id="lfNewFazr" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report a new ' + esc(type) + '</button></div>';
 }
 function lfOptionsHTML() {
-  const nRooms = visited.size;
-  const nFazr = foundFazr.size;
+  const nRooms = visitedCount();
+  const nFazr = foundFazrCount();
   const nNums = foundCount();
   const roomLine = lf.room
     ? '<div style="color:#e0a800;font-size:15px;margin-bottom:10px">Room: <b>' + esc(lf.room.name) + '</b> (' + floorLabel(lf.room.level) + ') · <button id="lfClearRoom" style="background:none;border:none;color:#e0a800;font-size:14px;padding:0;cursor:pointer;text-decoration:underline">change</button></div>'
@@ -1229,6 +1302,8 @@ function lfPhoneCheck(raw) {
     const isNew = !found.has(k);
     found.add(k);
     saveFound();
+    /* v1.17.0: also check it off in the Numbers list (same find, other key). */
+    if (!foundPhones.has(p.number)) { foundPhones.add(p.number); saveFoundPhones(); }
     const n = foundCount();
     const total = Object.keys(known).length;
     const unconf = p.confirmed ? '' : ' <span class="unconf">(unconfirmed)</span>';
@@ -1242,13 +1317,14 @@ function lfPhoneCheck(raw) {
       '<button class="submitBtn" id="lfPhGo">Report this find</button>' +
       '<button class="cancelBtn" id="lfPhCancel">Done</button></div>';
     attachRoomPicker(document.getElementById('lfPhRoom'), document.getElementById('lfPhRoomList'));
-    document.getElementById('lfPhCancel').addEventListener('click', () => { lfReset(); render(); });
+    document.getElementById('lfPhCancel').addEventListener('click', () => { lfGoToList('numbers'); });
     document.getElementById('lfPhGo').addEventListener('click', () => {
       const room = document.getElementById('lfPhRoom').value.trim();
       const notes = document.getElementById('lfPhNotes').value.trim();
       const pv = profileValues('lfph');
       openResearchReport('Phone #', p.number, room, notes);
       if (pv.agent || pv.email || pv.text) { profile = pv; saveProfile(); setProfileBtn(); }
+      lfGoToList('numbers');
     });
     const inp = document.getElementById('lfPhoneInput');
     if (inp) inp.value = '';
@@ -1289,6 +1365,7 @@ function lfPhoneNewForm(raw) {
       const pv = profileValues('lfnew');
       openResearchReport('Phone #', raw.trim(), room, said);
       if (pv.agent || pv.email || pv.text) { profile = pv; saveProfile(); setProfileBtn(); }
+      lfGoToList('numbers');
     });
 }
 /* Secret Passage (v1.16.0, Allen 2026-11-19): you report the DESTINATION.
@@ -1298,6 +1375,9 @@ function lfPhoneNewForm(raw) {
    can use it. If it's a public connection already, it isn't a secret.
    If it's neither, it's a new passage — report it. */
 function lfPassageResolve(from, to) {
+  /* v1.17.0: every outcome returns to the Rooms list (Back to Rooms). */
+  lf.returnTo = 'rooms';
+  lf.returnFazrType = null;
   if ((from.connections || []).includes(to.name)) {
     lf.step = 'done';
     lf.msg = '<div class="result"><div class="rtitle">Already a public connection</div>' +
@@ -1310,9 +1390,13 @@ function lfPassageResolve(from, to) {
     const isNew = !foundPassages.has(k);
     foundPassages.add(k);
     saveFoundPassages();
+    /* v1.17.0: finding the passage means you found the room it leads to —
+       add it to your visited rooms so it shows in the Researcher Rooms list. */
+    visited.add(roomKey(to));
+    saveVisited();
     lf.step = 'done';
     lf.msg = '<div class="result good"><div class="rtitle">✓ Secret passage found!</div>' +
-      '<div class="rdesc">' + esc(from.name) + ' → ' + esc(to.name) + (isNew ? ' — revealed for you. Wayfinder can now use it, and it shows on the room sheet.' : ' — you already logged this one.') + '</div></div>';
+      '<div class="rdesc">' + esc(from.name) + ' → ' + esc(to.name) + (isNew ? ' — revealed for you. Wayfinder can now use it, it shows on the room sheet, and ' + esc(to.name) + ' is now in your visited rooms.' : ' — you already logged this one.') + '</div></div>';
     render();
     return;
   }
@@ -1325,14 +1409,16 @@ function lfPassageResolve(from, to) {
   document.getElementById('lfPassGo').addEventListener('click', () => {
     const notes = (document.getElementById('lfPassNotes') || {}).value || '';
     openResearchReport('Secret Passage', from.name + ' → ' + to.name, from.name, notes.trim());
+    lfGoToList('rooms');
   });
 }
 function logFindHTML() {
   if (lf.step === 'options') return lfOptionsHTML();
   if (lf.step === 'done') {
+    const backLabel = { rooms: 'Rooms', people: 'People', phones: 'Phones', numbers: 'Numbers', fazr: 'FAZR' }[lf.returnTo || 'rooms'] || 'Rooms';
     return '<div class="huntBox">' + lf.msg +
-      '<button class="transcriptBtn" id="lfAgain" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:12px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Log another find</button>' +
-      '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back to options</button></div>';
+      '<button class="transcriptBtn" id="lfBackToList" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:12px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Back to ' + backLabel + '</button>' +
+      '<button class="cancelBtn" id="lfAgain" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">Log another find</button></div>';
   }
   if (lf.step === 'phone-number') return lfPhoneHTML();
   if (lf.step === 'room') {
@@ -1376,32 +1462,60 @@ function logFindHTML() {
           '<button class="submitBtn" id="lfNewPhone" style="display:block;width:100%;margin-top:10px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #e0a800;background:#e0a800;color:#111;font-weight:bold;cursor:pointer">Report a new phone</button></div>';
       }
     }
+    /* v1.17.0: leaving the items step goes back to the list for that
+       category, not to the options — after a report, back to the list. */
+    const itemsBackLabel = LF_FAZR_TYPES.includes(lf.type) ? '← Back to FAZR' : (lf.type === 'phone' ? '← Back to Phones' : '← Back');
     return '<div class="huntBox"><div class="big">' + esc(lf.type === 'phone' ? 'Phone' : lf.type) + ' in ' + esc(room.name) + '</div>' +
       body +
-      '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">← Back</button></div>';
+      '<button class="cancelBtn" id="lfBack" style="display:block;width:100%;margin-top:14px;font-size:16px;padding:11px 0;border-radius:8px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">' + itemsBackLabel + '</button></div>';
   }
   return lfOptionsHTML();
+}
+/* Mark a room visited and land on its done screen (v1.17.1): shared by
+   the room picker's tap handler and by choosing Room with a room
+   already picked — previously the pre-filled Room choice fell through
+   to the items step, which has no Room handling (empty screen). */
+function lfMarkRoomVisited(r) {
+  const k = roomKey(r);
+  const isNew = !visited.has(k);
+  visited.add(k);
+  saveVisited();
+  lf.returnTo = 'rooms';
+  lf.returnFazrType = null;
+  lf.step = 'done';
+  lf.msg = '<div class="result good"><div class="rtitle">✓ ' + esc(r.name) + ' marked visited</div>' +
+    '<div class="rdesc">' + (isNew ? 'Added to your visited rooms.' : 'You already marked this one visited.') + '</div></div>';
+  render();
+}
+/* Type choice on the Report options screen (v1.17.1): a pre-filled room
+   routes by type — Secret Passage goes straight to the destination
+   picker, Room marks the picked room visited, FAZR types and Phone go
+   to the items step. Previously every pre-filled type went to items,
+   which has no passage/room handling (empty screen — the v1.17.0
+   Projection Room bug). */
+function lfChooseType(type) {
+  lf.type = type;
+  lf.dest = null;
+  lf.msg = '';
+  if (type === 'phone-number') { lf.step = 'phone-number'; render(); return; }
+  if (type === 'passage') { lf.step = lf.room ? 'dest' : 'room'; render(); return; }
+  if (type === 'room' && lf.room) { lfMarkRoomVisited(lf.room); return; }
+  if (lf.room) { lf.step = 'items'; render(); return; }
+  lf.step = 'room';
+  render();
 }
 function lfAttach() {
   if (lf.step === 'options') {
     const clearBtn = document.getElementById('lfClearRoom');
     if (clearBtn) clearBtn.addEventListener('click', () => { lf.room = null; render(); });
     document.querySelectorAll('[data-lftype]').forEach(b => {
-      b.addEventListener('click', () => {
-        lf.type = b.dataset.lftype;
-        lf.dest = null;
-        lf.msg = '';
-        if (lf.type === 'phone-number') { lf.step = 'phone-number'; render(); return; }
-        if (lf.room) { lf.step = 'items'; render(); return; }
-        lf.step = 'room';
-        render();
-      });
+      b.addEventListener('click', () => lfChooseType(b.dataset.lftype));
     });
     return;
   }
   if (lf.step === 'done') {
     document.getElementById('lfAgain').addEventListener('click', () => { lfReset(); render(); });
-    document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; lf.msg = ''; render(); });
+    document.getElementById('lfBackToList').addEventListener('click', () => { lfGoToList(lf.returnTo || 'rooms', lf.returnFazrType); });
     return;
   }
   if (lf.step === 'phone-number') {
@@ -1433,17 +1547,7 @@ function lfAttach() {
   }
   if (lf.step === 'room') {
     lfAttachRoomPicker((r) => {
-      if (lf.type === 'room') {
-        const k = roomKey(r);
-        const isNew = !visited.has(k);
-        visited.add(k);
-        saveVisited();
-        lf.step = 'done';
-        lf.msg = '<div class="result good"><div class="rtitle">✓ ' + esc(r.name) + ' marked visited</div>' +
-          '<div class="rdesc">' + (isNew ? 'Added to your visited rooms.' : 'You already marked this one visited.') + '</div></div>';
-        render();
-        return;
-      }
+      if (lf.type === 'room') { lfMarkRoomVisited(r); return; }
       if (lf.type === 'passage') { lf.room = r; lf.step = 'dest'; render(); return; }
       lf.room = r;
       lf.step = 'items';
@@ -1459,7 +1563,11 @@ function lfAttach() {
     return;
   }
   if (lf.step === 'items') {
-    document.getElementById('lfBack').addEventListener('click', () => { lf.step = 'options'; lf.type = null; render(); });
+    document.getElementById('lfBack').addEventListener('click', () => {
+      if (LF_FAZR_TYPES.includes(lf.type)) lfGoToList('fazr', lf.type);
+      else if (lf.type === 'phone') lfGoToList('phones');
+      else { lf.step = 'options'; lf.type = null; render(); }
+    });
     /* FAZR rows: tap the row (or its checkmark) to mark the point found.
        A hidden point you log is revealed for you from then on. */
     list.querySelectorAll('[data-lffazr]').forEach(el => {
@@ -1484,30 +1592,50 @@ function lfAttach() {
     if (newFazr) newFazr.addEventListener('click', () => {
       const notes = (document.getElementById('lfNewNotes') || {}).value || '';
       openResearchReport(lf.type, '', lf.room.name, notes.trim());
+      lfGoToList('fazr', lf.type);
     });
     const newPhone = document.getElementById('lfNewPhone');
     if (newPhone) newPhone.addEventListener('click', () => {
       const notes = (document.getElementById('lfNewNotes') || {}).value || '';
       openResearchReport('Phone', '', lf.room.name, notes.trim());
+      lfGoToList('phones');
     });
     return;
   }
 }
 
 
+/* Researcher redesign (v1.17.0, Allen 2026-11-19): the sub-tab row is
+   shared by both modes — the last button is Timeline in Dossier, Report
+   in Researcher. The guard keeps the two mode-only tabs from leaking
+   across a mode switch. */
+function syncSubTabs() {
+  if (tab === 'hunt' && dossier === 'timeline') dossier = 'report';
+  if (tab === 'dossier' && dossier === 'report') dossier = 'timeline';
+  document.querySelectorAll('#dossierTabs button').forEach(b => {
+    const d = b.dataset.dossier;
+    b.classList.toggle('hidden', (d === 'timeline' && tab === 'hunt') || (d === 'report' && tab === 'dossier'));
+    b.classList.toggle('on', d === dossier);
+  });
+}
 function render() {
   const needle = q.value.trim().toLowerCase();
   let items = [];
-  if (tab === 'hunt') {
+  syncSubTabs();
+  /* Report screen (v1.17.0): the old Researcher/Log a Find screen, now
+     behind the Report button — the Researcher lists are the found items. */
+  if (tab === 'hunt' && dossier === 'report') {
     q.classList.add('hidden');
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.add('hidden');
-    dossierTabs.classList.add('hidden');
+    dossierTabs.classList.remove('hidden');
     count.textContent = '';
     list.innerHTML = logFindHTML();
     lfAttach();
     return;
   }
+  /* Researcher lists show ONLY found items (v1.17.0); Dossier shows all. */
+  const foundOnly = (tab === 'hunt');
   q.classList.remove('hidden');
   dossierTabs.classList.remove('hidden');
   q.placeholder = 'Search rooms, people, phones, numbers, FAZR…';
@@ -1521,14 +1649,21 @@ function render() {
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.add('hidden');
     const rm = data.rooms.filter(r => {
+      if (foundOnly && !visited.has(roomKey(r))) return false;
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
       else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
       return roomSearchHay(r).toLowerCase().includes(needle);
     });
     const pp = data.people.filter(p => [p.name, p.description].join(' ').toLowerCase().includes(needle));
-    const tel = data.telephones.filter(t => [t.name, t.description].join(' ').toLowerCase().includes(needle));
-    const ph = uniqueNumbers().filter(p => numberMatches(p, needle));
-    const fz = data.fazr.filter(f => fazrVisible(f) && (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
+    const tel = data.telephones.filter(t => {
+      if (foundOnly && !foundTelephones.has(telephoneKey(t))) return false;
+      return [t.name, t.description].join(' ').toLowerCase().includes(needle);
+    });
+    const ph = uniqueNumbers().filter(p => {
+      if (foundOnly && !numberFound(p)) return false;
+      return numberMatches(p, needle);
+    });
+    const fz = data.fazr.filter(f => fazrVisible(f) && (!foundOnly || foundFazr.has(fazrKey(f))) && (fazrType === 'all' || f.type === fazrType) && fazrMatches(f, needle));
     const total = rm.length + pp.length + tel.length + ph.length + fz.length;
     count.textContent = total + ' result' + (total === 1 ? '' : 's') + ' for “' + q.value.trim() + '”';
     let html = '';
@@ -1596,8 +1731,8 @@ function render() {
           if (foundFazr.has(k)) foundFazr.delete(k); else foundFazr.add(k);
           saveFoundFazr();
         } else {
-          if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
-          saveFoundPhones();
+          /* a number: keep the hunt set and the Numbers-list set in sync. */
+          markNumberFound(k, !numberFound({ number: k }));
         }
         render();
       });
@@ -1630,12 +1765,13 @@ function render() {
     levelFilters.classList.remove('hidden');
     fazrTypeFilters.classList.add('hidden');
     items = data.rooms.filter(r => {
+      if (foundOnly && !visited.has(roomKey(r))) return false;
       if (level === 'visited') { if (!visited.has(roomKey(r))) return false; }
       else if (level !== 'all' && String(r.level) !== level && r.level !== 0) return false;
       if (!needle) return true;
       return [r.name, descText(r), (r.artists || []).join(' ')].join(' ').toLowerCase().includes(needle);
     });
-    count.textContent = items.length + ' of ' + data.rooms.length + ' rooms · ' + visited.size + ' visited';
+    count.textContent = foundOnly ? items.length + ' rooms visited' : items.length + ' of ' + data.rooms.length + ' rooms · ' + visitedCount() + ' visited';
     list.innerHTML = items.length ? items.map((r, i) => {
       const star = r.official ? ' <span class="star">*</span>' : '';
       const artists = (r.artists && r.artists.length) ? r.artists.join(', ') : '';
@@ -1646,7 +1782,7 @@ function render() {
         '<div class="body"><div class="name">' + esc(r.name) + star + '</div>' +
         (meta ? '<div class="meta">' + esc(meta) + '</div>' : '') +
         '<div class="desc">' + descFor(r) + '</div></div>' + thumb + '</div>';
-    }).join('') : '<div class="empty">No rooms match.</div>';
+    }).join('') : (foundOnly ? '<div class="empty">Nothing found yet — tap Report to log your first find.</div>' : '<div class="empty">No rooms match.</div>');
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1691,10 +1827,11 @@ function render() {
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.add('hidden');
     items = data.telephones.filter(t => {
+      if (foundOnly && !foundTelephones.has(telephoneKey(t))) return false;
       if (!needle) return true;
       return [t.name, t.description].join(' ').toLowerCase().includes(needle);
     });
-    count.textContent = items.length + ' of ' + data.telephones.length + ' phones · ' + foundTelephones.size + ' found';
+    count.textContent = foundOnly ? items.length + ' phones found' : items.length + ' of ' + data.telephones.length + ' phones · ' + foundTelephonesCount() + ' found';
     list.innerHTML = items.length ? items.map((t, i) => {
       const done = foundTelephones.has(telephoneKey(t));
       const thumb = t.photo ? '<img class="thumb" src="' + esc(t.photo) + '" alt="" loading="lazy">' : '';
@@ -1702,7 +1839,7 @@ function render() {
         thumb +
         '<div class="body"><div class="name">' + esc(t.name) + '</div>' +
         '<div class="meta">Floor ' + t.level + ' · ' + esc(t.description || '') + '</div></div></div>';
-    }).join('') : '<div class="empty">No phones match.</div>';
+    }).join('') : (foundOnly ? '<div class="empty">Nothing found yet — tap Report to log your first find.</div>' : '<div class="empty">No phones match.</div>');
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1741,10 +1878,10 @@ function render() {
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.remove('hidden');
     const visibleFazr = data.fazr.filter(f => fazrVisible(f));
-    items = visibleFazr.filter(f => fazrType === 'all' || f.type === fazrType);
+    items = visibleFazr.filter(f => (!foundOnly || foundFazr.has(fazrKey(f))) && (fazrType === 'all' || f.type === fazrType));
     const foundVisible = visibleFazr.filter(f => foundFazr.has(fazrKey(f))).length;
-    count.textContent = items.length + ' of ' + visibleFazr.length + ' FAZR points · ' + foundVisible + ' found';
-    list.innerHTML = items.length ? items.map((f, i) => fazrItemHTML(f, ' data-i="' + i + '"')).join('') : '<div class="empty">No FAZR points match.</div>';
+    count.textContent = foundOnly ? items.length + ' of ' + visibleFazr.length + ' FAZR points found' : items.length + ' of ' + visibleFazr.length + ' FAZR points · ' + foundVisible + ' found';
+    list.innerHTML = items.length ? items.map((f, i) => fazrItemHTML(f, ' data-i="' + i + '"')).join('') : (foundOnly ? '<div class="empty">Nothing found yet — tap Report to log your first find.</div>' : '<div class="empty">No FAZR points match.</div>');
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1761,21 +1898,22 @@ function render() {
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.add('hidden');
     items = uniqueNumbers().filter(p => {
+      if (foundOnly && !numberFound(p)) return false;
       if (!needle) return true;
       return numberMatches(p, needle);
     });
-    count.textContent = items.length + ' of ' + uniqueNumbers().length + ' numbers · ' + foundPhones.size + ' found';
+    count.textContent = foundOnly ? items.length + ' numbers found' : items.length + ' of ' + uniqueNumbers().length + ' numbers · ' + foundNumbersCount() + ' found';
     list.innerHTML = items.length ? items.map((p, i) => {
       const done = foundPhones.has(phoneKey(p));
       return '<div class="item" data-i="' + i + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(phoneKey(p)) + '" aria-label="Mark found">✓</button>' +
         numberRowHTML(p) + '</div>';
-    }).join('') : '<div class="empty">No phone numbers match.</div>';
+    }).join('') : (foundOnly ? '<div class="empty">Nothing found yet — tap Report to log your first find.</div>' : '<div class="empty">No phone numbers match.</div>');
     list.querySelectorAll('.check').forEach(b => {
       b.addEventListener('click', (e) => {
         e.stopPropagation();
         const k = b.dataset.k;
-        if (foundPhones.has(k)) foundPhones.delete(k); else foundPhones.add(k);
-        saveFoundPhones();
+        /* keep the hunt set and the Numbers-list set in sync. */
+        markNumberFound(k, !numberFound({ number: k }));
         render();
       });
     });
@@ -1809,18 +1947,25 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 q.addEventListener('input', render);
+const qClear = document.getElementById('qClear');
+function syncQClear() { if (qClear) qClear.classList.toggle('hidden', !q.value); }
+q.addEventListener('input', syncQClear);
+if (qClear) qClear.addEventListener('click', () => { q.value = ''; syncQClear(); render(); q.focus(); });
+syncQClear();
 document.querySelectorAll('.tabs button').forEach(b => {
   b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
     b.classList.add('on');
     tab = b.dataset.tab;
+    /* v1.17.0: the last sub-tab is Timeline in Dossier, Report in
+       Researcher — carry the selection across the mode switch. */
+    if (tab === 'hunt' && dossier === 'timeline') dossier = 'report';
+    else if (tab === 'dossier' && dossier === 'report') dossier = 'timeline';
     render();
   });
 });
 document.querySelectorAll('#dossierTabs button').forEach(b => {
   b.addEventListener('click', () => {
-    document.querySelectorAll('#dossierTabs button').forEach(x => x.classList.remove('on'));
-    b.classList.add('on');
     dossier = b.dataset.dossier;
     render();
   });
