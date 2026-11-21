@@ -219,7 +219,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode lists every room and person to check off as you visit them — phones, numbers, and FAZR points stay hidden until you find and report them. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.17.20';
+const APP_VERSION = '1.17.21';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -438,6 +438,7 @@ const WELCOME_KEY = 'a9-welcomed';
    in the header opens this list, newest first. Notes stay terse and never
    name anything hidden — no hidden FAZR, hidden door, or hidden room. */
 const WHATS_NEW = {
+  '1.17.21': ['Room names cleaned up: Lobby Stairs, Lobby Arcade, Lobby Concessions, Lobby Restrooms, Elevator, Agent Onboarding, Splice Bros. Pizza Restroom, Starbot Restroom.', 'Headshot Remixer is now a spoiler room, and room descriptions were rewritten. FAZR has 46 points now, sorted by type, and the movie posters name their films.'],
   '1.17.20': ['The room picker lists are sorted A–Z within each floor now.', 'Mesmerite no longer links straight to the Sapphire Jazz Club — that was old info; the route runs through the Hypnotizer Room now.'],
   '1.17.19': ['Crawls are passages, not rooms: report the room at the far end of a crawl and the crawl entrance opens up — no more picking the crawl itself as the destination.'],
   '1.17.18': ['Phones and Numbers in Researcher now read "X of ? found" with spoilers off, like FAZR and Passage — the real total shows with spoilers on.'],
@@ -461,7 +462,7 @@ const WHATS_NEW = {
   '1.17.0': ['Researcher and Dossier share the same category lists; Researcher shows only what you found.'],
   '1.16.0': ['Researcher reworked as Log a Find.', 'Room descriptions split into a public description and a spoiler-only detail.']
 };
-const RELEASE_VERSIONS = ['1.17.16', '1.17.15', '1.17.14', '1.17.13', '1.17.12', '1.17.11', '1.17.10', '1.17.9', '1.17.8', '1.17.7', '1.17.6', '1.17.5', '1.17.4', '1.17.3', '1.17.2', '1.17.1', '1.17.0', '1.16.0'];
+const RELEASE_VERSIONS = ['1.17.21', '1.17.16', '1.17.15', '1.17.14', '1.17.13', '1.17.12', '1.17.11', '1.17.10', '1.17.9', '1.17.8', '1.17.7', '1.17.6', '1.17.5', '1.17.4', '1.17.3', '1.17.2', '1.17.1', '1.17.0', '1.16.0'];
 function releaseNotesHTML() {
   let html = '';
   for (const v of RELEASE_VERSIONS) {

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-19",
+  "generated": "2026-11-21",
   "source": "Atlas9 Data — People",
   "count": 7,
   "people": [
@@ -25,7 +25,7 @@
       "name": "Burny",
       "description": "A talking oversized kernel of popcorn.",
       "photo": "photos/burny.jpg",
-      "whereEncountered": "Onboarding TV."
+      "whereEncountered": "Onboarding TV, Employee Breakroom TV, social media."
     },
     {
       "name": "Casper Voss",
@@ -36,7 +36,8 @@
     {
       "name": "Frank Roberts",
       "description": "Projectionist that invented the HOLOMAX system.",
-      "photo": "photos/frank.jpg"
+      "photo": "photos/frank.jpg",
+      "whereEncountered": "Onboarding TV, social media."
     },
     {
       "name": "Melissa Hartwell",

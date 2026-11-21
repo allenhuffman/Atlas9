@@ -8,6 +8,11 @@ Dates are the day each version went live. Versions before 1.9.3 predate this
 repository — the app's earlier history lives in the V0 prototype snapshot
 (`FieldGuide-V0/`, version 1.8.18).
 
+## [1.17.21] - 2026-11-20
+
+- Room names cleaned up: Lobby Stairs, Lobby Arcade, Lobby Concessions, Lobby Restrooms, Elevator, Agent Onboarding, Splice Bros. Pizza Restroom, Starbot Restroom.
+- Headshot Remixer is now a spoiler room, and room descriptions were rewritten. FAZR has 46 points now, sorted by type, and the movie posters name their films.
+
 ## [1.17.20] - 2026-11-20
 
 - The room picker lists are sorted A–Z within each floor now.
