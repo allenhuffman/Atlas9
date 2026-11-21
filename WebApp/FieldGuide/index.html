@@ -219,7 +219,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode lists every room and person to check off as you visit them — phones, numbers, and FAZR points stay hidden until you find and report them. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.17.21';
+const APP_VERSION = '1.17.24';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -234,6 +234,10 @@ const RESEARCH_FORM_ENTRY = { about: '2144553325', found: '1939760705', where: '
 let data = { rooms: [], people: [], phones: [], telephones: [], timeline: [], fazr: [] };
 let tab = 'hunt';
 let dossier = 'rooms';
+/* Log a Find flow (v1.17.23): true while a report flow is open. The flow
+   used to be tied to the Passage sub-tab, so every Report button jumped
+   you there. Now the flow opens from any list and the sub-tab stays put. */
+let lfOpen = false;
 let level = 'all';
 /* FAZR Dossier tab (v1.11.0, updated v1.16.0): type filter state — 'all'
    or one of the five types present in fazr.json (FAZR / Computer /
@@ -357,6 +361,12 @@ function fazrKey(f) {
   const group = data.fazr.filter(x => x.room === f.room && x.type === f.type);
   return f.room + '|' + f.type + '|#' + group.indexOf(f);
 }
+/* FAZR count (v1.17.22, Allen 2026-11-20): a FAZR row can cover several
+   identical stations in one room (Count column in the sheet); show the
+   count on the type badge when there is more than one, e.g. "FAZR (2)". */
+function fazrTypeLabel(f) {
+  return f.type + (((f.count || 1) > 1) ? ' (' + f.count + ')' : '');
+}
 /* Secret passages found (v1.16.0, Log a Find): a hidden connection you
    logged — "fromRoom|toRoom" — so Wayfinder can route through it and the
    room sheet can show it even with spoilers off. Only the passage you
@@ -438,6 +448,9 @@ const WELCOME_KEY = 'a9-welcomed';
    in the header opens this list, newest first. Notes stay terse and never
    name anything hidden — no hidden FAZR, hidden door, or hidden room. */
 const WHATS_NEW = {
+  '1.17.24': ['Correction: the Power Supply FAZR is back — the bogus entry was its INTERFAZE, not the FAZR. Power Supply has 3 computers and 1 FAZR, no INTERFAZE; the INTERFAZE belongs to FACADE Field Lab next door.'],
+  '1.17.23': ['The Power Supply FAZR point is gone — it was a misfiled FACADE photo, not a Power Supply FAZR. FACADE keeps its FAZR.', 'Reporting from a list no longer jumps you to the Passage tab — the tab stays on the list you came from, and Back takes you back there.'],
+  '1.17.22': ['FAZR points now show how many identical stations they cover, e.g. "FAZR (2)" — the Spire seats are 6, the StarBot LITE stations are 4.', 'The Lobby links directly to the Box Office now, both ways.'],
   '1.17.21': ['Room names cleaned up: Lobby Stairs, Lobby Arcade, Lobby Concessions, Lobby Restrooms, Elevator, Agent Onboarding, Splice Bros. Pizza Restroom, Starbot Restroom.', 'Headshot Remixer is now a spoiler room, and room descriptions were rewritten. FAZR has 46 points now, sorted by type, and the movie posters name their films.'],
   '1.17.20': ['The room picker lists are sorted A–Z within each floor now.', 'Mesmerite no longer links straight to the Sapphire Jazz Club — that was old info; the route runs through the Hypnotizer Room now.'],
   '1.17.19': ['Crawls are passages, not rooms: report the room at the far end of a crawl and the crawl entrance opens up — no more picking the crawl itself as the destination.'],
@@ -462,7 +475,7 @@ const WHATS_NEW = {
   '1.17.0': ['Researcher and Dossier share the same category lists; Researcher shows only what you found.'],
   '1.16.0': ['Researcher reworked as Log a Find.', 'Room descriptions split into a public description and a spoiler-only detail.']
 };
-const RELEASE_VERSIONS = ['1.17.21', '1.17.16', '1.17.15', '1.17.14', '1.17.13', '1.17.12', '1.17.11', '1.17.10', '1.17.9', '1.17.8', '1.17.7', '1.17.6', '1.17.5', '1.17.4', '1.17.3', '1.17.2', '1.17.1', '1.17.0', '1.16.0'];
+const RELEASE_VERSIONS = ['1.17.24', '1.17.23', '1.17.22', '1.17.21', '1.17.16', '1.17.15', '1.17.14', '1.17.13', '1.17.12', '1.17.11', '1.17.10', '1.17.9', '1.17.8', '1.17.7', '1.17.6', '1.17.5', '1.17.4', '1.17.3', '1.17.2', '1.17.1', '1.17.0', '1.16.0'];
 function releaseNotesHTML() {
   let html = '';
   for (const v of RELEASE_VERSIONS) {
@@ -635,7 +648,7 @@ function fazrItemHTML(f, attrs) {
   const thumb = f.photo ? '<img class="thumb" src="' + esc(f.photo) + '" alt="" loading="lazy">' : '';
   const done = foundFazr.has(fazrKey(f));
   return '<div class="item"' + attrs + '><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(fazrKey(f)) + '" aria-label="Mark found">✓</button>' + thumb +
-    '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></div>' +
+    '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(fazrTypeLabel(f)) + '</span></div>' +
     '<div class="desc">' + fazrDescHTML(f) + '</div></div></div>';
 }
 
@@ -735,7 +748,7 @@ function roomSheet(r) {
   const roomFazr = (data.fazr || []).filter(f => f.room === r.name && fazrVisible(f));
   const fazrHTML = roomFazr.length
     ? '<div class="connHead">FAZR:</div>' + roomFazr.map(f =>
-        '<div class="fazrRow">' + esc((f.type ? f.type + ' — ' : '') + (f.description || '')) + '</div>'
+        '<div class="fazrRow">' + esc((f.type ? fazrTypeLabel(f) + ' — ' : '') + (f.description || '')) + '</div>'
       ).join('')
     : '';
   openSheet(
@@ -764,14 +777,20 @@ function roomSheet(r) {
   document.getElementById('sheetWayfinder').addEventListener('click', () => wayfinderSheet(r));
   /* Log a Find (v1.16.0, Passage screen since v1.17.7): jump to the Log a
      Find screen with this room pre-filled — the room is the master, so the
-     user picks what they found without re-picking the room. */
+     user picks what they found without re-picking the room. v1.17.23: the
+     flow no longer jumps to the Passage sub-tab — it stays on Rooms and
+     Back returns there. */
   document.getElementById('sheetLogFind').addEventListener('click', () => {
     tab = 'hunt';
-    dossier = 'passage';
+    dossier = 'rooms';
+    lfOpen = true;
+    lf.returnTo = 'rooms';
+    lf.returnFazrType = null;
     document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
     document.querySelector('.tabs button[data-tab="hunt"]').classList.add('on');
     lf.room = r;
     lf.type = null;
+    lf.dest = null;
     lf.step = 'options';
     lf.msg = '';
     closeSheet();
@@ -1124,7 +1143,7 @@ function fazrSheet(f) {
   const floorMeta = room && room.level != null ? '<div class="meta">' + floorLabel(room.level) + '</div>' : '';
   const done = foundFazr.has(fazrKey(f));
   openSheet(
-    '<button class="titleLink" id="sheetRoom"><span>' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></span><span class="chev">›</span></button>' +
+    '<button class="titleLink" id="sheetRoom"><span>' + esc(f.room) + ' <span class="fazrType">' + esc(fazrTypeLabel(f)) + '</span></span><span class="chev">›</span></button>' +
     floorMeta +
     photo +
     '<div class="desc">' + fazrDescHTML(f) + '</div>' +
@@ -1241,6 +1260,10 @@ function lfGoToList(cat, fazrTypeValue) {
   if (c === 'passage') lf.step = 'home';
   tab = 'hunt';
   dossier = c;
+  /* v1.17.23: only returning to Passage re-opens the flow (its home is the
+     flow); every other list closes it. */
+  lfOpen = (c === 'passage');
+  lf.returnTo = c;
   if (c === 'fazr' && fazrTypeValue) {
     fazrType = fazrTypeValue;
     document.querySelectorAll('#fazrTypeFilters button').forEach(x => x.classList.toggle('on', x.dataset.fazrtype === fazrTypeValue));
@@ -1419,7 +1442,7 @@ function lfFazrItemsHTML(type, room) {
   return items.map(f => {
     const done = foundFazr.has(fazrKey(f));
     return '<div class="item" data-lffazr="' + data.fazr.indexOf(f) + '"><button class="check' + (done ? ' done' : '') + '" data-k="' + esc(fazrKey(f)) + '" aria-label="Mark found">✓</button>' +
-      '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(f.type) + '</span></div>' +
+      '<div class="body"><div class="name">' + esc(f.room) + ' <span class="fazrType">' + esc(fazrTypeLabel(f)) + '</span></div>' +
       '<div class="desc">' + fazrDescHTML(f) + '</div></div></div>';
   }).join('') +
     '<div class="result new" style="margin-top:12px"><div class="rtitle">Found a different one?</div>' +
@@ -1866,24 +1889,41 @@ function syncSubTabs() {
 function reportBtnHTML(label, sub) {
   return '<button id="areaReport" style="display:block;width:100%;margin-bottom:10px;padding:13px 12px;border-radius:10px;border:1px solid #e0a800;background:#222;color:#eee;cursor:pointer;text-align:left"><div style="font-size:17px;font-weight:bold;color:#e0a800">' + esc(label) + '</div><div style="font-size:14px;color:#aaa;margin-top:2px">' + esc(sub) + '</div></button>';
 }
+/* Count line while the Log a Find flow is open (v1.17.23): it follows what
+   is being reported — the type once chosen, the list you came from before
+   that — instead of always showing the passage count. */
+function lfCountText() {
+  /* v1.17.14, Allen: the other lists show "N of X found" — for passages
+     the total is a spoiler, so it reads "N of ? secret passages found"
+     unless spoilers are on, when the real total shows. The total is the
+     hidden-door count in the data. */
+  const totalPassages = data.rooms.reduce((n, r) => n + (r.spoilerConnections || []).length, 0);
+  const pass = foundPassages.size + ' of ' + (!noSpoilers ? totalPassages : '?') + ' secret passages found' + ((!noSpoilers && foundPassages.size === totalPassages) ? ' - you found them all!' : '');
+  const ctx = lf.type || lf.returnTo;
+  if (ctx === 'phone' || ctx === 'phones') return foundTelephonesCount() + ' of ' + (!noSpoilers ? data.telephones.length : '?') + ' phones found';
+  if (ctx === 'phone-number' || ctx === 'numbers') return foundNumbersCount() + ' of ' + (!noSpoilers ? uniqueNumbers().length : '?') + ' numbers found';
+  if (ctx === 'room' || ctx === 'rooms') return visitedCount() + ' of ' + data.rooms.length + ' rooms · ' + visitedCount() + ' visited';
+  if (ctx === 'fazr' || LF_FAZR_TYPES.includes(ctx)) {
+    const vis = data.fazr.filter(f => fazrVisible(f));
+    const foundVis = vis.filter(f => foundFazr.has(fazrKey(f))).length;
+    return foundVis + ' of ' + (!noSpoilers ? vis.length : '?') + ' FAZR points found' + ((!noSpoilers && foundVis === vis.length) ? ' - you found them all!' : '');
+  }
+  return pass;
+}
 function render() {
   const needle = q.value.trim().toLowerCase();
   let items = [];
   syncSubTabs();
   /* Log a Find screen (v1.17.0): the old Researcher screen, now behind
      the Passage tab and the per-area Report buttons — the Researcher lists
-     are the found items. */
-  if (tab === 'hunt' && dossier === 'passage') {
+     are the found items. v1.17.23: the flow opens from any list, tracked
+     by lfOpen, so the sub-tab stays on the list you came from. */
+  if (tab === 'hunt' && lfOpen) {
     q.classList.add('hidden');
     levelFilters.classList.add('hidden');
     fazrTypeFilters.classList.add('hidden');
     dossierTabs.classList.remove('hidden');
-    /* v1.17.14, Allen: the other lists show "N of X found" — for
-       passages the total is a spoiler, so it reads "N of ? secret
-       passages found" unless spoilers are on, when the real total
-       shows. The total is the hidden-door count in the data. */
-    const totalPassages = data.rooms.reduce((n, r) => n + (r.spoilerConnections || []).length, 0);
-    count.textContent = foundPassages.size + ' of ' + (!noSpoilers ? totalPassages : '?') + ' secret passages found' + ((!noSpoilers && foundPassages.size === totalPassages) ? ' - you found them all!' : '');
+    count.textContent = lfCountText();
     list.innerHTML = logFindHTML();
     lfAttach();
     return;
@@ -2109,7 +2149,7 @@ function render() {
       el.addEventListener('click', () => telephoneSheet(items[+el.dataset.i]));
     });
     const arPhone = document.getElementById('areaReport');
-    if (arPhone) arPhone.addEventListener('click', () => { lfReset(); tab = 'hunt'; dossier = 'passage'; lfChooseType('phone'); });
+    if (arPhone) arPhone.addEventListener('click', () => { lfReset(); tab = 'hunt'; dossier = 'phones'; lfOpen = true; lf.returnTo = 'phones'; lf.returnFazrType = null; lfChooseType('phone'); });
   } else if (dossier === 'timeline') {
     /* Timeline: public (Allen, 2026-11-19) — shows the same regardless of
        spoiler mode. No checklist, no detail sheet; each row is the bold
@@ -2158,7 +2198,9 @@ function render() {
     });
     const arFazr = document.getElementById('areaReport');
     if (arFazr) arFazr.addEventListener('click', () => {
-      lfReset(); tab = 'hunt'; dossier = 'passage';
+      /* v1.17.23: the flow stays on the FAZR tab (with its type filter) —
+         it no longer jumps to Passage, and Back returns here. */
+      lfReset(); tab = 'hunt'; dossier = 'fazr'; lfOpen = true; lf.returnTo = 'fazr'; lf.returnFazrType = fazrType;
       if (fazrType === 'all') render();
       else lfChooseType(fazrType);
     });
@@ -2190,7 +2232,7 @@ function render() {
       el.addEventListener('click', () => phoneSheet(items[+el.dataset.i]));
     });
     const arNum = document.getElementById('areaReport');
-    if (arNum) arNum.addEventListener('click', () => { lfReset(); tab = 'hunt'; dossier = 'passage'; lfChooseType('phone-number'); });
+    if (arNum) arNum.addEventListener('click', () => { lfReset(); tab = 'hunt'; dossier = 'numbers'; lfOpen = true; lf.returnTo = 'numbers'; lf.returnFazrType = null; lfChooseType('phone-number'); });
   }
 }
 /* Update check: iOS home-screen apps resume from the background without
@@ -2249,8 +2291,11 @@ document.querySelectorAll('#dossierTabs button').forEach(b => {
   b.addEventListener('click', () => {
     dossier = b.dataset.dossier;
     /* Passage (v1.17.12): the tab shows your found passages with a
-       Report a Secret Passage button — the button starts the flow. */
-    if (dossier === 'passage') { lfReset(); lf.step = 'home'; render(); return; }
+       Report a Secret Passage button — the button starts the flow.
+       v1.17.23: tapping any other sub-tab leaves the flow (lfOpen off);
+       tapping Passage opens it, with the passage count. */
+    lfOpen = (dossier === 'passage');
+    if (dossier === 'passage') { lfReset(); lf.returnTo = 'passage'; lf.step = 'home'; render(); return; }
     render();
   });
 });

@@ -1,13 +1,14 @@
 {
-  "generated": "2026-11-21",
+  "generated": "2026-11-20",
   "source": "Atlas9 Data — FAZR",
-  "count": 46,
+  "count": 45,
   "fazr": [
     {
       "room": "Projection Room",
       "type": "Computer",
       "spoiler": false,
       "description": "computer on desk",
+      "count": 1,
       "photo": null
     },
     {
@@ -15,6 +16,7 @@
       "type": "Computer",
       "spoiler": false,
       "description": "computer on desk",
+      "count": 1,
       "photo": null
     },
     {
@@ -22,6 +24,7 @@
       "type": "Computer",
       "spoiler": false,
       "description": "computer on desk",
+      "count": 3,
       "photo": null
     },
     {
@@ -29,6 +32,7 @@
       "type": "Computer",
       "spoiler": false,
       "description": "computer on desk",
+      "count": 1,
       "photo": null
     },
     {
@@ -36,6 +40,7 @@
       "type": "Computer",
       "spoiler": false,
       "description": "computer on desk",
+      "count": 1,
       "photo": null
     },
     {
@@ -43,6 +48,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on VERA Runner arcade game",
+      "count": 1,
       "photo": null
     },
     {
@@ -50,6 +56,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "joystick cup",
+      "count": 1,
       "photo": null
     },
     {
@@ -57,6 +64,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "four button cup",
+      "count": 1,
       "photo": null
     },
     {
@@ -64,6 +72,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "paddle cups",
+      "count": 2,
       "photo": null
     },
     {
@@ -71,6 +80,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the Holomax",
+      "count": 1,
       "photo": null
     },
     {
@@ -78,6 +88,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the Scene Selector",
+      "count": 1,
       "photo": null
     },
     {
@@ -85,6 +96,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "by drums",
+      "count": 1,
       "photo": null
     },
     {
@@ -92,6 +104,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "NODE computers in the back",
+      "count": 4,
       "photo": null
     },
     {
@@ -99,6 +112,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on table",
+      "count": 1,
       "photo": null
     },
     {
@@ -106,6 +120,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -113,6 +128,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on microphone stand",
+      "count": 1,
       "photo": null
     },
     {
@@ -120,6 +136,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on seats around The Spire",
+      "count": 6,
       "photo": null
     },
     {
@@ -127,6 +144,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on wall",
+      "count": 1,
       "photo": "photos/Mesmerite-fazr.jpg"
     },
     {
@@ -134,6 +152,7 @@
       "type": "FAZR",
       "spoiler": true,
       "description": "inside the booth",
+      "count": 1,
       "photo": null
     },
     {
@@ -141,6 +160,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the Power Supply",
+      "count": 1,
       "photo": null
     },
     {
@@ -148,6 +168,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the Prototyzer",
+      "count": 1,
       "photo": null
     },
     {
@@ -155,6 +176,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the Sample Analyzer",
+      "count": 1,
       "photo": null
     },
     {
@@ -162,6 +184,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on LITE (Linguistic Information Translation Engine)",
+      "count": 4,
       "photo": null
     },
     {
@@ -169,6 +192,7 @@
       "type": "FAZR",
       "spoiler": true,
       "description": "hidden behind filing cabinet",
+      "count": 1,
       "photo": null
     },
     {
@@ -176,6 +200,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -183,6 +208,7 @@
       "type": "FAZR",
       "spoiler": true,
       "description": "hidden in the beaver dam behind a painting",
+      "count": 1,
       "photo": null
     },
     {
@@ -190,6 +216,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the V.H.S. (Visual Harp System)",
+      "count": 1,
       "photo": null
     },
     {
@@ -197,6 +224,7 @@
       "type": "FAZR",
       "spoiler": false,
       "description": "on the wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -204,6 +232,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 1 — entrance to Sapphire Stroll",
+      "count": 1,
       "photo": null
     },
     {
@@ -211,6 +240,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 2 — toys area",
+      "count": 1,
       "photo": null
     },
     {
@@ -218,6 +248,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 3 — cigarette machine",
+      "count": 1,
       "photo": null
     },
     {
@@ -225,6 +256,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 4 — Fun Zone (party room)",
+      "count": 1,
       "photo": null
     },
     {
@@ -232,6 +264,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 5 — battle / delayered posters",
+      "count": 1,
       "photo": null
     },
     {
@@ -239,6 +272,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 6 — jungle",
+      "count": 1,
       "photo": null
     },
     {
@@ -246,6 +280,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 7 — adjacent to the Projection Room",
+      "count": 1,
       "photo": null
     },
     {
@@ -253,6 +288,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 8 — entrance to FACADE Field Lab",
+      "count": 1,
       "photo": null
     },
     {
@@ -260,6 +296,7 @@
       "type": "FAZR-Portal",
       "spoiler": false,
       "description": "Portal 9 — entrance to Theater",
+      "count": 1,
       "photo": null
     },
     {
@@ -267,6 +304,7 @@
       "type": "INTERFAZE",
       "spoiler": false,
       "description": "on the wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -274,6 +312,7 @@
       "type": "INTERFAZE",
       "spoiler": false,
       "description": "on the wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -281,6 +320,7 @@
       "type": "INTERFAZE",
       "spoiler": false,
       "description": "on the wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -288,13 +328,7 @@
       "type": "INTERFAZE",
       "spoiler": false,
       "description": "on the wall",
-      "photo": null
-    },
-    {
-      "room": "Power Supply",
-      "type": "INTERFAZE",
-      "spoiler": false,
-      "description": "on the wall",
+      "count": 1,
       "photo": null
     },
     {
@@ -302,6 +336,7 @@
       "type": "Movie Poster",
       "spoiler": false,
       "description": "Trance of the Sapphire poster",
+      "count": 1,
       "photo": null
     },
     {
@@ -309,6 +344,7 @@
       "type": "Movie Poster",
       "spoiler": false,
       "description": "Mossman poster",
+      "count": 1,
       "photo": null
     },
     {
@@ -316,6 +352,7 @@
       "type": "Movie Poster",
       "spoiler": false,
       "description": "Scavengers poster",
+      "count": 1,
       "photo": null
     },
     {
@@ -323,6 +360,7 @@
       "type": "Movie Poster",
       "spoiler": false,
       "description": "Starbot poster",
+      "count": 1,
       "photo": null
     }
   ]

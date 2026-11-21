@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-21",
+  "generated": "2026-11-20",
   "source": "Atlas9 Data — Rooms + Connections",
   "count": 59,
   "rooms": [
@@ -43,7 +43,8 @@
       "photo": null,
       "spoiler": false,
       "connections": [
-        "Containment Zone"
+        "Containment Zone",
+        "Lobby"
       ]
     },
     {
@@ -341,6 +342,7 @@
       "spoiler": false,
       "connections": [
         "Agent Onboarding",
+        "Box Office",
         "Containment Zone",
         "Elevator",
         "Employee Break Room",

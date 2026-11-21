@@ -8,6 +8,20 @@ Dates are the day each version went live. Versions before 1.9.3 predate this
 repository — the app's earlier history lives in the V0 prototype snapshot
 (`FieldGuide-V0/`, version 1.8.18).
 
+## [1.17.24] - 2026-11-20
+
+- Correction: the Power Supply FAZR is back — the bogus entry was its INTERFAZE, not the FAZR. Power Supply has 3 computers and 1 FAZR, no INTERFAZE; the INTERFAZE belongs to FACADE Field Lab next door.
+
+## [1.17.23] - 2026-11-20
+
+- Reporting from a list no longer jumps you to the Passage tab — the tab stays on the list you came from, and Back takes you back there. The count line follows what is being reported instead of always showing the passage count.
+- The Power Supply FAZR point was removed in this version — that turned out to be the wrong row; 1.17.24 restores it and removes the bogus INTERFAZE instead.
+
+## [1.17.22] - 2026-11-20
+
+- FAZR points now show how many identical stations they cover, e.g. "FAZR (2)" — the Spire seats are 6, the StarBot LITE stations are 4.
+- The Lobby links directly to the Box Office now, both ways.
+
 ## [1.17.21] - 2026-11-20
 
 - Room names cleaned up: Lobby Stairs, Lobby Arcade, Lobby Concessions, Lobby Restrooms, Elevator, Agent Onboarding, Splice Bros. Pizza Restroom, Starbot Restroom.
