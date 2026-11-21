@@ -43,6 +43,11 @@
   .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .grid .big { text-align: center; padding: 18px 8px; }
   .hint { color: #888; font-size: 14px; margin-top: 8px; line-height: 1.5; }
+  .stairRow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid #333; }
+  .stairRow > span:first-child { font-size: 15px; }
+  .seg { display: flex; gap: 4px; background: #222; border-radius: 9px; padding: 3px; }
+  .seg button { flex: 1; border: 0; padding: 7px 10px; font-size: 13px; border-radius: 7px; background: transparent; color: #ccc; cursor: pointer; white-space: nowrap; }
+  .seg button.on { background: #e0a800; color: #111; font-weight: bold; }
   .searchWrap { position: relative; display: block; }
   .searchWrap input { width: 100%; font-size: 18px; padding: 10px 38px 10px 12px; border-radius: 8px; border: 1px solid #555; background: #222; color: #eee; }
   .searchWrap input::placeholder { color: #888; }
@@ -179,13 +184,16 @@
 <footer>Routes use public connections only — no hidden doors — unless Spoilers are on. Some rooms and routes only appear with Spoilers on. Crawls are left out unless you turn them on in Config. Data from the Atlas9 Data spreadsheet, same rooms file as the Unofficial Atlas9 Field Guide (fan-made, not affiliated with Atlas9). <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <div id="sheetWrap"><div id="sheet"></div></div>
 <script>
-const APP_VERSION = '1.4.24';
+const APP_VERSION = '1.4.25';
 /* Release notes (v1.3.1): one short list per version, newest first in
    About's Release Notes section. The What's new sheet shows only the
    current version's list. Keep each note to one plain sentence — and
    never name a hidden room or route in a note a spoilers-off user
    could read. */
 const WHATS_NEW = {
+  '1.4.25': [
+    'Config now sets each staircase to Both ways, Up only, or Down only — routes respect your choice.',
+  ],
   '1.4.24': [
     'Eight rooms renamed for clarity — Lobby Arcade, Lobby Concessions, Lobby Restrooms, Lobby Stairs, Agent Onboarding, Elevator, Splice Bros. Pizza Restroom, Starbot Restroom.',
     'Seven more Door notes from the sheet (25 in total).',
@@ -312,7 +320,7 @@ const WHATS_NEW = {
     'New shortcuts: Food/Drink and INTERFAZE.',
   ],
 };
-const RELEASE_VERSIONS = ['1.4.24', '1.4.23', '1.4.22', '1.4.21', '1.4.20', '1.4.19', '1.4.18', '1.4.17', '1.4.16', '1.4.15', '1.4.14', '1.4.13', '1.4.12', '1.4.11', '1.4.10', '1.4.9', '1.4.8', '1.4.7', '1.4.6', '1.4.5', '1.4.4', '1.4.3', '1.4.2', '1.4.1', '1.4.0', '1.3.7', '1.3.6', '1.3.5', '1.3.4', '1.3.3', '1.3.2', '1.3.1', '1.3.0', '1.2.0'];
+const RELEASE_VERSIONS = ['1.4.25', '1.4.24', '1.4.23', '1.4.22', '1.4.21', '1.4.20', '1.4.19', '1.4.18', '1.4.17', '1.4.16', '1.4.15', '1.4.14', '1.4.13', '1.4.12', '1.4.11', '1.4.10', '1.4.9', '1.4.8', '1.4.7', '1.4.6', '1.4.5', '1.4.4', '1.4.3', '1.4.2', '1.4.1', '1.4.0', '1.3.7', '1.3.6', '1.3.5', '1.3.4', '1.3.3', '1.3.2', '1.3.1', '1.3.0', '1.2.0'];
 document.getElementById('ver').textContent = 'v' + APP_VERSION;
 /* Version tap (v1.4.10): tapping the version number in the header
    opens the release notes in their own sheet. */
@@ -437,9 +445,21 @@ function excludedNodes(avoidStairs, includeCrawls) {
   if (avoidStairs) STAIRS.forEach(n => ex.add(n));
   return ex;
 }
+/* Stair direction (v1.4.25, Allen): each staircase may be Both ways,
+   Up only, or Down only. A staircase is used "up" when entered from
+   its Floor 1 end, "down" when entered from its Floor 2 end — each
+   staircase joins exactly one room per floor, so the entering room's
+   level is the direction. The Elevator is never restricted. */
+const STAIR_DIRS_DEFAULT = { 'Lobby Stairs': 'both', 'Theater Stairs': 'both', 'Jazz Club Stairs': 'both', 'Scavengers Stairs': 'both' };
+function stairEnterAllowed(stair, fromLevel, stairDirs) {
+  const d = (stairDirs && stairDirs[stair]) || 'both';
+  if (d === 'both') return true;
+  if (d === 'up') return fromLevel !== 2;
+  return fromLevel !== 1; // 'down'
+}
 /* BFS from `from` to `to` on the directional graph, skipping excluded
    nodes. Returns the path (array of room names) or null. */
-function findRoute(from, to, avoidStairs, spoilersOn, includeCrawls) {
+function findRoute(from, to, avoidStairs, spoilersOn, includeCrawls, stairDirs = STAIR_DIRS_DEFAULT) {
   if (from === to) return [from];
   const ex = excludedNodes(avoidStairs, includeCrawls);
   if (ex.has(from) || ex.has(to)) return null;
@@ -450,6 +470,10 @@ function findRoute(from, to, avoidStairs, spoilersOn, includeCrawls) {
     const cur = q.shift();
     for (const nb of (graph.get(cur) || [])) {
       if (prev.has(nb) || ex.has(nb)) continue;
+      if (STAIRS.includes(nb)) {
+        const fromRoom = ROOM_BY_NAME.get(cur);
+        if (fromRoom && !stairEnterAllowed(nb, fromRoom.level, stairDirs)) continue;
+      }
       prev.set(nb, cur);
       if (nb === to) {
         const path = [to];
@@ -464,7 +488,7 @@ function findRoute(from, to, avoidStairs, spoilersOn, includeCrawls) {
 }
 /* BFS from `from` to the nearest room in `targets` (fewest stops).
    Returns the path or null. */
-function findNearest(from, targets, avoidStairs, spoilersOn, includeCrawls) {
+function findNearest(from, targets, avoidStairs, spoilersOn, includeCrawls, stairDirs = STAIR_DIRS_DEFAULT) {
   const targetSet = new Set(targets);
   if (targetSet.has(from)) return [from];
   const ex = excludedNodes(avoidStairs, includeCrawls);
@@ -475,6 +499,10 @@ function findNearest(from, targets, avoidStairs, spoilersOn, includeCrawls) {
     const cur = q.shift();
     for (const nb of (graph.get(cur) || [])) {
       if (prev.has(nb) || ex.has(nb)) continue;
+      if (STAIRS.includes(nb)) {
+        const fromRoom = ROOM_BY_NAME.get(cur);
+        if (fromRoom && !stairEnterAllowed(nb, fromRoom.level, stairDirs)) continue;
+      }
       prev.set(nb, cur);
       if (targetSet.has(nb)) {
         const path = [nb];
@@ -559,6 +587,9 @@ let separateFloors = false;
    (v1.4.17) and restored on launch. While on, the three crawl passages
    count as rooms. */
 let includeCrawls = false;
+/* Stair directions (v1.4.25, Allen): per-staircase Both / Up only /
+   Down only. Saved with the other settings; all Both by default. */
+let stairDirs = { 'Lobby Stairs': 'both', 'Theater Stairs': 'both', 'Jazz Club Stairs': 'both', 'Scavengers Stairs': 'both' };
 /* Spoilers (v1.3.0): in-memory only, like the Field Guide — off on
    every launch, never remembered. While on, hidden doors are edges,
    Headshot Remixer is pickable, and spoiler FAZR points join the lists. */
@@ -574,11 +605,16 @@ function loadSettings() {
     if (typeof s.avoidStairs === 'boolean') avoidStairs = s.avoidStairs;
     if (typeof s.includeCrawls === 'boolean') includeCrawls = s.includeCrawls;
     if (typeof s.separateFloors === 'boolean') separateFloors = s.separateFloors;
+    if (s.stairDirs && typeof s.stairDirs === 'object') {
+      for (const n of STAIRS) {
+        if (['both', 'up', 'down'].includes(s.stairDirs[n])) stairDirs[n] = s.stairDirs[n];
+      }
+    }
     if (typeof s.fromName === 'string' && byName.has(s.fromName)) fromName = s.fromName;
   } catch (e) { /* a bad stored value just means defaults */ }
 }
 function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ avoidStairs, includeCrawls, separateFloors, fromName })); } catch (e) {}
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ avoidStairs, includeCrawls, separateFloors, stairDirs, fromName })); } catch (e) {}
 }
 loadSettings();
 let activeCat = null;
@@ -597,10 +633,10 @@ let routePath = null;
 function refreshRoute() {
   if (!destName) return;
   if (routeStart !== null) {
-    const p = findRoute(routeStart, destName, avoidStairs, spoilersOn, includeCrawls);
+    const p = findRoute(routeStart, destName, avoidStairs, spoilersOn, includeCrawls, stairDirs);
     if (p && p.includes(fromName)) { routePath = p; return; }
   }
-  routePath = findRoute(fromName, destName, avoidStairs, spoilersOn, includeCrawls);
+  routePath = findRoute(fromName, destName, avoidStairs, spoilersOn, includeCrawls, stairDirs);
   routeStart = fromName;
 }
 
@@ -645,6 +681,9 @@ function renderAvoid() {
   if (cfgHint) cfgHint.textContent = avoidStairs
     ? 'Stairs excluded — routes use the elevator only.'
     : 'Stairs and elevator both allowed — the shortest route wins.';
+  /* Stair directions (v1.4.25): the Stairs section dims while Avoid
+     stairs is on — renderStairs guards the missing sheet itself. */
+  renderStairs();
   if (destName) { refreshRoute(); renderRoute(); }
   saveSettings();
 }
@@ -699,7 +738,7 @@ function renderRoute() {
      to this destination and still contains "I am in". Otherwise
      compute a fresh route from "I am in". */
   if (!routePath || routeStart === null || routePath[routePath.length - 1] !== destName || !routePath.includes(fromName)) {
-    routePath = findRoute(fromName, destName, avoidStairs, spoilersOn, includeCrawls);
+    routePath = findRoute(fromName, destName, avoidStairs, spoilersOn, includeCrawls, stairDirs);
     routeStart = fromName;
   }
   const path = routePath;
@@ -959,8 +998,13 @@ function tier2Options(cat) {
   const nearest = (targets, prefix) => ({ label: 'Nearest', targets, prefix });
   switch (cat) {
     case 'stairs':
+      /* Stair direction (v1.4.25): only list a staircase you can
+         actually use from the floor you are standing on — a Down
+         only staircase is no use to someone on Floor 1, and vice
+         versa. Nearest already skips them via the routing filter. */
+      const fromLevel = (byName.get(fromName) || {}).level;
       return [nearest(STAIRS, 'Nearest stairs'),
-        ...STAIRS.map(n => ({ label: n, dest: n }))];
+        ...STAIRS.filter(n => stairEnterAllowed(n, fromLevel, stairDirs)).map(n => ({ label: n, dest: n }))];
     case 'food':
       return [nearest(FOOD_DRINK, 'Nearest food/drink'),
         ...FOOD_DRINK.map(n => ({ label: n, dest: n }))];
@@ -1006,7 +1050,7 @@ function clearTier3() {
    it, so both route the same way. */
 function routeTierOpt(o) {
   if (o.dest) { setDestination(o.dest, o.dest, false); return; }
-  const p = findNearest(fromName, o.targets, avoidStairs, spoilersOn, includeCrawls);
+  const p = findNearest(fromName, o.targets, avoidStairs, spoilersOn, includeCrawls, stairDirs);
   if (p) setDestination(p[p.length - 1], o.prefix + ' (' + p[p.length - 1] + ')', false);
 }
 function renderTier2(cat) {
@@ -1038,7 +1082,7 @@ document.querySelectorAll('#catGrid [data-cat]').forEach(b => {
          gold — Elevator and Exit never were, so a tap gave no
          feedback that it was selected. */
       b.classList.add('on');
-      const p = findNearest(fromName, [ELEVATOR], avoidStairs, spoilersOn, includeCrawls);
+      const p = findNearest(fromName, [ELEVATOR], avoidStairs, spoilersOn, includeCrawls, stairDirs);
       if (p) setDestination(p[p.length - 1], 'Nearest elevator', false);
       return;
     }
@@ -1340,15 +1384,49 @@ function configHTML() {
     '<p class="hint" id="configCrawlsHint"></p>' +
     '<p><button class="big" id="configFloorsBtn" aria-pressed="false"></button></p>' +
     '<p class="hint" id="configFloorsHint"></p>' +
+    '<h3>Stairs</h3>' +
+    '<p class="hint">Which way each staircase can be used. Down only stairs are skipped going up, and vice versa. The Elevator is always available both ways.</p>' +
+    '<div id="configStairs"></div>' +
+    '<p class="hint" id="configStairsHint"></p>' +
     '<p>Defaults live here. More options can be added as the app grows.</p>' +
     '<p>Your settings are saved on this phone only. An app update may reset them — that’s expected, not a bug.</p>' +
     '</div>';
+}
+/* Stair directions (v1.4.25, Allen): each staircase gets Both / Up
+   only / Down only. The section dims while Avoid stairs is on — no
+   stairs are used at all then, so the choices are moot. */
+const STAIR_DIR_LABELS = [['both', 'Both'], ['up', 'Up only'], ['down', 'Down only']];
+function renderStairs() {
+  const wrap = document.getElementById('configStairs');
+  if (!wrap) return;
+  wrap.innerHTML = STAIRS.map(n => {
+    const cur = stairDirs[n] || 'both';
+    return '<div class="stairRow"><span>' + esc(n) + '</span><span class="seg">' +
+      STAIR_DIR_LABELS.map(([v, label]) =>
+        '<button data-stair="' + esc(n) + '" data-dir="' + v + '"' + (v === cur ? ' class="on"' : '') + '>' + label + '</button>'
+      ).join('') + '</span></div>';
+  }).join('');
+  wrap.querySelectorAll('[data-stair]').forEach(b => {
+    b.addEventListener('click', () => {
+      stairDirs[b.dataset.stair] = b.dataset.dir;
+      saveSettings();
+      renderStairs();
+      if (destName) { refreshRoute(); renderRoute(); }
+    });
+  });
+  const hint = document.getElementById('configStairsHint');
+  if (hint) hint.textContent = avoidStairs
+    ? 'Hidden while Avoid stairs is on — no stairs are used at all.'
+    : 'Applies to routes through each staircase.';
+  wrap.style.opacity = avoidStairs ? '0.4' : '1';
+  wrap.style.pointerEvents = avoidStairs ? 'none' : 'auto';
 }
 function openConfig() {
   openSheet(configHTML(), true);
   renderAvoid();
   renderCrawls();
   renderFloors();
+  renderStairs();
   document.getElementById('configAvoidBtn').addEventListener('click', () => {
     avoidStairs = !avoidStairs;
     renderAvoid();
@@ -1400,7 +1478,7 @@ function aboutHTML() {
     (isStandalone ? '' : '<p><button id="aboutInstall" style="font-size:15px;padding:9px 16px;border-radius:8px;border:1px solid #555;background:#2a2a2a;color:#eee;cursor:pointer">Install on Home Screen</button></p>') +
     '<p>Unofficial Atlas9 Wayfinder is a fan-made wayfinding tool for the Atlas9 experience in Kansas City, KS. It is not affiliated with Atlas9.</p>' +
     '<p>Pick the room you are in, then pick a category — Stairs, Elevator, Food, Restroom, Exit or FAZR — and choose Nearest or a specific one. FAZR offers FAZR, Movie Poster, Computer, INTERFAZE and FAZR-Portal. Or pick any room to go to: search matches room names and descriptions, so “guitar” or “bar” finds a room even when you don’t know its name.</p>' +
-    '<p><strong>Config</strong> (top right) holds <strong>Avoid stairs</strong>, which routes by elevator only, and <strong>Include crawls</strong>, which lets routes use the crawl passages. <strong>Spoilers</strong> (top right) enables hidden routes and hidden items. Spoilers are off on every launch.</p>' +
+    '<p><strong>Config</strong> (top right) holds <strong>Avoid stairs</strong>, which routes by elevator only, and <strong>Include crawls</strong>, which lets routes use the crawl passages. It also holds <strong>per-staircase directions</strong> — each staircase can be Both ways, Up only, or Down only. <strong>Spoilers</strong> (top right) enables hidden routes and hidden items. Spoilers are off on every launch.</p>' +
     '<p>The <strong>flag</strong> (top right) reports a FAZR, Computer, Movie Poster or INTERFAZE that is listed but not there, or there but not listed. The <strong>share</strong> icon (top right) shares the app with a QR code or a link.</p>' +
     '<p>Your starting room and settings are saved on this phone only. There is no account and nothing is sent to a server. <strong>Spoilers</strong> are never saved — they start off every time you open the app.</p>' +
     '<h3>Release Notes</h3>' + releaseNotesHTML() +

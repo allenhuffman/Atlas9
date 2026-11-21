@@ -133,6 +133,28 @@ check(typeof DIRECTIONS === 'object', 'DIRECTIONS must be embedded');
 check(Object.keys(DIRECTIONS).length > 0, 'DIRECTIONS must not be empty — Door notes are live (v1.4.22)');
 check(DIRECTIONS['Employee Break Room|Headshot Remixer'] === 'through the door disguised as a soda machine', 'shipped DIRECTIONS must carry the soda-machine note (v1.4.22)');
 console.log('Via notes embedded in shipped file:', Object.keys(DIRECTIONS).length);
+// v1.4.25: stair directions — each staircase Both / Up only / Down
+// only. The filter is on the entry edge: entering a staircase from
+// its Floor 1 end is going up, from its Floor 2 end going down.
+const DOWN2 = { 'Lobby Stairs': 'both', 'Theater Stairs': 'both', 'Jazz Club Stairs': 'down', 'Scavengers Stairs': 'down' };
+const upJazz = findRoute('Sapphire Jazz Club', 'Sapphire Jazz Club Balcony', false, false, false, DOWN2);
+check(upJazz !== null && !upJazz.includes('Jazz Club Stairs'), 'Jazz Club Stairs must not carry an up route when Down only: ' + upJazz);
+check(JSON.stringify(findRoute('Sapphire Jazz Club Balcony', 'Sapphire Jazz Club', false, false, false, DOWN2)) === JSON.stringify(['Sapphire Jazz Club Balcony', 'Jazz Club Stairs', 'Sapphire Jazz Club']), 'Balcony -> Jazz Club must still use Jazz Club Stairs going down');
+const upScav = findRoute('Scavengers/TV Den', 'Scavengers/Green Hallway', false, false, false, DOWN2);
+check(upScav !== null && !upScav.includes('Scavengers Stairs'), 'Scavengers Stairs must not carry an up route when Down only: ' + upScav);
+check(JSON.stringify(findRoute('Scavengers/Green Hallway', 'Scavengers/TV Den', false, false, false, DOWN2)) === JSON.stringify(['Scavengers/Green Hallway', 'Scavengers Stairs', 'Scavengers/TV Den']), 'Green Hallway -> TV Den must still use Scavengers Stairs going down');
+const UP1 = { 'Lobby Stairs': 'both', 'Theater Stairs': 'up', 'Jazz Club Stairs': 'both', 'Scavengers Stairs': 'both' };
+const downThe = findRoute('Theater Upper', 'Theater', false, false, false, UP1);
+check(downThe !== null && !downThe.includes('Theater Stairs'), 'Theater Stairs must not carry a down route when Up only: ' + downThe);
+check(JSON.stringify(findRoute('Theater', 'Theater Upper', false, false, false, UP1)) === JSON.stringify(['Theater', 'Theater Stairs', 'Theater Upper']), 'Theater -> Theater Upper must still use Theater Stairs going up');
+const ALL_DOWN = { 'Lobby Stairs': 'down', 'Theater Stairs': 'down', 'Jazz Club Stairs': 'down', 'Scavengers Stairs': 'down' };
+check(JSON.stringify(findRoute('Lobby', 'StarBot', false, false, false, ALL_DOWN)) === JSON.stringify(['Lobby', 'Elevator', 'StarBot']), 'Lobby -> StarBot with all stairs Down only must go by elevator');
+const nearJazz = findNearest('Sapphire Jazz Club', STAIRS, false, false, false, DOWN2);
+check(nearJazz !== null && !['Jazz Club Stairs', 'Scavengers Stairs'].includes(nearJazz[nearJazz.length - 1]), 'nearest stairs from Jazz Club with Jazz/Scav Down only must skip them: ' + nearJazz);
+// v1.4.25 static guards: the Config Stairs section and its labels.
+check(html.includes('id="configStairs"'), 'missing Config element #configStairs (v1.4.25)');
+check(html.includes('Up only') && html.includes('Down only'), 'Config must offer Up only / Down only (v1.4.25)');
+check(html.includes('stairDirs'), 'stair directions must be saved in settings (v1.4.25)');
 // Shortcut target lists (v1.2.0/1.3.0): exact sets, all pickable rooms.
 check(JSON.stringify(FOOD_DRINK.slice().sort()) === JSON.stringify(['Lobby Concessions', 'Speakereasy', 'Splice Bros Pizza & Pub'].sort()), 'FOOD_DRINK must be the 3 serving rooms, got ' + FOOD_DRINK);
 check(JSON.stringify(FAZR_TYPES) === JSON.stringify(['FAZR', 'Movie Poster', 'Computer', 'INTERFAZE', 'FAZR-Portal']), 'FAZR_TYPES must be the 5 types in tier-2 order');
