@@ -8,6 +8,10 @@ Dates are the day each version went live. Versions before 1.9.3 predate this
 repository — the app's earlier history lives in the V0 prototype snapshot
 (`FieldGuide-V0/`, version 1.8.18).
 
+## [1.17.25] - 2026-11-20
+
+- The Sapphire Jazz Club has an INTERFAZE now — next to the Auditorium 4 entrance. That makes 5 INTERFAZE terminals.
+
 ## [1.17.24] - 2026-11-20
 
 - Correction: the Power Supply FAZR is back — the bogus entry was its INTERFAZE, not the FAZR. Power Supply has 3 computers and 1 FAZR, no INTERFAZE; the INTERFAZE belongs to FACADE Field Lab next door.

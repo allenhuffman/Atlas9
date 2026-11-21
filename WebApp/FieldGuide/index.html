@@ -219,7 +219,7 @@
 <div id="sheetWrap"><div id="sheet"></div></div>
 <footer>Researcher mode lists every room and person to check off as you visit them — phones, numbers, and FAZR points stay hidden until you find and report them. Dossier mode is the full reference (spoilers): rooms, people, phones, and phone numbers with their details, plus FAZR points and the timeline. Data from the Atlas9 Data spreadsheet (fan-made, not affiliated with Atlas9). Rooms: * = official exhibit name from atlas9.com/featured-artists. <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <script>
-const APP_VERSION = '1.17.24';
+const APP_VERSION = '1.17.25';
 /* Physical keyboard: desktop browsers have a fine pointer (mouse/trackpad);
    phones and tablets have a coarse pointer (touch) and no keyboard. The hunt
    input stays readonly on touch devices so the on-screen keyboard never pops
@@ -448,6 +448,7 @@ const WELCOME_KEY = 'a9-welcomed';
    in the header opens this list, newest first. Notes stay terse and never
    name anything hidden — no hidden FAZR, hidden door, or hidden room. */
 const WHATS_NEW = {
+  '1.17.25': ['The Sapphire Jazz Club has an INTERFAZE now — next to the Auditorium 4 entrance.'],
   '1.17.24': ['Correction: the Power Supply FAZR is back — the bogus entry was its INTERFAZE, not the FAZR. Power Supply has 3 computers and 1 FAZR, no INTERFAZE; the INTERFAZE belongs to FACADE Field Lab next door.'],
   '1.17.23': ['The Power Supply FAZR point is gone — it was a misfiled FACADE photo, not a Power Supply FAZR. FACADE keeps its FAZR.', 'Reporting from a list no longer jumps you to the Passage tab — the tab stays on the list you came from, and Back takes you back there.'],
   '1.17.22': ['FAZR points now show how many identical stations they cover, e.g. "FAZR (2)" — the Spire seats are 6, the StarBot LITE stations are 4.', 'The Lobby links directly to the Box Office now, both ways.'],
@@ -475,7 +476,7 @@ const WHATS_NEW = {
   '1.17.0': ['Researcher and Dossier share the same category lists; Researcher shows only what you found.'],
   '1.16.0': ['Researcher reworked as Log a Find.', 'Room descriptions split into a public description and a spoiler-only detail.']
 };
-const RELEASE_VERSIONS = ['1.17.24', '1.17.23', '1.17.22', '1.17.21', '1.17.16', '1.17.15', '1.17.14', '1.17.13', '1.17.12', '1.17.11', '1.17.10', '1.17.9', '1.17.8', '1.17.7', '1.17.6', '1.17.5', '1.17.4', '1.17.3', '1.17.2', '1.17.1', '1.17.0', '1.16.0'];
+const RELEASE_VERSIONS = ['1.17.25', '1.17.24', '1.17.23', '1.17.22', '1.17.21', '1.17.16', '1.17.15', '1.17.14', '1.17.13', '1.17.12', '1.17.11', '1.17.10', '1.17.9', '1.17.8', '1.17.7', '1.17.6', '1.17.5', '1.17.4', '1.17.3', '1.17.2', '1.17.1', '1.17.0', '1.16.0'];
 function releaseNotesHTML() {
   let html = '';
   for (const v of RELEASE_VERSIONS) {

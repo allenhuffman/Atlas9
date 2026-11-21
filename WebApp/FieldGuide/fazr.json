@@ -1,7 +1,7 @@
 {
   "generated": "2026-11-20",
   "source": "Atlas9 Data — FAZR",
-  "count": 45,
+  "count": 46,
   "fazr": [
     {
       "room": "Projection Room",
@@ -360,6 +360,14 @@
       "type": "Movie Poster",
       "spoiler": false,
       "description": "Starbot poster",
+      "count": 1,
+      "photo": null
+    },
+    {
+      "room": "Sapphire Jazz Club",
+      "type": "INTERFAZE",
+      "spoiler": false,
+      "description": "next to auditorium 4 entrance",
       "count": 1,
       "photo": null
     }
