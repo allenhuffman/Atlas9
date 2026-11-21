@@ -179,13 +179,17 @@
 <footer>Routes use public connections only — no hidden doors — unless Spoilers are on. Some rooms and routes only appear with Spoilers on. Crawls are left out unless you turn them on in Config. Data from the Atlas9 Data spreadsheet, same rooms file as the Unofficial Atlas9 Field Guide (fan-made, not affiliated with Atlas9). <button id="aboutBtn">About this app</button> · <button id="installBtn">Install on Home Screen</button></footer>
 <div id="sheetWrap"><div id="sheet"></div></div>
 <script>
-const APP_VERSION = '1.4.23';
+const APP_VERSION = '1.4.24';
 /* Release notes (v1.3.1): one short list per version, newest first in
    About's Release Notes section. The What's new sheet shows only the
    current version's list. Keep each note to one plain sentence — and
    never name a hidden room or route in a note a spoilers-off user
    could read. */
 const WHATS_NEW = {
+  '1.4.24': [
+    'Eight rooms renamed for clarity — Lobby Arcade, Lobby Concessions, Lobby Restrooms, Lobby Stairs, Agent Onboarding, Elevator, Splice Bros. Pizza Restroom, Starbot Restroom.',
+    'Seven more Door notes from the sheet (25 in total).',
+  ],
   '1.4.23': [
     'Door notes now read as full phrases ("through the…") throughout.',
   ],
@@ -308,7 +312,7 @@ const WHATS_NEW = {
     'New shortcuts: Food/Drink and INTERFAZE.',
   ],
 };
-const RELEASE_VERSIONS = ['1.4.23', '1.4.22', '1.4.21', '1.4.20', '1.4.19', '1.4.18', '1.4.17', '1.4.16', '1.4.15', '1.4.14', '1.4.13', '1.4.12', '1.4.11', '1.4.10', '1.4.9', '1.4.8', '1.4.7', '1.4.6', '1.4.5', '1.4.4', '1.4.3', '1.4.2', '1.4.1', '1.4.0', '1.3.7', '1.3.6', '1.3.5', '1.3.4', '1.3.3', '1.3.2', '1.3.1', '1.3.0', '1.2.0'];
+const RELEASE_VERSIONS = ['1.4.24', '1.4.23', '1.4.22', '1.4.21', '1.4.20', '1.4.19', '1.4.18', '1.4.17', '1.4.16', '1.4.15', '1.4.14', '1.4.13', '1.4.12', '1.4.11', '1.4.10', '1.4.9', '1.4.8', '1.4.7', '1.4.6', '1.4.5', '1.4.4', '1.4.3', '1.4.2', '1.4.1', '1.4.0', '1.3.7', '1.3.6', '1.3.5', '1.3.4', '1.3.3', '1.3.2', '1.3.1', '1.3.0', '1.2.0'];
 document.getElementById('ver').textContent = 'v' + APP_VERSION;
 /* Version tap (v1.4.10): tapping the version number in the header
    opens the release notes in their own sheet. */
@@ -361,17 +365,17 @@ const DIRECTIONS = __DIRECTIONS_JSON__;
    Connections are its outgoing edges only. A hidden door's reverse
    direction is a spoiler connection, so it is never an edge here.
    STAIRS / ELEVATOR are the Level-0 connector rooms. */
-const STAIRS = ['Theater Stairs', 'Jazz Club Stairs', 'Scavengers Stairs', 'Stairs (Lobby/Starbot)'];
-const ELEVATOR = 'Elevator (Lobby/Starbot)';
+const STAIRS = ['Theater Stairs', 'Jazz Club Stairs', 'Scavengers Stairs', 'Lobby Stairs'];
+const ELEVATOR = 'Elevator';
 const CRAWLS = ['Theater Crawl', 'Hypnotizer Crawl', 'Concession Crawl'];
-const RESTROOMS = ['Restrooms (Lobby)', 'Restroom (Starbot)', 'Restroom (Splice Bros. Pizza)'];
+const RESTROOMS = ['Lobby Restrooms', 'Starbot Restroom', 'Splice Bros. Pizza Restroom'];
 const EXIT = 'Containment Zone';
 /* Food/drink (v1.2.0): the rooms that serve it — the Lobby snack bar,
    the Speakereasy bar, and Splice Bros Pizza & Pub. Curated like
    RESTROOMS: a judgment call, not a keyword match (the Containment
    Zone mentions Splice Bros. Pizza in its description but serves
    nothing itself). */
-const FOOD_DRINK = ['Concessions (Lobby)', 'Speakereasy', 'Splice Bros Pizza & Pub'];
+const FOOD_DRINK = ['Lobby Concessions', 'Speakereasy', 'Splice Bros Pizza & Pub'];
 /* Pickable rooms: real rooms on Floor 1 or 2. Excluded: the Level-0
    connectors and the 3 crawls. Headshot Remixer is excluded too —
    reachable only through hidden doors, so no public route to it

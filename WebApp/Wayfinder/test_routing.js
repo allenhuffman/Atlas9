@@ -134,16 +134,16 @@ check(Object.keys(DIRECTIONS).length > 0, 'DIRECTIONS must not be empty — Door
 check(DIRECTIONS['Employee Break Room|Headshot Remixer'] === 'through the door disguised as a soda machine', 'shipped DIRECTIONS must carry the soda-machine note (v1.4.22)');
 console.log('Via notes embedded in shipped file:', Object.keys(DIRECTIONS).length);
 // Shortcut target lists (v1.2.0/1.3.0): exact sets, all pickable rooms.
-check(JSON.stringify(FOOD_DRINK.slice().sort()) === JSON.stringify(['Concessions (Lobby)', 'Speakereasy', 'Splice Bros Pizza & Pub'].sort()), 'FOOD_DRINK must be the 3 serving rooms, got ' + FOOD_DRINK);
+check(JSON.stringify(FOOD_DRINK.slice().sort()) === JSON.stringify(['Lobby Concessions', 'Speakereasy', 'Splice Bros Pizza & Pub'].sort()), 'FOOD_DRINK must be the 3 serving rooms, got ' + FOOD_DRINK);
 check(JSON.stringify(FAZR_TYPES) === JSON.stringify(['FAZR', 'Movie Poster', 'Computer', 'INTERFAZE', 'FAZR-Portal']), 'FAZR_TYPES must be the 5 types in tier-2 order');
-check(FAZR_POINTS.length === 45, 'expected 45 FAZR points embedded, got ' + FAZR_POINTS.length);
+check(FAZR_POINTS.length === 46, 'expected 46 FAZR points embedded, got ' + FAZR_POINTS.length);
 check(FAZR_POINTS.filter(p => p.spoiler).length === 3, 'expected 3 spoiler FAZR points, got ' + FAZR_POINTS.filter(p => p.spoiler).length);
 const sorted = (a) => JSON.stringify(a.slice().sort());
-check(sorted(fazrRooms('FAZR', false)) === sorted(['Arcade', 'Crystal Cave, The', 'FACADE Field Lab', 'Grayscale Swords', 'Mesmerite, The', 'Power Supply', 'Projection Room', 'Prototyzer', 'Sapphire Jazz Club', 'Scavengers/Battle Drums', 'Scavengers/TV Den', 'StarBot', 'Theater', 'Victor\u2019s Study']), 'public FAZR rooms wrong: ' + fazrRooms('FAZR', false));
-check(sorted(fazrRooms('FAZR', true)) === sorted(['Arcade', 'Crystal Cave, The', 'FACADE Field Lab', 'Grayscale Swords', 'Headshot Remixer', 'Mesmerite, The', 'PhotoBooth (Left)', 'Power Supply', 'Projection Room', 'Prototyzer', 'Sapphire Jazz Club', 'Scavengers/Battle Drums', 'Scavengers/TV Den', 'StarBot', 'Theater', 'Theater Manager\u2019s Office', 'Victor\u2019s Study']), 'spoiler-on FAZR rooms wrong: ' + fazrRooms('FAZR', true));
+check(sorted(fazrRooms('FAZR', false)) === sorted(['Lobby Arcade', 'Crystal Cave, The', 'FACADE Field Lab', 'Grayscale Swords', 'Mesmerite, The', 'Power Supply', 'Projection Room', 'Prototyzer', 'Sapphire Jazz Club', 'Scavengers/Battle Drums', 'Scavengers/TV Den', 'StarBot', 'Theater', 'Victor\u2019s Study']), 'public FAZR rooms wrong: ' + fazrRooms('FAZR', false));
+check(sorted(fazrRooms('FAZR', true)) === sorted(['Lobby Arcade', 'Crystal Cave, The', 'FACADE Field Lab', 'Grayscale Swords', 'Headshot Remixer', 'Mesmerite, The', 'PhotoBooth (Left)', 'Power Supply', 'Projection Room', 'Prototyzer', 'Sapphire Jazz Club', 'Scavengers/Battle Drums', 'Scavengers/TV Den', 'StarBot', 'Theater', 'Theater Manager\u2019s Office', 'Victor\u2019s Study']), 'spoiler-on FAZR rooms wrong: ' + fazrRooms('FAZR', true));
 check(sorted(fazrRooms('Movie Poster', false)) === sorted(['MossMan', 'Sapphire Jazz Club Balcony', 'Scavengers/TV Den', 'StarBot']), 'Movie Poster rooms wrong');
 check(sorted(fazrRooms('Computer', false)) === sorted(['Film Storage', 'Power Supply', 'Projection Room', 'Prototyzer', 'Theater Manager\u2019s Office']), 'Computer rooms wrong');
-check(sorted(fazrRooms('INTERFAZE', false)) === sorted(['FACADE Field Lab', 'StarBot', 'Theater Manager\u2019s Office', 'VERA']), 'INTERFAZE rooms wrong');
+check(sorted(fazrRooms('INTERFAZE', false)) === sorted(['FACADE Field Lab', 'Power Supply', 'StarBot', 'Theater Manager\u2019s Office', 'VERA']), 'INTERFAZE rooms wrong');
 check(sorted(fazrRooms('FAZR-Portal', false)) === sorted(['Employee Break Room', 'Lobby', 'MossMan', 'Sapphire Jazz Club', 'Sapphire Jazz Club Balcony', 'Scavengers', 'Scavengers/School Desks']), 'FAZR-Portal rooms wrong');
 check(fazrRooms('ANY', false).length === 23, 'public FAZR-any rooms should be 23, got ' + fazrRooms('ANY', false).length);
 check(fazrRooms('ANY', true).length === 25, 'spoiler-on FAZR-any rooms should be 25, got ' + fazrRooms('ANY', true).length);
@@ -152,7 +152,7 @@ check(fazrRooms('ANY', true).includes('Headshot Remixer'), 'FAZR-any must includ
 for (const n of [...FOOD_DRINK, ...fazrRooms('ANY', false)]) check(pickable.includes(n), 'shortcut target must be pickable: ' + n);
 // Description search (v1.1.0): name + description + artists.
 const matchNames = (n, s) => pickableList(!!s).filter(r => roomMatches(r, n, !!s)).map(r => r.name).sort();
-check(JSON.stringify(matchNames('bar')) === JSON.stringify(['Concessions (Lobby)', 'Speakereasy', 'Splice Bros Pizza & Pub'].sort()), 'search "bar" should find 3 rooms, got ' + matchNames('bar'));
+check(JSON.stringify(matchNames('bar')) === JSON.stringify(['Lobby Concessions', 'Speakereasy', 'Splice Bros Pizza & Pub'].sort()), 'search "bar" should find 3 rooms, got ' + matchNames('bar'));
 check(JSON.stringify(matchNames('desk')) === JSON.stringify(['Film Storage', 'Power Supply', 'Scavengers/School Desks', 'Theater Manager\u2019s Office'].sort()), 'search "desk" should find 4 rooms, got ' + matchNames('desk'));
 check(JSON.stringify(matchNames('BAR')) === JSON.stringify(matchNames('bar')), 'search must be case-insensitive');
 check(matchNames('starbot').includes('StarBot'), 'search by name must still work');
